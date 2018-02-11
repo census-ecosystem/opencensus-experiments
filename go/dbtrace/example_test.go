@@ -17,13 +17,14 @@
 package dbtrace_test
 
 import (
-	"github.com/ramonza/opencensus-experiments/dbtrace"
 	"context"
 	"database/sql"
 	"log"
-	"github.com/ramonza/opencensus-experiments/testing/mocktrace"
-	"github.com/ramonza/opencensus-experiments/testing/mockstats"
 	"time"
+
+	"github.com/census-instrumentation/opencensus-experiments/go/dbtrace"
+	"github.com/census-instrumentation/opencensus-experiments/go/testing/mockstats"
+	"github.com/census-instrumentation/opencensus-experiments/go/testing/mocktrace"
 	"go.opencensus.io/stats"
 )
 
@@ -35,6 +36,7 @@ func init() {
 func ExampleDbtrace() {
 	dbtrace.ExecTime.Distribution.Subscribe()
 	dbtrace.QueryTime.Distribution.Subscribe()
+	dbtrace.RowsAffected.Subscribe()
 
 	ctx := context.Background()
 
@@ -63,7 +65,6 @@ func ExampleDbtrace() {
 	q := dbtrace.StartQuery(ctx, "")
 	q.Rows, q.Err = db.QueryContext(ctx, q.Query)
 
-
 	if q.Err != nil {
 		for q.NextRow() {
 			q.Rows.Scan()
@@ -74,8 +75,4 @@ func ExampleDbtrace() {
 
 	stats.SetReportingPeriod(100 * time.Millisecond)
 	time.Sleep(150 * time.Millisecond)
-	e := <-mockstats.Exported(dbtrace.ExecTime.Distribution)
-	if e.View == dbtrace.ExecTime.Distribution {
-
-	}
 }
