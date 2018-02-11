@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TODO: High-level file comment.
-
 package convenience
 
 import (
@@ -23,37 +21,33 @@ import (
 	"time"
 )
 
-type Counter struct {
-	*stats.MeasureInt64
-	Total *stats.View
-}
+type Int64Recorder func(int64) stats.Measurement
 
-func NewCounter(prefix, name, desc string) Counter {
+func NewCounter(prefix, name, desc string) (Int64Recorder, *stats.View) {
 	fullname := fmt.Sprintf("%s/%s", prefix, name)
 	m, err := stats.NewMeasureInt64(fullname, desc, "")
 	if err != nil {
-		log.Fatal("unable to create measure", err)
+		log.Panic("unable to create measure", err)
 	}
 	v, err := stats.NewView(fullname, desc, nil, m, stats.SumAggregation{}, stats.Cumulative{})
 	if err != nil {
-		log.Fatal("unable to create view", err)
+		log.Panic("unable to create view", err)
 	}
-	return Counter{MeasureInt64: m, Total: v}
+	return m.M, v
 }
 
-type Guage struct {
-	*stats.MeasureInt64
-	Mean *stats.View
-}
-
-func NewGauge(prefix, name, desc string) Guage {
+func NewGauge(prefix, name, desc string) (Int64Recorder, *stats.View) {
 	fullname := fmt.Sprintf("%s/%s", prefix, name)
 	m, err := stats.NewMeasureInt64(fullname, desc, "")
 	if err != nil {
-		log.Fatal("unable to create measure", err)
+		log.Panic("unable to create measure", err)
 	}
-	// TODO: add default view once #318 is fixed
-	return Guage{MeasureInt64: m, Mean: nil}
+	// TODO: change aggregation function to Latest
+	v, err := stats.NewView(fullname, desc, nil, m, stats.SumAggregation{}, stats.Cumulative{})
+	if err != nil {
+		log.Panic("unable to create view", err)
+	}
+	return m.M, v
 }
 
 type Stopwatch struct {
@@ -66,25 +60,21 @@ func NewTimer(prefix, desc string) Stopwatch {
 	if err != nil {
 		log.Fatal("unable to create measure", err)
 	}
-	v, err := stats.NewView(fmt.Sprintf("%s/%s", prefix, "time"), desc, nil, m, stats.DistributionAggregation{}, stats.Cumulative{})
+	v, err := stats.NewView(fmt.Sprintf("%s/%s", prefix, "time"), desc, nil, m, defaultTimeDistribution(), stats.Cumulative{})
 	if err != nil {
 		log.Fatal("unable to create view", err)
 	}
 	return Stopwatch{m: m, Distribution: v}
 }
 
-type StopwatchRun struct {
-	m     *stats.MeasureFloat64
-	start time.Time
-}
+type Stopper func() stats.Measurement
 
-func (sw Stopwatch) Start() StopwatchRun {
-	return StopwatchRun{m: sw.m, start: time.Now()}
-}
-
-func (sws StopwatchRun) Stop() stats.Measurement {
-	end := time.Now()
-	return sws.m.M(float64(end.Sub(sws.start)) / float64(time.Microsecond))
+func (sw Stopwatch) Start() Stopper {
+	start := time.Now()
+	return func() stats.Measurement {
+		end := time.Now()
+		return sw.m.M(float64(end.Sub(start)) / float64(time.Microsecond))
+	}
 }
 
 func defaultTimeDistribution() stats.DistributionAggregation {
