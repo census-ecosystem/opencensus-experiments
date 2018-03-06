@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package interop
+package main
 
 import (
 	"log"
@@ -54,7 +54,7 @@ func (s *server) Echo(ctx context.Context, req *pb.EchoRequest) (*pb.EchoRespons
 	return res, nil
 }
 
-const addr = ":9898"
+const addr = ":9800"
 
 func main() {
 	ln, err := net.Listen("tcp", addr)
