@@ -75,17 +75,13 @@ func runInteropTest(t *testing.T, host, propagationStr string) {
 		tag.Insert(mustKey("operation"), "interop-test"),
 		tag.Insert(mustKey("project"), "open-census"),
 	)
+
 	if err != nil {
 		t.Fatalf("tag.New err: %v", err)
 	}
+	ctx, rootSpan := trace.StartSpan(ctx, "interop-test+"+propagationStr)
+	defer rootSpan.End()
 	req = req.WithContext(ctx)
-
-	// 2. Create a span with a traceID, spanID
-	inSpanCtx := trace.SpanContext{
-		TraceID:      trace.TraceID{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F},
-		SpanID:       trace.SpanID{0x0D, 0x0E, 0x0A, 0x0D, 0x0B, 0x0E, 0x0E, 0x0F},
-		TraceOptions: 1,
-	}
 
 	var hf propagation.HTTPFormat
 	switch propagationStr {
@@ -97,9 +93,6 @@ func runInteropTest(t *testing.T, host, propagationStr string) {
 		hf = new(tracecontext.HTTPFormat)
 	}
 
-	hf.SpanContextToRequest(inSpanCtx, req)
-
-	// t.Logf("%q: %+v\n", propagationStr, req)
 	httpClient := &http.Client{
 		Transport: &ochttp.Transport{
 			Sampler:     trace.AlwaysSample(),
@@ -123,12 +116,11 @@ func runInteropTest(t *testing.T, host, propagationStr string) {
 		t.Fatalf("UnmarshalJSON err: %v", err)
 	}
 
-	if gti, wti := eres.TraceId, inSpanCtx.TraceID[:]; !bytes.Equal(gti, wti) {
-		t.Errorf("TraceID:\ngot= (% X)\nwant=(% X)", gti, wti)
+	sc := rootSpan.SpanContext()
+	if gti, wti := eres.TraceId, sc.TraceID[:]; !bytes.Equal(gti, wti) {
+		t.Errorf("TraceID:\ngot= (% X) %x\nwant=(% X) %x", gti, gti, wti, wti)
 	}
-	if gsi, wsi := eres.SpanId, inSpanCtx.SpanID[:]; !bytes.Equal(gsi, wsi) {
-		t.Errorf("SpanID:\ngot= (% X)\nwant=(% X)", gsi, wsi)
-	}
+	// TODO: (@odeke-em) Once tag propagation for HTTP is implemented, add it here.
 }
 
 func mustKey(key string) tag.Key {
