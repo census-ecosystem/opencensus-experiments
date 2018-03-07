@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"reflect"
 	"testing"
 
 	"golang.org/x/net/context"
@@ -73,19 +74,36 @@ func runInteropTest(t *testing.T, addr string) {
 	opts := trace.StartOptions{Sampler: trace.AlwaysSample()}
 	clientSpan := trace.NewSpan("gRPC-client-span", nil, opts)
 	ctx = trace.WithSpan(ctx, clientSpan)
-	inSpanCtx := clientSpan.SpanContext()
 
+	outTagMap := tag.FromContext(ctx)
 	// 3. Send those over and ensure that its response echoes them back
 	res, err := echoClient.Echo(ctx, new(pb.EchoRequest))
 	if err != nil {
 		t.Fatalf("Echo err: %v", err)
 	}
 
+	// 4. Now verify what's echoed back
+	inSpanCtx := clientSpan.SpanContext()
 	if gti, wti := res.TraceId, inSpanCtx.TraceID[:]; !bytes.Equal(gti, wti) {
 		t.Errorf("TraceID:\ngot= (% X)\nwant=(% X)", gti, wti)
 	}
-	if gsi, wsi := res.SpanId, inSpanCtx.SpanID[:]; !bytes.Equal(gsi, wsi) {
-		t.Errorf("SpanID:\ngot= (% X)\nwant=(% X)", gsi, wsi)
+
+	if g, w := res.TraceOptions, int32(inSpanCtx.TraceOptions); g != w {
+		t.Errorf("TraceOptions:\ngot= (%b)\nwant=(%b)", g, w)
+	}
+
+	// Since we cannot introspect tag.Map, we can only
+	// assert that its decoding returns the originally
+	// sent tag.Map, with the caveat: gRPC inserts the key "method" on sending
+	// to the serverside, so let's delete it from the serverside tagMap
+	inTagMap, err := tag.Decode(res.TagsBlob)
+	if err != nil {
+		t.Fatalf("Failed to decode tagBlob (% X) err: %v", res.TagsBlob, err)
+	}
+	tag.Delete(mustKey("method")).Mutate(inTagMap)
+
+	if !reflect.DeepEqual(inTagMap, outTagMap) {
+		t.Errorf("TagMap: got=(%v)\nwant=(%v)", inTagMap, outTagMap)
 	}
 }
 

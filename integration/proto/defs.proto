@@ -20,10 +20,10 @@ message EchoRequest {
 }
 
 message EchoResponse {
-	bytes trace_id		  = 1;
-	bytes span_id		  = 2;
-	int32 trace_options	  = 3;
-	map<string, string> tags  = 4;
+	bytes trace_id	    = 1;
+	bytes span_id	    = 2;
+	bytes tags_blob	    = 3;
+	int32 trace_options = 4;
 }
 
 service EchoService {

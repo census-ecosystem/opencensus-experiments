@@ -21,9 +21,9 @@ import (
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
-	"go.opencensus.io/plugin/ocgrpc"
 
 	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
 )
@@ -42,13 +42,8 @@ func (s *server) Echo(ctx context.Context, req *pb.EchoRequest) (*pb.EchoRespons
 	res := &pb.EchoResponse{
 		TraceId:      []byte(sCtx.TraceID[:]),
 		SpanId:       []byte(sCtx.SpanID[:]),
+		TagsBlob:     tag.Encode(tag.FromContext(ctx)),
 		TraceOptions: int32(sCtx.TraceOptions),
-	}
-
-	tagMap := tag.FromContext(ctx)
-	// TODO: File a Go issue for tagMap key inspection
-	// as the underlying map is unexposed.
-	if tagMap != nil {
 	}
 
 	return res, nil
