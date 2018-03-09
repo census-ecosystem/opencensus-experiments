@@ -28,7 +28,7 @@ import (
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
+	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
 )
 
 var setups = []struct {
@@ -38,7 +38,7 @@ var setups = []struct {
 }{
 
 	{name: "GoClient-GoServer", envAddrKey: "OPENCENSUS_GO_GRPC_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9800"},
-	// {name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_GRPC_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9801"},
+	{name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_GRPC_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9801"},
 }
 
 func TestInterop(t *testing.T) {
