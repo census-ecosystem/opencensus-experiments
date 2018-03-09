@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 	"net"
+	"os"
 
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -49,9 +50,12 @@ func (s *server) Echo(ctx context.Context, req *pb.EchoRequest) (*pb.EchoRespons
 	return res, nil
 }
 
-const addr = ":9800"
-
 func main() {
+	addr := os.Getenv("OPENCENSUS_GO_GRPC_INTEGRATION_TEST_SERVER_ADDR")
+	if addr == "" {
+		addr = ":9800"
+	}
+
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("Go gRPC server net.Listen: %v", err)
