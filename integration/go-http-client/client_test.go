@@ -42,9 +42,8 @@ var setups = []struct {
 	envAddrKey   string
 	fallbackAddr string
 }{
-	{name: "GoClient-GoServer-HTTP", envAddrKey: "GO_HTTP_SERVER_ADDR", fallbackAddr: ":9900"},
-	// {name: "GoClient-JavaServer-HTTP", envName: "JAVA_SERVER_ADDR", fallbackAddr: ":9901"},
-	// {name: "GoClient-PythonServer-HTTP", envName: "PYTHON_SERVER_ADDR", fallbackAddr: ":9902"},
+	{name: "GoClient-GoServer", envAddrKey: "OPENCENSUS_GO_HTTP_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9900"},
+	// {name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_HTTP_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9901"},
 }
 
 var propagations = []string{"b3", "google", "tracecontext"}

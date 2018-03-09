@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
@@ -53,8 +54,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const addr = ":9900"
-
 type multiPropagationHandler struct {
 	mux *http.ServeMux
 }
@@ -86,6 +85,11 @@ func (mph *multiPropagationHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(echo))
+
+	addr := os.Getenv("OPENCENSUS_GO_HTTP_INTEGRATION_TEST_SERVER_ADDR")
+	if addr == "" {
+		addr = ":9900"
+	}
 
 	// At runtime we need to be able to multiplex on
 	// the various propagators from this interop test.

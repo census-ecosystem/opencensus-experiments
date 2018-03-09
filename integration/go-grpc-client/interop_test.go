@@ -36,9 +36,9 @@ var setups = []struct {
 	envAddrKey   string
 	fallbackAddr string
 }{
-	{name: "GoClient-GoServer", envAddrKey: "GO_SERVER_ADDR", fallbackAddr: ":9800"},
-	// {name: "GoClient-JavaServer", envName: "JAVA_SERVER_ADDR", fallbackAddr: ":9801"},
-	// {name: "GoClient-PythonServer", envName: "PYTHON_SERVER_ADDR", fallbackAddr: ":9802"},
+
+	{name: "GoClient-GoServer", envAddrKey: "OPENCENSUS_GO_GRPC_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9800"},
+	// {name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_GRPC_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9801"},
 }
 
 func TestInterop(t *testing.T) {
