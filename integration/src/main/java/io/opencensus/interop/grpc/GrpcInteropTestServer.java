@@ -35,6 +35,7 @@ import java.math.BigInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Interop test server for gRPC interop testing. */
@@ -70,7 +71,7 @@ public final class GrpcInteropTestServer {
                 try {
                   server.shutdown();
                 } catch (Exception e) {
-                  logger.severe("Exception thrown when shutting down: " + e);
+                  logger.log(Level.SEVERE, "Exception thrown when shutting down.", e);
                 }
               }
             });
@@ -114,7 +115,7 @@ public final class GrpcInteropTestServer {
             .setTraceOptions(traceOptionInt)
             .build();
       } catch (TagContextSerializationException e) {
-        logger.severe("Serialization failed: " + e);
+        logger.log(Level.SEVERE, "Serialization failed.", e);
       }
       return EchoResponse.newBuilder().build();
     }
@@ -122,7 +123,8 @@ public final class GrpcInteropTestServer {
 
   /** Main launcher of the test server. */
   public static void main(String[] args) throws Exception {
-    int port = GrpcInteropTestUtils.getPortOrDefault(args, 0);
+    int port = GrpcInteropTestUtils.getPortOrDefault(
+        GrpcInteropTestUtils.ENV_PORT_KEY_JAVA, GrpcInteropTestUtils.DEFAULT_PORT_JAVA);
     new GrpcInteropTestServer(port).run();
   }
 }

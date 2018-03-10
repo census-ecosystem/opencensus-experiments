@@ -10,8 +10,6 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        // ASSUMES GRADLE 2.12 OR HIGHER. Use plugin version 0.7.5 with earlier
-        // gradle versions
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.3'
     }
 }
@@ -26,6 +24,15 @@ version = "0.13.0-SNAPSHOT" // CURRENT_OPENCENSUS_VERSION
 
 def opencensusVersion = "0.12.2" // LATEST_OPENCENSUS_RELEASE_VERSION
 def grpcVersion = "1.9.0" // CURRENT_GRPC_VERSION
+def guavaVersion = "19.0"
+
+if (project.hasProperty("opencensusVersion")) {
+    opencensusVersion = project.properties["opencensusVersion"]
+}
+
+if (project.hasProperty("grpcVersion")) {
+    grpcVersion = project.properties["grpcVersion"]
+}
 
 tasks.withType(JavaCompile) {
     sourceCompatibility = '1.8'
@@ -37,9 +44,10 @@ dependencies {
             "io.opencensus:opencensus-api:${opencensusVersion}",
             "io.grpc:grpc-protobuf:${grpcVersion}",
             "io.grpc:grpc-stub:${grpcVersion}",
-            "io.grpc:grpc-netty:${grpcVersion}"
+            "io.grpc:grpc-netty:${grpcVersion}",
+            "com.google.guava:guava:${guavaVersion}"
 
-    runtime "io.opencensus:opencensus-impl:${opencensusVersion}"
+            runtime "io.opencensus:opencensus-impl:${opencensusVersion}"
 }
 
 protobuf {
