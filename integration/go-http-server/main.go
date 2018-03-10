@@ -29,7 +29,7 @@ import (
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
+	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
 )
 
 func echo(w http.ResponseWriter, r *http.Request) {
