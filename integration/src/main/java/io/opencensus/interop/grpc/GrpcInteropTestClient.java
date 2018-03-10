@@ -18,6 +18,7 @@ package io.opencensus.interop.grpc;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opencensus.common.Scope;
 import io.opencensus.interop.EchoRequest;
@@ -40,9 +41,10 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Interop test client for gRPC interop testing. */
@@ -70,12 +72,13 @@ public final class GrpcInteropTestClient {
 
   private void run() {
     ExecutorService executor = Executors.newFixedThreadPool(1);
-    ManagedChannelBuilder<?> channelBuilder =
+    ManagedChannel channel =
         ManagedChannelBuilder.forAddress(HOST, serverPort)
             .executor(executor)
             // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
             // needing certificates.
-            .usePlaintext(true);
+            .usePlaintext(true)
+            .build();
     SpanBuilder spanBuilder =
         tracer.spanBuilderWithExplicitParent(SPAN_NAME, null).setSampler(Samplers.alwaysSample());
     TagContextBuilder tagContextBuilder =
@@ -84,19 +87,18 @@ public final class GrpcInteropTestClient {
     boolean succeeded = false;
     try (Scope scopedSpan = spanBuilder.startScopedSpan();
         Scope scopedTags = tagContextBuilder.buildScoped()) {
-      EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channelBuilder.build());
+      EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
       EchoResponse response = stub.echo(EchoRequest.getDefaultInstance());
       succeeded = verifyResponse(response);
     } catch (Exception e) {
-      logger.severe("Exception thrown when sending request: " + e);
+      logger.log(Level.SEVERE, "Exception thrown when sending request.", e);
     } finally {
       if (succeeded) {
         logger.info("PASSED.");
-        System.exit(0);
       } else {
         logger.info("FAILED.");
-        System.exit(1);
       }
+      channel.shutdownNow();
     }
   }
 
@@ -143,7 +145,7 @@ public final class GrpcInteropTestClient {
       }
     } catch (TagContextDeserializationException e) {
       succeeded = false;
-      logger.severe("Bad binary format for TagContext: " + e);
+      logger.log(Level.SEVERE, "Bad binary format for TagContext.", e);
     }
 
     return succeeded;
@@ -151,7 +153,9 @@ public final class GrpcInteropTestClient {
 
   /** Main launcher of the test client. */
   public static void main(String[] args) {
-    int serverPort = GrpcInteropTestUtils.getPortOrDefault(args, 0);
-    new GrpcInteropTestClient(serverPort).run();
+    for (Entry<String, Integer> setup : GrpcInteropTestUtils.SETUP_MAP.entrySet()) {
+      int port = GrpcInteropTestUtils.getPortOrDefault(setup.getKey(), setup.getValue());
+      new GrpcInteropTestClient(port).run();
+    }
   }
 }

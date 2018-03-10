@@ -16,23 +16,30 @@
 
 package io.opencensus.interop.grpc;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.logging.Logger;
 
-/** Util methods. */
+/** Util methods and constants. */
 final class GrpcInteropTestUtils {
 
   private static Logger logger = Logger.getLogger(GrpcInteropTestUtils.class.getName());
 
-  private static final int DEFAULT_PORT = 9801;
+  static final String ENV_PORT_KEY_GO = "OPENCENSUS_GO_GRPC_INTEGRATION_TEST_SERVER_ADDR";
+  static final String ENV_PORT_KEY_JAVA = "OPENCENSUS_JAVA_GRPC_INTEGRATION_TEST_SERVER_ADDR";
+  static final int DEFAULT_PORT_GO = 9800;
+  static final int DEFAULT_PORT_JAVA = 9801;
+  static final ImmutableMap<String, Integer> SETUP_MAP =
+      ImmutableMap.of(ENV_PORT_KEY_GO, DEFAULT_PORT_GO, ENV_PORT_KEY_JAVA, DEFAULT_PORT_JAVA);
 
-  static int getPortOrDefault(String[] args, int index) {
-    int portNumber = DEFAULT_PORT;
-    if (index < args.length) {
+  static int getPortOrDefault(String varName, int defaultPort) {
+    int portNumber = defaultPort;
+    String portStr = System.getenv(varName);
+    if (portStr != null) {
       try {
-        portNumber = Integer.parseInt(args[index]);
+        portNumber = Integer.parseInt(portStr);
       } catch (NumberFormatException e) {
         logger.warning(
-            String.format("Port %s is invalid, use default port %d.", args[index], DEFAULT_PORT));
+            String.format("Port %s is invalid, use default port %d.", portStr, defaultPort));
       }
     }
     return portNumber;
