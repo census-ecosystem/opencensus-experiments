@@ -94,7 +94,9 @@ func runInteropTest(t *testing.T, host, propagationStr string) {
 
 	httpClient := &http.Client{
 		Transport: &ochttp.Transport{
-			Sampler:     trace.AlwaysSample(),
+			StartOptions: trace.StartOptions{
+				Sampler: trace.AlwaysSample(),
+			},
 			Propagation: hf,
 		},
 	}
