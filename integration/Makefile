@@ -2,7 +2,7 @@
 test: gen_proto gradlew_install start_go_servers start_java_servers run_go_client_tests run_java_client_tests
 
 gen_proto:
-	protoc -I src/main/proto/ src/main/proto/defs.proto --go_out=plugins=grpc:proto
+	protoc -I src/main/proto/ src/main/proto/defs.proto --go_out=plugins=grpc:src/main/proto
 
 gradlew_install:
 	# To use a different OpenCensus and gRPC version, use -PopencensusVersion= and -PgrpcVersion=.
