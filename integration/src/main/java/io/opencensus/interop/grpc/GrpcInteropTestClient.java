@@ -63,8 +63,8 @@ public final class GrpcInteropTestClient {
   private static final TagKey METHOD_KEY = TagKey.create("method");
   private static final TagValue OPERATION_VALUE = TagValue.create("interop-test");
   private static final TagValue PROJECT_VALUE = TagValue.create("open-census");
-  private static final TagValue METHOD_VALUE = TagValue.create(
-      EchoServiceGrpc.getEchoMethod().getFullMethodName());
+  private static final TagValue METHOD_VALUE =
+      TagValue.create(EchoServiceGrpc.getEchoMethod().getFullMethodName());
 
   private GrpcInteropTestClient(int serverPort) {
     this.serverPort = serverPort;
@@ -105,8 +105,7 @@ public final class GrpcInteropTestClient {
   // Returns true if all tracing values and tags received in the response match the expected values.
   private static boolean verifyResponse(EchoResponse response) {
     boolean succeeded = true;
-    TagContextBinarySerializer serializer =
-        Tags.getTagPropagationComponent().getBinarySerializer();
+    TagContextBinarySerializer serializer = Tags.getTagPropagationComponent().getBinarySerializer();
     SpanContext spanContext = tracer.getCurrentSpan().getContext();
     ByteString expectedTraceIdByteStr = ByteString.copyFrom(spanContext.getTraceId().getBytes());
     int expectedTraceOption = new BigInteger(spanContext.getTraceOptions().getBytes()).intValue();
@@ -114,10 +113,10 @@ public final class GrpcInteropTestClient {
 
     if (!response.getTraceId().equals(expectedTraceIdByteStr)) {
       succeeded = false;
-      logger.severe(String.format(
-          "Client received bad trace id. got %s, want %s.",
-          response.getTraceId(),
-          expectedTraceIdByteStr));
+      logger.severe(
+          String.format(
+              "Client received bad trace id. got %s, want %s.",
+              response.getTraceId(), expectedTraceIdByteStr));
     }
 
     int spanIdInt = new BigInteger(spanContext.getSpanId().getBytes()).intValue();
@@ -128,20 +127,21 @@ public final class GrpcInteropTestClient {
 
     if (!(response.getTraceOptions() == expectedTraceOption)) {
       succeeded = false;
-      logger.severe(String.format(
-          "Client received bad trace options. got %d, want %d.",
-          response.getTraceOptions(),
-          expectedTraceOption));
+      logger.severe(
+          String.format(
+              "Client received bad trace options. got %d, want %d.",
+              response.getTraceOptions(), expectedTraceOption));
     }
 
     try {
       TagContext actualTagContext = serializer.fromByteArray(response.getTagsBlob().toByteArray());
       if (!actualTagContext.equals(expectedTagContext)) {
         succeeded = false;
-        logger.severe(String.format(
-            "Client received wrong TagContext. Got %s, want %s.",
-            Lists.<Tag>newArrayList(InternalUtils.getTags(actualTagContext)),
-            Lists.<Tag>newArrayList(InternalUtils.getTags(expectedTagContext))));
+        logger.severe(
+            String.format(
+                "Client received wrong TagContext. Got %s, want %s.",
+                Lists.<Tag>newArrayList(InternalUtils.getTags(actualTagContext)),
+                Lists.<Tag>newArrayList(InternalUtils.getTags(expectedTagContext))));
       }
     } catch (TagContextDeserializationException e) {
       succeeded = false;
