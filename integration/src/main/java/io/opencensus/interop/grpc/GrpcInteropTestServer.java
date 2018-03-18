@@ -123,8 +123,9 @@ public final class GrpcInteropTestServer {
 
   /** Main launcher of the test server. */
   public static void main(String[] args) throws Exception {
-    int port = GrpcInteropTestUtils.getPortOrDefault(
-        GrpcInteropTestUtils.ENV_PORT_KEY_JAVA, GrpcInteropTestUtils.DEFAULT_PORT_JAVA);
+    int port =
+        GrpcInteropTestUtils.getPortOrDefault(
+            GrpcInteropTestUtils.ENV_PORT_KEY_JAVA, GrpcInteropTestUtils.DEFAULT_PORT_JAVA);
     new GrpcInteropTestServer(port).run();
   }
 }
