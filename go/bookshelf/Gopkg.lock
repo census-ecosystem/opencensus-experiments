@@ -3,9 +3,9 @@
 
 [[projects]]
   name = "cloud.google.com/go"
-  packages = ["compute/metadata","datastore","iam","internal","internal/atomiccache","internal/fields","internal/optional","internal/version","monitoring/apiv3","pubsub","pubsub/apiv1","storage","trace/apiv2"]
-  revision = "20d4028b8a750c2aca76bf9fefa8ed2d0109b573"
-  version = "v0.19.0"
+  packages = ["compute/metadata","datastore","iam","internal","internal/atomiccache","internal/fields","internal/optional","internal/trace","internal/version","monitoring/apiv3","pubsub","pubsub/apiv1","pubsub/internal/distribution","storage","trace/apiv2"]
+  revision = "4b98a6370e36d7a85192e7bad08a4ebd82eac2a8"
+  version = "v0.20.0"
 
 [[projects]]
   branch = "master"
@@ -118,7 +118,7 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/api/annotations","googleapis/api/distribution","googleapis/api/label","googleapis/api/metric","googleapis/api/monitoredres","googleapis/datastore/v1","googleapis/devtools/cloudtrace/v2","googleapis/iam/v1","googleapis/monitoring/v3","googleapis/pubsub/v1","googleapis/rpc/status","googleapis/type/latlng","protobuf/field_mask"]
+  packages = ["googleapis/api/annotations","googleapis/api/distribution","googleapis/api/label","googleapis/api/metric","googleapis/api/monitoredres","googleapis/datastore/v1","googleapis/devtools/cloudtrace/v2","googleapis/iam/v1","googleapis/monitoring/v3","googleapis/pubsub/v1","googleapis/rpc/code","googleapis/rpc/status","googleapis/type/latlng","protobuf/field_mask"]
   revision = "f8c8703595236ae70fdf8789ecb656ea0bcdcf46"
 
 [[projects]]
@@ -136,6 +136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "98851d6f743c89a718f10a591bc2ab527422faf03d7feae46ec67fa0e9bc233a"
+  inputs-digest = "3645b2b019d45df127b79a51805c4a9c47a821d518c689c7a3b83bcddd44d9ea"
   solver-name = "gps-cdcl"
   solver-version = 1
