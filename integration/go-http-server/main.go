@@ -15,22 +15,27 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/golang/protobuf/jsonpb"
+
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
-	"go.opencensus.io/plugin/ochttp/propagation/google"
 	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 
 	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
+	google "go.opencensus.io/exporter/stackdriver/propagation"
 )
+
+var jsonMarshaler = jsonpb.Marshaler{
+	OrigName: true,
+}
 
 func echo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -48,10 +53,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	if tagMap != nil {
 	}
 
-	enc := json.NewEncoder(w)
-	if err := enc.Encode(res); err != nil {
+	data, err := jsonMarshaler.MarshalToString(res)
+	if err != nil {
 		log.Fatalf("Failed to encode response from %q", r.RemoteAddr)
 	}
+	fmt.Fprintf(w, "%s", data)
 }
 
 type multiPropagationHandler struct {
