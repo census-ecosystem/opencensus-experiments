@@ -31,6 +31,8 @@ import (
 	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/zpages"
+	"go.opencensus.io/stats"
+	"go.opencensus.io/stats/view"
 )
 
 var (
@@ -40,8 +42,14 @@ var (
 	detailTmpl = parseTemplate("detail.html")
 )
 
+var booksPerPage, _ = stats.Int64("books_per_page", "number of books rendered on a page", stats.UnitNone)
+
 func main() {
 	registerHandlers()
+	view.Subscribe(&view.View{
+		Aggregation: view.Distribution(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 100, 200, 300, 500, 1000),
+		Measure: booksPerPage,
+	})
 	appengine.Main()
 }
 
@@ -102,7 +110,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) *appError {
 	if err != nil {
 		return appErrorf(err, "could not list books: %v", err)
 	}
-
+	stats.Record(r.Context(), booksPerPage.M(int64(len(books))))
 	return listTmpl.Execute(w, r, books)
 }
 

@@ -21,6 +21,9 @@ import (
 	"golang.org/x/oauth2/google"
 	"go.opencensus.io/exporter/stackdriver"
 	"go.opencensus.io/trace"
+	"go.opencensus.io/stats/view"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/plugin/ocgrpc"
 )
 
 var (
@@ -50,6 +53,14 @@ func init() {
 	}
 	trace.SetDefaultSampler(trace.AlwaysSample())
 	trace.RegisterExporter(exporter)
+
+	view.RegisterExporter(exporter)
+
+	// subscribe to views
+	view.Subscribe(ochttp.DefaultServerViews...)
+	view.Subscribe(ochttp.DefaultClientViews...)
+	view.Subscribe(ocgrpc.DefaultServerViews...)
+	view.Subscribe(ocgrpc.DefaultClientViews...)
 
 	log.Printf("installed opencensus trace exporter")
 
