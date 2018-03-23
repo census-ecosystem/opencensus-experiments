@@ -31,7 +31,7 @@ repositories {
 group = "io.opencensus"
 version = "0.13.0-SNAPSHOT" // CURRENT_OPENCENSUS_VERSION
 
-def opencensusVersion = "0.12.2" // LATEST_OPENCENSUS_RELEASE_VERSION
+def opencensusVersion = "0.13.0-SNAPSHOT" // LATEST_OPENCENSUS_VERSION we want to test.
 def grpcVersion = "1.9.0" // CURRENT_GRPC_VERSION
 def guavaVersion = "19.0"
 
@@ -47,18 +47,7 @@ if (project.hasProperty("grpcVersion")) {
 if (JavaVersion.current().isJava8Compatible()) {
     googleJavaFormat {
         toolVersion '1.5'
-    }
-
-    afterEvaluate {  // Allow subproject to add more source sets.
-        tasks.googleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
-
-        tasks.verifyGoogleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
+        exclude 'build/generated/**/*.java'
     }
 }
 
@@ -70,6 +59,7 @@ tasks.withType(JavaCompile) {
 dependencies {
     compile "com.google.api.grpc:proto-google-common-protos:1.0.5",
             "io.opencensus:opencensus-api:${opencensusVersion}",
+            "io.opencensus:opencensus-contrib-http-util:${opencensusVersion}",
             "io.grpc:grpc-protobuf:${grpcVersion}",
             "io.grpc:grpc-stub:${grpcVersion}",
             "io.grpc:grpc-netty:${grpcVersion}",
@@ -125,8 +115,24 @@ task interopTestClient(type: CreateStartScripts) {
     classpath = jar.outputs.files + project.configurations.runtime
 }
 
+task interopHttpTestServer(type: CreateStartScripts) {
+    mainClassName = 'io.opencensus.interop.http.HttpInteropTestServer'
+    applicationName = 'HttpInteropTestServer'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task interopHttpTestClient(type: CreateStartScripts) {
+    mainClassName = 'io.opencensus.interop.http.HttpInteropTestClient'
+    applicationName = 'HttpInteropTestClient'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
 applicationDistribution.into('bin') {
     from(interopTestServer)
     from(interopTestClient)
+    from(interopHttpTestServer)
+    from(interopHttpTestClient)
     fileMode = 0755
 }
