@@ -16,7 +16,6 @@ package interop
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,17 +23,19 @@ import (
 	"os"
 	"testing"
 
+	"github.com/golang/protobuf/jsonpb"
+
 	"golang.org/x/net/context"
 
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
-	"go.opencensus.io/plugin/ochttp/propagation/google"
 	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 
 	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
+	google "go.opencensus.io/exporter/stackdriver/propagation"
 )
 
 var setups = []struct {
@@ -47,6 +48,8 @@ var setups = []struct {
 }
 
 var propagations = []string{"b3", "google", "tracecontext"}
+
+var jsonUnmarshaler = jsonpb.Unmarshaler{}
 
 func TestInterop(t *testing.T) {
 	for _, setup := range setups {
@@ -113,7 +116,7 @@ func runInteropTest(t *testing.T, host, propagationStr string) {
 		t.Fatalf("Response.Body read err: %v", err)
 	}
 	eres := new(pb.EchoResponse)
-	if err := json.Unmarshal(blob, eres); err != nil {
+	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(blob), eres); err != nil {
 		t.Fatalf("UnmarshalJSON err: %v", err)
 	}
 
