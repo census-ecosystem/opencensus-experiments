@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  *
  * <p>This class should be placed after {@link io.netty.handler.codec.http.HttpServerCodec}.
  */
- // TODO(hailongwen): moved this into `opencensus-instrumentation-http-netty` artifact.
+// TODO(hailongwen): moved this into `opencensus-instrumentation-http-netty` artifact.
 public abstract class OpenCensusServerInboundOutboundHandler extends ChannelDuplexHandler {
   private static final Logger logger =
       Logger.getLogger(OpenCensusServerInboundOutboundHandler.class.getName());
@@ -96,11 +96,10 @@ public abstract class OpenCensusServerInboundOutboundHandler extends ChannelDupl
   /**
    * Extract the {@link SpanContext} from HTTP header and start a new span under this context.
    *
-   * <p>This method is a copy of
-   * <a href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpServerHandler.java#L75">
+   * <p>This method is a copy of <a
+   * href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpServerHandler.java#L75">
    * HttpServerHandler.handlerStart(TextFormat.Getter,Carrier,Request)</a> with some minor
    * modifications.
-   *
    */
   // TODO(hailongwen): remove this method once the HTTP util is merged.
   private Span handleStart(TextFormat textFormat, HttpRequest request) {
@@ -134,10 +133,9 @@ public abstract class OpenCensusServerInboundOutboundHandler extends ChannelDupl
   /**
    * Close the HTTP span.
    *
-   * <p>This method is a copy of
-   * <a href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpHandler.java#L124">
+   * <p>This method is a copy of <a
+   * href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpHandler.java#L124">
    * HttpHandler.handleEnd(Response,Throwable,Span)</a> with some minor modifications.
-   *
    */
   // TODO(hailongwen): remove this method once the HTTP util is merged.
   private void handleEnd(HttpResponse response, Throwable error, Span span) {

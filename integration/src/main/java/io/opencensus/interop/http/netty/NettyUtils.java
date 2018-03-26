@@ -26,9 +26,7 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.propagation.TextFormat;
 import java.util.logging.Logger;
 
-/**
- * Utilities for netty instrumentation.
- */
+/** Utilities for netty instrumentation. */
 // TODO(hailongwen): moved this into `opencensus-instrumentation-http-netty` artifact.
 public class NettyUtils {
   private static final Logger logger = Logger.getLogger(NettyUtils.class.getName());

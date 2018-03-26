@@ -44,8 +44,8 @@ import io.opencensus.trace.propagation.TextFormat;
  *
  * <p>This should be placed after the {@link io.netty.handler.codec.http.HttpClientCodec}.
  */
- // TODO(hailongwen): moved this into `opencensus-instrumentation-http-netty` artifact.
-public class OpenCensusClientInboundOutboundHandler extends ChannelDuplexHandler {
+// TODO(hailongwen): moved this into `opencensus-instrumentation-http-netty` artifact.
+public final class OpenCensusClientInboundOutboundHandler extends ChannelDuplexHandler {
 
   private final Tracer tracer;
   private final TextFormat textFormat;
@@ -123,8 +123,8 @@ public class OpenCensusClientInboundOutboundHandler extends ChannelDuplexHandler
   /**
    * Close the HTTP span.
    *
-   * <p>This method is a copy of
-   * <a href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpHandler.java#L124">
+   * <p>This method is a copy of <a
+   * href="https://github.com/HailongWen/opencensus-java/blob/1b7864992078f331034b2b157c0c372f34a7ddb9/contrib/http_util/src/main/java/io/opencensus/contrib/http/HttpHandler.java#L124">
    * HttpHandler.handleEnd(Response,Throwable,Span)</a> with some minor modifications.
    */
   // TODO(hailongwen): remove this method once the HTTP util is merged.

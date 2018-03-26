@@ -16,6 +16,8 @@
 
 package io.opencensus.interop;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import io.opencensus.contrib.http.util.HttpPropagationUtil;
@@ -64,25 +66,24 @@ public class TestUtils {
    * Build the {@link io.opencensus.interop.EchoResponse} according to the given {@link SpanContext}
    * and {@link TagContext}.
    *
-   * @param spanContext the {@code SpanContext}. Can be {@code null}.
+   * @param spanContext the {@code SpanContext}.
    * @param tagContext the {@code TagContext}. Can be {@code null}.
    * @return a {@code EchoResponse}.
    */
   public static EchoResponse buildResponse(SpanContext spanContext, TagContext tagContext) {
+    checkNotNull(spanContext, "spanContext");
     TagContextBinarySerializer serializer = Tags.getTagPropagationComponent().getBinarySerializer();
     EchoResponse.Builder builder = EchoResponse.newBuilder();
 
     try {
-      if (spanContext != null) {
-        byte[] traceIdBytes = spanContext.getTraceId().getBytes();
-        byte[] spanIdBytes = spanContext.getSpanId().getBytes();
-        int traceOptionInt = new BigInteger(spanContext.getTraceOptions().getBytes()).intValue();
+      byte[] traceIdBytes = spanContext.getTraceId().getBytes();
+      byte[] spanIdBytes = spanContext.getSpanId().getBytes();
+      int traceOptionInt = new BigInteger(spanContext.getTraceOptions().getBytes()).intValue();
+      builder
+          .setTraceId(ByteString.copyFrom(traceIdBytes))
+          .setSpanId(ByteString.copyFrom(spanIdBytes))
+          .setTraceOptions(traceOptionInt);
 
-        builder
-            .setTraceId(ByteString.copyFrom(traceIdBytes))
-            .setSpanId(ByteString.copyFrom(spanIdBytes))
-            .setTraceOptions(traceOptionInt);
-      }
       if (tagContext != null) {
         byte[] tagContextBytes = serializer.toByteArray(tagContext);
         builder.setTagsBlob(ByteString.copyFrom(tagContextBytes));
