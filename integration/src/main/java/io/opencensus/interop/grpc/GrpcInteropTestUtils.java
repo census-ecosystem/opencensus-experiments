@@ -17,12 +17,9 @@
 package io.opencensus.interop.grpc;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.logging.Logger;
 
 /** Util methods and constants. */
 final class GrpcInteropTestUtils {
-
-  private static Logger logger = Logger.getLogger(GrpcInteropTestUtils.class.getName());
 
   static final String ENV_PORT_KEY_GO = "OPENCENSUS_GO_GRPC_INTEGRATION_TEST_SERVER_ADDR";
   static final String ENV_PORT_KEY_JAVA = "OPENCENSUS_JAVA_GRPC_INTEGRATION_TEST_SERVER_ADDR";
@@ -30,20 +27,6 @@ final class GrpcInteropTestUtils {
   static final int DEFAULT_PORT_JAVA = 9801;
   static final ImmutableMap<String, Integer> SETUP_MAP =
       ImmutableMap.of(ENV_PORT_KEY_GO, DEFAULT_PORT_GO, ENV_PORT_KEY_JAVA, DEFAULT_PORT_JAVA);
-
-  static int getPortOrDefault(String varName, int defaultPort) {
-    int portNumber = defaultPort;
-    String portStr = System.getenv(varName);
-    if (portStr != null) {
-      try {
-        portNumber = Integer.parseInt(portStr);
-      } catch (NumberFormatException e) {
-        logger.warning(
-            String.format("Port %s is invalid, use default port %d.", portStr, defaultPort));
-      }
-    }
-    return portNumber;
-  }
 
   private GrpcInteropTestUtils() {}
 }
