@@ -16,22 +16,17 @@
 
 package io.opencensus.interop.grpc;
 
-import com.google.protobuf.ByteString;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opencensus.interop.EchoRequest;
 import io.opencensus.interop.EchoResponse;
 import io.opencensus.interop.EchoServiceGrpc.EchoServiceImplBase;
-import io.opencensus.tags.TagContext;
+import io.opencensus.interop.TestUtils;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
-import io.opencensus.tags.propagation.TagContextBinarySerializer;
-import io.opencensus.tags.propagation.TagContextSerializationException;
-import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
-import java.math.BigInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -91,40 +86,18 @@ public final class GrpcInteropTestServer {
 
     @Override
     public void echo(EchoRequest request, StreamObserver<EchoResponse> responseObserver) {
-      EchoResponse response = buildResponse();
+      EchoResponse response =
+          TestUtils.buildResponse(
+              tracer.getCurrentSpan().getContext(), tagger.getCurrentTagContext());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
-    }
-
-    private static EchoResponse buildResponse() {
-      TagContextBinarySerializer serializer =
-          Tags.getTagPropagationComponent().getBinarySerializer();
-      TagContext tagContext = tagger.getCurrentTagContext();
-      SpanContext spanContext = tracer.getCurrentSpan().getContext();
-
-      try {
-        byte[] traceIdBytes = spanContext.getTraceId().getBytes();
-        byte[] spanIdBytes = spanContext.getSpanId().getBytes();
-        int traceOptionInt = new BigInteger(spanContext.getTraceOptions().getBytes()).intValue();
-        byte[] tagContextBytes = serializer.toByteArray(tagContext);
-
-        return EchoResponse.newBuilder()
-            .setTraceId(ByteString.copyFrom(traceIdBytes))
-            .setSpanId(ByteString.copyFrom(spanIdBytes))
-            .setTagsBlob(ByteString.copyFrom(tagContextBytes))
-            .setTraceOptions(traceOptionInt)
-            .build();
-      } catch (TagContextSerializationException e) {
-        logger.log(Level.SEVERE, "Serialization failed.", e);
-      }
-      return EchoResponse.newBuilder().build();
     }
   }
 
   /** Main launcher of the test server. */
   public static void main(String[] args) throws Exception {
     int port =
-        GrpcInteropTestUtils.getPortOrDefault(
+        TestUtils.getPortOrDefault(
             GrpcInteropTestUtils.ENV_PORT_KEY_JAVA, GrpcInteropTestUtils.DEFAULT_PORT_JAVA);
     new GrpcInteropTestServer(port).run();
   }
