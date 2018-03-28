@@ -10,16 +10,16 @@ gradlew_install:
 
 start_go_servers:
 	# TODO: Capture these PIDs and kill them
-	go run go-grpc-server/main.go &
-	go run go-http-server/main.go &
+	go run go/grpc/server/main.go &
+	go run go/http/server/main.go &
 
 start_java_servers:
 	# TODO: Capture these PIDs and kill them
 	build/install/java-interop/bin/GrpcInteropTestServer &
 
 run_go_client_tests:
-	go test -v go-grpc-client/*.go
-	go test -v go-http-client/*.go
+	go test -v go/grpc/client/*.go
+	go test -v go/http/client/*.go
 
 run_java_client_tests:
 	build/install/java-interop/bin/GrpcInteropTestClient
