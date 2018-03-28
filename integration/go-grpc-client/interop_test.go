@@ -28,7 +28,7 @@ import (
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
+	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
 )
 
 var setups = []struct {

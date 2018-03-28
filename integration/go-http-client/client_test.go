@@ -34,7 +34,7 @@ import (
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
+	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
 	google "go.opencensus.io/exporter/stackdriver/propagation"
 )
 

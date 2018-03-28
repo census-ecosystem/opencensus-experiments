@@ -13,7 +13,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.3'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.5'
         classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.6'
     }
 }
@@ -88,6 +88,9 @@ protobuf {
 // Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
 sourceSets {
     main {
+        proto {
+            srcDir 'proto'
+        }
         java {
             srcDir 'src'
             srcDirs 'build/generated/source/proto/main/grpc'
