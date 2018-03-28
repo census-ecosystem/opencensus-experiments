@@ -41,7 +41,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.CharsetUtil;
 import io.opencensus.interop.EchoResponse;
-import io.opencensus.interop.TestUtils;
+import io.opencensus.interop.util.TestUtils;
 import io.opencensus.interop.http.netty.NettyUtils;
 import io.opencensus.interop.http.netty.OpenCensusServerInboundOutboundHandler;
 import io.opencensus.trace.Span;

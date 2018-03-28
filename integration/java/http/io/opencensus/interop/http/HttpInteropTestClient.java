@@ -39,7 +39,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opencensus.common.Scope;
 import io.opencensus.interop.EchoResponse;
-import io.opencensus.interop.TestUtils;
+import io.opencensus.interop.util.TestUtils;
 import io.opencensus.interop.http.HttpInteropTestUtils.Setup;
 import io.opencensus.interop.http.netty.NettyUtils;
 import io.opencensus.interop.http.netty.OpenCensusClientInboundOutboundHandler;

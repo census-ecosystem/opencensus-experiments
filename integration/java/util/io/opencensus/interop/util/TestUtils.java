@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.opencensus.interop;
+package io.opencensus.interop.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import io.opencensus.contrib.http.util.HttpPropagationUtil;
+import io.opencensus.interop.EchoResponse;
 import io.opencensus.tags.InternalUtils;
 import io.opencensus.tags.Tag;
 import io.opencensus.tags.TagContext;

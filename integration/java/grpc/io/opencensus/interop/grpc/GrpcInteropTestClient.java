@@ -23,7 +23,7 @@ import io.opencensus.interop.EchoRequest;
 import io.opencensus.interop.EchoResponse;
 import io.opencensus.interop.EchoServiceGrpc;
 import io.opencensus.interop.EchoServiceGrpc.EchoServiceBlockingStub;
-import io.opencensus.interop.TestUtils;
+import io.opencensus.interop.util.TestUtils;
 import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagContextBuilder;
 import io.opencensus.tags.TagKey;
