@@ -22,7 +22,7 @@ import io.grpc.stub.StreamObserver;
 import io.opencensus.interop.EchoRequest;
 import io.opencensus.interop.EchoResponse;
 import io.opencensus.interop.EchoServiceGrpc.EchoServiceImplBase;
-import io.opencensus.interop.TestUtils;
+import io.opencensus.interop.util.TestUtils;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
 import io.opencensus.trace.Tracer;

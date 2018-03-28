@@ -92,7 +92,9 @@ sourceSets {
             srcDir 'proto'
         }
         java {
-            srcDir 'src'
+            srcDirs 'java/grpc'
+            srcDirs 'java/http'
+            srcDirs 'java/util'
             srcDirs 'build/generated/source/proto/main/grpc'
             srcDirs 'build/generated/source/proto/main/java'
         }
