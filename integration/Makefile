@@ -1,8 +1,12 @@
 .PHONY: start_go_servers start_java_servers run_go_client_tests run_java_client_tests
-test: gen_proto gradlew_install start_go_servers start_java_servers run_go_client_tests run_java_client_tests
+test: gen_proto gradlew_install_opencensus gradlew_install start_go_servers start_java_servers run_go_client_tests run_java_client_tests
 
 gen_proto:
 	protoc -I proto/ proto/defs.proto --go_out=plugins=grpc:proto
+
+gradlew_install_opencensus:
+	# Install the latest OpenCensus-Java version locally.
+	git clone https://github.com/census-instrumentation/opencensus-java.git && cd opencensus-java && ./gradlew install && cd .. && rm -rf opencensus-java
 
 gradlew_install:
 	# To use a different OpenCensus and gRPC version, use -PopencensusVersion= and -PgrpcVersion=.
