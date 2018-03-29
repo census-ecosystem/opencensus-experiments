@@ -16,6 +16,7 @@ start_go_servers:
 start_java_servers:
 	# TODO: Capture these PIDs and kill them
 	build/install/java-interop/bin/GrpcInteropTestServer &
+	build/install/java-interop/bin/HttpInteropTestServer &
 
 run_go_client_tests:
 	go test -v go/grpc/client/*.go
@@ -23,3 +24,4 @@ run_go_client_tests:
 
 run_java_client_tests:
 	build/install/java-interop/bin/GrpcInteropTestClient
+	build/install/java-interop/bin/HttpInteropTestClient
