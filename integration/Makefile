@@ -6,7 +6,7 @@ gen_proto:
 
 gradlew_install:
 	# To use a different OpenCensus and gRPC version, use -PopencensusVersion= and -PgrpcVersion=.
-	./gradlew installDist
+	cd java && ./gradlew installDist && cd ..
 
 start_go_servers:
 	# TODO: Capture these PIDs and kill them
@@ -15,13 +15,14 @@ start_go_servers:
 
 start_java_servers:
 	# TODO: Capture these PIDs and kill them
-	build/install/java-interop/bin/GrpcInteropTestServer &
-	build/install/java-interop/bin/HttpInteropTestServer &
+	java/build/install/java-interop/bin/GrpcInteropTestServer &
+	java/build/install/java-interop/bin/HttpInteropTestServer &
 
 run_go_client_tests:
 	go test -v go/grpc/client/*.go
 	go test -v go/http/client/*.go
 
 run_java_client_tests:
-	build/install/java-interop/bin/GrpcInteropTestClient
-	build/install/java-interop/bin/HttpInteropTestClient
+	java/build/install/java-interop/bin/GrpcInteropTestClient
+	java/build/install/java-interop/bin/HttpInteropTestClient
+
