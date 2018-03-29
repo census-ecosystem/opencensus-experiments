@@ -89,12 +89,12 @@ protobuf {
 sourceSets {
     main {
         proto {
-            srcDir 'proto'
+            srcDir '../proto'
         }
         java {
-            srcDirs 'java/grpc'
-            srcDirs 'java/http'
-            srcDirs 'java/util'
+            srcDirs 'grpc'
+            srcDirs 'http'
+            srcDirs 'util'
             srcDirs 'build/generated/source/proto/main/grpc'
             srcDirs 'build/generated/source/proto/main/java'
         }
