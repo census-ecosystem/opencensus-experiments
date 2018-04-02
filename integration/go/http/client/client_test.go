@@ -34,7 +34,7 @@ import (
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/src/main/proto"
+	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
 	google "go.opencensus.io/exporter/stackdriver/propagation"
 )
 
@@ -44,7 +44,7 @@ var setups = []struct {
 	fallbackAddr string
 }{
 	{name: "GoClient-GoServer", envAddrKey: "OPENCENSUS_GO_HTTP_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9900"},
-	// {name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_HTTP_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9901"},
+	{name: "GoClient-JavaServer", envAddrKey: "OPENCENSUS_JAVA_HTTP_INTEGRATION_TEST_SERVER_ADDR", fallbackAddr: ":9901"},
 }
 
 var propagations = []string{"b3", "google", "tracecontext"}
