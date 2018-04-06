@@ -54,11 +54,8 @@ public final class GrpcInteropTestClient {
   private static final String SPAN_NAME = "gRPC-client-span";
   private static final TagKey OPERATION_KEY = TagKey.create("operation");
   private static final TagKey PROJECT_KEY = TagKey.create("project");
-  private static final TagKey METHOD_KEY = TagKey.create("method");
   private static final TagValue OPERATION_VALUE = TagValue.create("interop-test");
   private static final TagValue PROJECT_VALUE = TagValue.create("open-census");
-  private static final TagValue METHOD_VALUE =
-      TagValue.create(EchoServiceGrpc.getEchoMethod().getFullMethodName());
 
   private GrpcInteropTestClient(int serverPort) {
     this.serverPort = serverPort;
@@ -85,7 +82,7 @@ public final class GrpcInteropTestClient {
       EchoResponse response = stub.echo(EchoRequest.getDefaultInstance());
 
       SpanContext expectedSpanContext = tracer.getCurrentSpan().getContext();
-      TagContext expectedTagContext = tagger.currentBuilder().put(METHOD_KEY, METHOD_VALUE).build();
+      TagContext expectedTagContext = tagger.currentBuilder().build();
       succeeded = TestUtils.verifyResponse(expectedSpanContext, expectedTagContext, response);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown when sending request.", e);
