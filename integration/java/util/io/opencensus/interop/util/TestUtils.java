@@ -18,13 +18,16 @@ package io.opencensus.interop.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.protobuf.ByteString;
 import io.opencensus.contrib.http.util.HttpPropagationUtil;
 import io.opencensus.interop.EchoResponse;
+import io.opencensus.interop.EchoServiceGrpc;
 import io.opencensus.tags.InternalUtils;
 import io.opencensus.tags.Tag;
 import io.opencensus.tags.TagContext;
+import io.opencensus.tags.TagKey;
+import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tags;
 import io.opencensus.tags.propagation.TagContextBinarySerializer;
 import io.opencensus.tags.propagation.TagContextDeserializationException;
@@ -33,6 +36,7 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.TextFormat;
 import java.math.BigInteger;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +44,10 @@ import java.util.logging.Logger;
 public class TestUtils {
 
   private static final Logger logger = Logger.getLogger(TestUtils.class.getName());
+
+  private static final TagKey METHOD_KEY = TagKey.create("method");
+  private static final TagValue METHOD_VALUE =
+      TagValue.create(EchoServiceGrpc.getEchoMethod().getFullMethodName());
 
   private TestUtils() {}
 
@@ -144,13 +152,16 @@ public class TestUtils {
       try {
         TagContext actualTagContext =
             serializer.fromByteArray(response.getTagsBlob().toByteArray());
-        if (!actualTagContext.equals(expectedTagContext)) {
+        Set<Tag> actualTags = Sets.<Tag>newHashSet(InternalUtils.getTags(actualTagContext));
+        // TODO(songya): method tag should be non-propagate. Remove this line once method tag is no
+        // longer propagated in gRPC-Java.
+        actualTags.remove(Tag.create(METHOD_KEY, METHOD_VALUE));
+        Set<Tag> expectedTags = Sets.<Tag>newHashSet(InternalUtils.getTags(expectedTagContext));
+        if (!actualTags.equals(expectedTags)) {
           succeeded = false;
           logger.severe(
               String.format(
-                  "Client received wrong TagContext. Got %s, want %s.",
-                  Lists.<Tag>newArrayList(InternalUtils.getTags(actualTagContext)),
-                  Lists.<Tag>newArrayList(InternalUtils.getTags(expectedTagContext))));
+                  "Client received wrong TagContext. Got %s, want %s.", actualTags, expectedTags));
         }
       } catch (TagContextDeserializationException e) {
         succeeded = false;
