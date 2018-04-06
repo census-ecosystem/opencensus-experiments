@@ -153,6 +153,8 @@ public class TestUtils {
         TagContext actualTagContext =
             serializer.fromByteArray(response.getTagsBlob().toByteArray());
         Set<Tag> actualTags = Sets.<Tag>newHashSet(InternalUtils.getTags(actualTagContext));
+        // TODO(songya): method tag should be non-propagate. Remove this line once method tag is no
+        // longer propagated in gRPC-Java.
         actualTags.remove(Tag.create(METHOD_KEY, METHOD_VALUE));
         Set<Tag> expectedTags = Sets.<Tag>newHashSet(InternalUtils.getTags(expectedTagContext));
         if (!actualTags.equals(expectedTags)) {
