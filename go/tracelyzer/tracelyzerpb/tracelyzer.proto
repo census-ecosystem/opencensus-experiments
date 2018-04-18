@@ -1,0 +1,39 @@
+// Copyright 2018 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package tracelyzerpb;
+
+import "trace.proto";
+
+service Tracelyzer {
+    rpc SubmitSpan(stream SubmitSpanRequest) returns (SubmitSpanResponse);
+}
+
+message SubmitSpanHeader {
+    string service_name = 1;
+    string instance_identity = 2;
+}
+
+message SubmitSpanRequest {
+    SubmitSpanHeader header = 1;
+    Span span = 2;
+    string sampling_method = 3;
+    uint32 sampling_weight = 4;
+}
+
+message SubmitSpanResponse {
+
+}
