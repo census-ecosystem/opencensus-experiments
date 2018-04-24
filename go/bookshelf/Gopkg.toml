@@ -23,7 +23,7 @@
 
 [[constraint]]
   name = "cloud.google.com/go"
-  version = "0.20.0"
+  version = "0.21.0"
 
 [[constraint]]
   branch = "master"
@@ -48,6 +48,10 @@
 [[constraint]]
   name = "go.opencensus.io"
   version = "0.6.0"
+
+[[override]]
+  name = "go.opencensus.io"
+  branch = "master"
 
 [[constraint]]
   branch = "master"
