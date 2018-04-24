@@ -16,14 +16,14 @@ import (
 
 	"github.com/gorilla/sessions"
 
+	"go.opencensus.io/exporter/stackdriver"
+	"go.opencensus.io/plugin/ocgrpc"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/stats/view"
+	"go.opencensus.io/trace"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"go.opencensus.io/exporter/stackdriver"
-	"go.opencensus.io/trace"
-	"go.opencensus.io/stats/view"
-	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/plugin/ocgrpc"
 )
 
 var (
@@ -51,16 +51,16 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	trace.SetDefaultSampler(trace.AlwaysSample())
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	trace.RegisterExporter(exporter)
 
 	view.RegisterExporter(exporter)
 
-	// subscribe to views
-	view.Subscribe(ochttp.DefaultServerViews...)
-	view.Subscribe(ochttp.DefaultClientViews...)
-	view.Subscribe(ocgrpc.DefaultServerViews...)
-	view.Subscribe(ocgrpc.DefaultClientViews...)
+	// register to views
+	view.Register(ochttp.DefaultServerViews...)
+	view.Register(ochttp.DefaultClientViews...)
+	view.Register(ocgrpc.DefaultServerViews...)
+	view.Register(ocgrpc.DefaultClientViews...)
 
 	log.Printf("installed opencensus trace exporter")
 
