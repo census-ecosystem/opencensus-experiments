@@ -4,14 +4,14 @@
 [[projects]]
   name = "cloud.google.com/go"
   packages = ["compute/metadata","datastore","iam","internal","internal/atomiccache","internal/fields","internal/optional","internal/trace","internal/version","monitoring/apiv3","pubsub","pubsub/apiv1","pubsub/internal/distribution","storage","trace/apiv2"]
-  revision = "4b98a6370e36d7a85192e7bad08a4ebd82eac2a8"
-  version = "v0.20.0"
+  revision = "29f476ffa9c4cd4fd14336b6043090ac1ad76733"
+  version = "v0.21.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/GoogleCloudPlatform/golang-samples"
   packages = ["internal/testutil","internal/webtest"]
-  revision = "d403327f32df358d10105469214602fbe285f932"
+  revision = "5f6163b4f7920d80049bd01ab8b3c374d073cdb0"
 
 [[projects]]
   branch = "master"
@@ -68,22 +68,22 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
   name = "go.opencensus.io"
-  packages = ["exporter/stackdriver","exporter/stackdriver/propagation","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/propagation","zpages","zpages/internal"]
-  revision = "6e3f034057826b530038d93267906ec3c012183f"
-  version = "v0.6.0"
+  packages = ["exporter/stackdriver","exporter/stackdriver/propagation","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/internal","trace/propagation","zpages","zpages/internal"]
+  revision = "2639db1fe0226114423223e3628cc483a437d4e6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  packages = ["context","context/ctxhttp","http/httpguts","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","google","internal","jws","jwt"]
-  revision = "fdc9e635145ae97e6c2cb777c48305600cf515cb"
+  revision = "6881fee410a5daf86371371f9ad451b95e168b71"
 
 [[projects]]
   branch = "master"
@@ -100,14 +100,14 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/tools"
-  packages = ["go/ast/astutil","imports"]
-  revision = "2226533658007779ffd629b495a088530c84dc50"
+  packages = ["go/ast/astutil","imports","internal/fastwalk"]
+  revision = "c1def519f03ddf76f16b3e444ee1095d73afa01b"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
   packages = ["books/v1","gensupport","googleapi","googleapi/internal/uritemplates","googleapi/transport","internal","iterator","option","plus/v1","storage/v1","support/bundler","transport","transport/grpc","transport/http"]
-  revision = "24928b980e6919be4c72647aacd53ebcbb8c4bab"
+  revision = "8b8c1d4168b3aa7d5fbdb9eb159a1a7ac0cc146d"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -119,13 +119,13 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/api/annotations","googleapis/api/distribution","googleapis/api/label","googleapis/api/metric","googleapis/api/monitoredres","googleapis/datastore/v1","googleapis/devtools/cloudtrace/v2","googleapis/iam/v1","googleapis/monitoring/v3","googleapis/pubsub/v1","googleapis/rpc/code","googleapis/rpc/status","googleapis/type/latlng","protobuf/field_mask"]
-  revision = "f8c8703595236ae70fdf8789ecb656ea0bcdcf46"
+  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
 
 [[projects]]
   name = "google.golang.org/grpc"
   packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","credentials/oauth","encoding","encoding/proto","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
-  revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
-  version = "v1.10.0"
+  revision = "d11072e7ca9811b1100b80ca0269ac831f06d024"
+  version = "v1.11.3"
 
 [[projects]]
   branch = "v2"
@@ -136,6 +136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3645b2b019d45df127b79a51805c4a9c47a821d518c689c7a3b83bcddd44d9ea"
+  inputs-digest = "90e04f13438b1b2d6d58b7fdfb84bd3bd9282261e434754302bebf5ba1cf5a50"
   solver-name = "gps-cdcl"
   solver-version = 1
