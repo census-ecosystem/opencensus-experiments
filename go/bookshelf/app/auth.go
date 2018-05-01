@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 
-	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
+	"github.com/census-ecosystem/opencensus-experiments/go/bookshelf"
 	uuid "github.com/satori/go.uuid"
 )
 
