@@ -68,10 +68,10 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
   name = "go.opencensus.io"
   packages = ["exporter/stackdriver","exporter/stackdriver/propagation","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/internal","trace/propagation","zpages","zpages/internal"]
-  revision = "2639db1fe0226114423223e3628cc483a437d4e6"
+  revision = "10cec2c05ea2cfb8b0d856711daedc49d8a45c56"
+  version = "v0.9.0"
 
 [[projects]]
   branch = "master"
@@ -136,6 +136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "90e04f13438b1b2d6d58b7fdfb84bd3bd9282261e434754302bebf5ba1cf5a50"
+  inputs-digest = "e4421ee8f952c21b51b2748211f52c451108a39d131db5c81ba527a8c5aab420"
   solver-name = "gps-cdcl"
   solver-version = 1

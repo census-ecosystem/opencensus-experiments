@@ -1,6 +1,6 @@
 FROM golang:alpine
 
-ARG pkg=github.com/census-instrumentation/opencensus-experiments/go/bookshelf
+ARG pkg=github.com/census-ecosystem/opencensus-experiments/go/bookshelf
 
 RUN set -ex \
     apk add --no-cache ca-certificates \
