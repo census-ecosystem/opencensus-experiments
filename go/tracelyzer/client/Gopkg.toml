@@ -1,0 +1,6 @@
+ignored = ["github.com/census-instrumentation/opencensus-experiments/go/tracelyzer/tracelyzerpb"]
+
+[[constraint]]
+  name = "go.opencensus.io"
+  version = "0.8.0"
+
