@@ -28,7 +28,7 @@ import (
 
 	"google.golang.org/appengine"
 
-	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
+	"github.com/census-ecosystem/opencensus-experiments/go/bookshelf"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"

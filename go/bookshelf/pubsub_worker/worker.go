@@ -21,7 +21,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
+	"github.com/census-ecosystem/opencensus-experiments/go/bookshelf"
 	"go.opencensus.io/trace"
 )
 

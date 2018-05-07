@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
+	"github.com/census-ecosystem/opencensus-experiments/go/bookshelf"
 )
 
 // parseTemplate applies a given file to the body of the base template.

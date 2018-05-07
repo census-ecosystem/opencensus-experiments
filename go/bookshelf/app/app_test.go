@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/census-instrumentation/opencensus-experiments/go/bookshelf"
 	"github.com/GoogleCloudPlatform/golang-samples/internal/testutil"
 	"github.com/GoogleCloudPlatform/golang-samples/internal/webtest"
+	"github.com/census-ecosystem/opencensus-experiments/go/bookshelf"
 )
 
 var wt *webtest.W
