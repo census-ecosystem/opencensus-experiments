@@ -22,10 +22,6 @@
 
 
 [[constraint]]
-  name = "cloud.google.com/go"
-  version = "0.21.0"
-
-[[constraint]]
   branch = "master"
   name = "github.com/GoogleCloudPlatform/golang-samples"
 
@@ -47,7 +43,11 @@
 
 [[constraint]]
   name = "go.opencensus.io"
-  version = "0.9.0"
+  version = ">=0.10.0"
+
+[[constraint]]
+  name = "contrib.go.opencensus.io/exporter/stackdriver"
+  branch = "master" # TODO: switch back to version on next release
 
 [[constraint]]
   branch = "master"
