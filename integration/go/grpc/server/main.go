@@ -26,7 +26,7 @@ import (
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 
-	pb "github.com/census-instrumentation/opencensus-experiments/integration/proto"
+	pb "github.com/census-ecosystem/opencensus-experiments/integration/proto"
 )
 
 type server int
