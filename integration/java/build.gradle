@@ -30,7 +30,7 @@ repositories {
 
 group = "io.opencensus"
 
-def opencensusVersion = "0.13.0-SNAPSHOT" // LATEST_OPENCENSUS_VERSION we want to test.
+def opencensusVersion = "0.14.0-SNAPSHOT" // LATEST_OPENCENSUS_VERSION we want to test.
 def grpcVersion = "1.10.0" // CURRENT_GRPC_VERSION
 def guavaVersion = "20.0"
 
