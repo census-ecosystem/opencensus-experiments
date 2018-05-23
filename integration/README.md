@@ -55,7 +55,7 @@ The client behavior will be:
 
 > TODO: For Go we will use dep
 
-Java will pin to the latest published version at the time and use Gradle for building
+Java will pin to the latest published version at the time and use Gradle for building. Note that the Java interop test client/server is only compatible up to JDK 8 (not compatible with JDK 9).
 
 ## Running
 
