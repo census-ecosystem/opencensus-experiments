@@ -47,7 +47,7 @@
 
 [[constraint]]
   name = "contrib.go.opencensus.io/exporter/stackdriver"
-  branch = "master" # TODO: switch back to version on next release
+  version = ">=0.2.0" # TODO: switch back to version on next release
 
 [[constraint]]
   branch = "master"
