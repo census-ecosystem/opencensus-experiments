@@ -24,10 +24,10 @@
   version = "v0.23.0"
 
 [[projects]]
-  branch = "master"
   name = "contrib.go.opencensus.io/exporter/stackdriver"
   packages = ["."]
   revision = "b98abe41e381c878749ef1aa9eb0798616afbb43"
+  version = "v0.2.0"
 
 [[projects]]
   branch = "master"
@@ -36,7 +36,7 @@
     "internal/testutil",
     "internal/webtest"
   ]
-  revision = "e9335190a4edc7741d7bf43d876c360640638a9c"
+  revision = "5fd29b8a484b6e4661bca753e387cc7499f551af"
 
 [[projects]]
   branch = "master"
@@ -121,8 +121,8 @@
     "zpages",
     "zpages/internal"
   ]
-  revision = "f7730ab009c252771b19074bd05217d054c0c93f"
-  version = "v0.10.0"
+  revision = "c3ed530f775d85e577ca652cb052a52c078aad26"
+  version = "v0.11.0"
 
 [[projects]]
   branch = "master"
@@ -137,7 +137,7 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "8e0cdda24ed423affc8f35c241e5e9b16180338e"
+  revision = "75944861c7512f64725d687546cfbc757626151f"
 
 [[projects]]
   branch = "master"
@@ -149,7 +149,7 @@
     "jws",
     "jwt"
   ]
-  revision = "dd5f5d8e78ce062a4aa881dff95a94f2a0fd405a"
+  revision = "ec22f46f877b4505e0117eeaab541714644fdd28"
 
 [[projects]]
   branch = "master"
@@ -189,7 +189,7 @@
     "imports",
     "internal/fastwalk"
   ]
-  revision = "28aef64757f4d432485ab970b094e1af8b301e84"
+  revision = "a5b4c53f6e8bdcafa95a94671bf2d1203365858b"
 
 [[projects]]
   branch = "master"
@@ -210,7 +210,7 @@
     "transport/grpc",
     "transport/http"
   ]
-  revision = "4f7dd2b006a4ffd9fd683c1c734d2fe91ca0ea1c"
+  revision = "de943baf05a022a8f921b544b7827bacaba1aed5"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -250,7 +250,7 @@
     "googleapis/type/latlng",
     "protobuf/field_mask"
   ]
-  revision = "11a468237815f3a3ddf9f7c6e8b6b3b382a24d15"
+  revision = "694d95ba50e67b2e363f3483057db5d4910c18f9"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -299,6 +299,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c5538aa4cb3fbcc2cb654e4363cc342b859b7083757096b3be830b1f084ba06b"
+  inputs-digest = "5084b3325e1e8eba8eb08fe317e7a659748783a0dfbbb973f9eab3466194ddb5"
   solver-name = "gps-cdcl"
   solver-version = 1
