@@ -26,23 +26,8 @@
 [[projects]]
   name = "contrib.go.opencensus.io/exporter/stackdriver"
   packages = ["."]
-  revision = "b98abe41e381c878749ef1aa9eb0798616afbb43"
-  version = "v0.2.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/GoogleCloudPlatform/golang-samples"
-  packages = [
-    "internal/testutil",
-    "internal/webtest"
-  ]
-  revision = "5fd29b8a484b6e4661bca753e387cc7499f551af"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/broady/preprocess"
-  packages = ["lib/preprocess"]
-  revision = "97e2c618d939b13a7bd7d199552e5e68846cb27a"
+  revision = "2dcf1bf4ddc5a28b2efbf9f7cfd09adb4993e453"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -106,6 +91,7 @@
   name = "go.opencensus.io"
   packages = [
     "exporter/stackdriver/propagation",
+    "exporterutil",
     "internal",
     "internal/tagencoding",
     "plugin/ocgrpc",
@@ -121,8 +107,8 @@
     "zpages",
     "zpages/internal"
   ]
-  revision = "c3ed530f775d85e577ca652cb052a52c078aad26"
-  version = "v0.11.0"
+  revision = "5897c5ce32247fc8af19c7710abd96e3304fb43c"
+  version = "v0.12.0"
 
 [[projects]]
   branch = "master"
@@ -137,7 +123,7 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "75944861c7512f64725d687546cfbc757626151f"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -149,7 +135,7 @@
     "jws",
     "jwt"
   ]
-  revision = "ec22f46f877b4505e0117eeaab541714644fdd28"
+  revision = "1e0a3fa8ba9a5c9eb35c271780101fdaf1b205d7"
 
 [[projects]]
   branch = "master"
@@ -183,16 +169,6 @@
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/tools"
-  packages = [
-    "go/ast/astutil",
-    "imports",
-    "internal/fastwalk"
-  ]
-  revision = "a5b4c53f6e8bdcafa95a94671bf2d1203365858b"
-
-[[projects]]
-  branch = "master"
   name = "google.golang.org/api"
   packages = [
     "books/v1",
@@ -210,7 +186,7 @@
     "transport/grpc",
     "transport/http"
   ]
-  revision = "de943baf05a022a8f921b544b7827bacaba1aed5"
+  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -250,7 +226,7 @@
     "googleapis/type/latlng",
     "protobuf/field_mask"
   ]
-  revision = "694d95ba50e67b2e363f3483057db5d4910c18f9"
+  revision = "81158efcc9f219c511e4d3c0d61a0e6e49c01a24"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -299,6 +275,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5084b3325e1e8eba8eb08fe317e7a659748783a0dfbbb973f9eab3466194ddb5"
+  inputs-digest = "16cab6e1cdebef6052e4987105fbd6085f219b49f8b6d872bcc6676fceadad49"
   solver-name = "gps-cdcl"
   solver-version = 1
