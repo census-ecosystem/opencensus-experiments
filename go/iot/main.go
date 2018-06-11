@@ -1,5 +1,12 @@
 package main
 
+import (
+	"gobot.io/x/gobot/platforms/raspi"
+	"gobot.io/x/gobot/drivers/gpio"
+	"gobot.io/x/gobot"
+	"fmt"
+)
+
 // Copyright 2017, OpenCensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +23,23 @@ package main
 
 // Starter codes for the ios application under the OpenCensus framework
 
-import "fmt"
-
 func main() {
-	processVideo();
+	fmt.Println("HelloWorld!")
 }
 
-func processVideo() {
-	fmt.Println("HelloWorld!\n");
+func process_video(){
+	r := raspi.NewAdaptor()
+	button := gpio.NewDirectPinDriver(r, "11")
+	led := gpio.NewLedDriver(r, "7")
+
+	work := func() {
+	}
+
+	robot := gobot.NewRobot("buttonBot",
+		[]gobot.Connection{r},
+		[]gobot.Device{button, led},
+		work,
+	)
+
+	robot.Start()
 }
