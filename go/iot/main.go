@@ -21,7 +21,7 @@ import (
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Starter codes for the ios application under the OpenCensus framework
+// Starter codes for the iot application under the OpenCensus framework
 
 func main() {
 	fmt.Println("HelloWorld!")
