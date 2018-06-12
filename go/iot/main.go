@@ -1,13 +1,3 @@
-package main
-
-import (
-	"github.com/mgutz/logxi/v1"
-	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/drivers/gpio"
-	"gobot.io/x/gobot/platforms/raspi"
-	"time"
-)
-
 // Copyright 2017, OpenCensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +13,16 @@ import (
 // limitations under the License.
 
 // Starter codes for the iot application under the OpenCensus framework
+
+package main
+
+import (
+	"github.com/mgutz/logxi/v1"
+	"gobot.io/x/gobot"
+	"gobot.io/x/gobot/drivers/gpio"
+	"gobot.io/x/gobot/platforms/raspi"
+	"time"
+)
 
 const (
 	high int = 1
