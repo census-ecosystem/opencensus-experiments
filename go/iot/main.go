@@ -1,11 +1,11 @@
 package main
 
 import (
-	"gobot.io/x/gobot/drivers/gpio"
+	"github.com/mgutz/logxi/v1"
 	"gobot.io/x/gobot"
+	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 	"time"
-	"github.com/mgutz/logxi/v1"
 )
 
 // Copyright 2017, OpenCensus Authors
@@ -26,7 +26,7 @@ import (
 
 const (
 	high int = 1
-	low int = 0
+	low  int = 0
 )
 
 func main() {
@@ -36,14 +36,14 @@ func main() {
 	work := func() {
 		// TODO: Since the sample period is 1 seconds, the worst delay would be 1 sec
 		// Since this is a simple demo applciation, we could temporary ignore this part.
-		gobot.Every(1* time.Second, func(){
+		gobot.Every(1*time.Second, func() {
 			voltage, err := myGPIO.DigitalRead()
-			if err != nil{
+			if err != nil {
 				log.Error("Error with Reading Voltage on the Raspberry Pi Pin 11")
-			} else{
-				if voltage == high{
+			} else {
+				if voltage == high {
 					led.On()
-				} else{
+				} else {
 					led.Off()
 				}
 			}
