@@ -1,10 +1,11 @@
 package main
 
 import (
-	"gobot.io/x/gobot/platforms/raspi"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot"
-	"fmt"
+	"gobot.io/x/gobot/platforms/raspi"
+	"time"
+	"github.com/mgutz/logxi/v1"
 )
 
 // Copyright 2017, OpenCensus Authors
@@ -23,21 +24,35 @@ import (
 
 // Starter codes for the iot application under the OpenCensus framework
 
+const (
+	high int = 1
+	low int = 0
+)
+
 func main() {
-	fmt.Println("HelloWorld!")
-}
-
-func process_video(){
 	r := raspi.NewAdaptor()
-	button := gpio.NewDirectPinDriver(r, "11")
+	myGPIO := gpio.NewDirectPinDriver(r, "11")
 	led := gpio.NewLedDriver(r, "7")
-
 	work := func() {
+		// TODO: Since the sample period is 1 seconds, the worst delay would be 1 sec
+		// Since this is a simple demo applciation, we could temporary ignore this part.
+		gobot.Every(1* time.Second, func(){
+			voltage, err := myGPIO.DigitalRead()
+			if err != nil{
+				log.Error("Error with Reading Voltage on the Raspberry Pi Pin 11")
+			} else{
+				if voltage == high{
+					led.On()
+				} else{
+					led.Off()
+				}
+			}
+		})
 	}
 
-	robot := gobot.NewRobot("buttonBot",
+	robot := gobot.NewRobot("PinVoltageCollection",
 		[]gobot.Connection{r},
-		[]gobot.Device{button, led},
+		[]gobot.Device{myGPIO, led},
 		work,
 	)
 
