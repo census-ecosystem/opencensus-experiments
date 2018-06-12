@@ -17,44 +17,64 @@ package main
 
 import (
 	"time"
+     "context"
 
-	"github.com/mgutz/logxi/v1"
-	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/drivers/gpio"
-	"gobot.io/x/gobot/platforms/raspi"
+	"contrib.go.opencensus.io/exporter/stackdriver"
+	"fmt"
+	"go.opencensus.io/stats"
+	"go.opencensus.io/stats/view"
+	"log"
 )
 
-const (
-	high int = 1
-	low  int = 0
-)
+// Create measures. The program will record measures for the size of
+// processed videos and the nubmer of videos marked as spam.
+var videoSize = stats.Int64("my.org/measure/video_size", "size of processed videos", stats.UnitBytes)
 
 func main() {
-	r := raspi.NewAdaptor()
-	myGPIO := gpio.NewDirectPinDriver(r, "11")
-	led := gpio.NewLedDriver(r, "7")
-	work := func() {
-		// TODO: Since the sample period is 1 seconds, the worst delay would be 1 sec
-		// Since this is a simple demo applciation, we could temporary ignore this part.
-		gobot.Every(1*time.Second, func() {
-			voltage, err := myGPIO.DigitalRead()
-			if err != nil {
-				log.Error("Error with Reading Voltage on the Raspberry Pi Pin 11")
-			} else {
-				if voltage == high {
-					led.On()
-				} else {
-					led.Off()
-				}
-			}
-		})
+	ctx := context.Background()
+
+	// Collected view data will be reported to Stackdriver Monitoring API
+	// via the Stackdriver exporter.
+	//
+	// In order to use the Stackdriver exporter, enable Stackdriver Monitoring API
+	// at https://console.cloud.google.com/apis/dashboard.
+	//
+	// Once API is enabled, you can use Google Application Default Credentials
+	// to setup the authorization.
+	// See https://developers.google.com/identity/protocols/application-default-credentials
+	// for more details.
+	exporter, err := stackdriver.NewExporter(stackdriver.Options{
+		ProjectID: "opencensus-java-stats-demo-app", // Google Cloud Console project ID.
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	view.RegisterExporter(exporter)
+
+	// Set reporting period to report data at every second.
+	view.SetReportingPeriod(1 * time.Second)
+
+	// Create view to see the processed video size cumulatively.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	if err := view.Register(&view.View{
+		Name:        "my.org/views/video_size_cum",
+		Description: "processed video size over time",
+		Measure:     videoSize,
+		Aggregation: view.Distribution(0, 1<<16, 1<<32),
+	}); err != nil {
+		log.Fatalf("Cannot subscribe to the view: %v", err)
 	}
 
-	robot := gobot.NewRobot("PinVoltageCollection",
-		[]gobot.Connection{r},
-		[]gobot.Device{myGPIO, led},
-		work,
-	)
+	processVideo(ctx)
 
-	robot.Start()
+	// Wait for a duration longer than reporting duration to ensure the stats
+	// library reports the collected data.
+	fmt.Println("Wait longer than the reporting duration...")
+	time.Sleep(1 * time.Minute)
+}
+
+func processVideo(ctx context.Context) {
+	// Do some processing and record stats.
+	stats.Record(ctx, videoSize.M(25648))
 }
