@@ -40,8 +40,8 @@ const (
 var (
 	soundStrengthMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c", "strength of sound", stats.UnitDimensionless)
 	lightStrengthMeasure = stats.Int64("my.org/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
-	humidityMeasure      = stats.Int64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure   = stats.Int64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	humidityMeasure      = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure   = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	lg = logger.NewPackageLogger("main",
 		logger.DebugLevel,
@@ -68,8 +68,8 @@ func main() {
 
 	work := func() {
 		gobot.Every(1*time.Second, func() {
-			go recordSound(ctx, soundSensor)
-			go recordLight(ctx, lightSensor)
+			recordSound(ctx, soundSensor)
+			recordLight(ctx, lightSensor)
 		})
 	}
 
@@ -95,7 +95,7 @@ func recordLight(ctx context.Context, lightSensor *aio.GroveLightSensorDriver) {
 	if lightErr != nil {
 		log.Fatalf("Could not read value from light sensors\n")
 	} else {
-		stats.Record(ctx, soundStrengthMeasure.M(int64(lightStrength)))
+		stats.Record(ctx, lightStrengthMeasure.M(int64(lightStrength)))
 	}
 }
 
@@ -137,8 +137,8 @@ func recordTemperatureHumidity(ctx context.Context) {
 		// print temperature and humidity
 		//lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
 		//	sensorType, temperature, humidity, retried)
-		stats.Record(ctx, temperatureMeasure.M(int64(temperature)))
-		stats.Record(ctx, humidityMeasure.M(int64(humidity)))
+		stats.Record(ctx, temperatureMeasure.M(float64(temperature)))
+		stats.Record(ctx, humidityMeasure.M(float64(humidity)))
 		if retried > 10 {
 		}
 	}
