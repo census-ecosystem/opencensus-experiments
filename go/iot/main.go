@@ -118,7 +118,7 @@ func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	return max - min, nil
 }
 func recordTemperatureHumidity(ctx context.Context) {
-	for range time.Tick(5 * time.Second) {
+	for range time.Tick(4 * time.Second) {
 		defer logger.FinalizeLogger()
 		// Uncomment/comment next line to suppress/increase verbosity of output
 		// logger.ChangePackageLogLevel("dht", logger.InfoLevel)
@@ -132,7 +132,8 @@ func recordTemperatureHumidity(ctx context.Context) {
 		temperature, humidity, retried, err :=
 			dht.ReadDHTxxWithRetry(sensorType, 4, false, 10)
 		if err != nil {
-			lg.Fatal(err)
+			lg.Info(err)
+			return
 		}
 		// print temperature and humidity
 		//lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
@@ -170,10 +171,10 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/sound_strength_instant",
+		Name:        "my.org/views/sound_strength_distribution",
 		Description: "sound strength over time",
 		Measure:     soundStrengthMeasure,
-		Aggregation: view.LastValue(),
+		Aggregation: view.Distribution(0, 300, 350, 400, 450, 500),
 	}); err != nil {
 		log.Fatalf("Cannot subscribe to the view: %v", err)
 	}
