@@ -118,10 +118,10 @@ func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	return max - min, nil
 }
 func recordTemperatureHumidity(ctx context.Context) {
-	for range time.Tick(4 * time.Second) {
+	for range time.Tick(5 * time.Second) {
 		defer logger.FinalizeLogger()
 		// Uncomment/comment next line to suppress/increase verbosity of output
-		// logger.ChangePackageLogLevel("dht", logger.InfoLevel)
+		logger.ChangePackageLogLevel("dht", logger.InfoLevel)
 
 		sensorType := dht.DHT11
 		// Read DHT11 sensor data from pin 4, retrying 10 times in case of failure.
@@ -130,10 +130,9 @@ func recordTemperatureHumidity(ctx context.Context) {
 		// "boost GPIO performance" parameter for old devices, but it may increase
 		// retry attempts. Play with this parameter.
 		temperature, humidity, retried, err :=
-			dht.ReadDHTxxWithRetry(sensorType, 4, false, 10)
+			dht.ReadDHTxxWithRetry(sensorType, 4, false, 50)
 		if err != nil {
-			lg.Info(err)
-			return
+			lg.Fatal(err)
 		}
 		// print temperature and humidity
 		//lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
