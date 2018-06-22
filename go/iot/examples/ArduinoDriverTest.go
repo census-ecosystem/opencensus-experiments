@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/platforms/raspi"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/arduino"
-	"time"
+	"fmt"
 )
 
 func main() {
@@ -13,11 +12,17 @@ func main() {
 	adc := arduino.NewArduinoDriver(a)
 
 	work := func() {
-		gobot.Every(1*time.Second, func() {
-			var test string = "Hello World!\n"
-			err := adc.Write([]byte(test))
-			fmt.Println("A0", err)
-		})
+		adc.TransferAndWait('a')
+		adc.TransferAndWait(10)
+		a, err := adc.TransferAndWait(17)
+		b, err := adc.TransferAndWait(33)
+		c, err := adc.TransferAndWait(42)
+		d, err := adc.TransferAndWait(0)
+		fmt.Printf("A: %d, B: %d, C: %d, D: %d\n", a, b, c, d)
+		if err == nil{
+
+		}
+		select {}
 	}
 
 	robot := gobot.NewRobot("ArduinoDriver",

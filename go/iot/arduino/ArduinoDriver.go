@@ -3,6 +3,8 @@ package arduino
 import (
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/spi"
+	"fmt"
+	"time"
 )
 
 // ArduinoDriver is a driver for the communication between the Raspberry Pi and Arduino.
@@ -82,8 +84,8 @@ func (d *ArduinoDriver) Read(count int) (result []byte, err error) {
 func (d *ArduinoDriver) Write(tx []byte) (err error) {
 
 	rx := make([]byte, len(tx))
-
 	err = d.connection.Tx(tx, rx)
+	fmt.Println(rx, err)
 	return err
 }
 
@@ -92,4 +94,13 @@ func (d *ArduinoDriver) AnalogRead(pin string) (value int, err error) {
 	var tmp int = len(pin)
 	result, err := d.Read(tmp)
 	return len(result), err
+}
+
+func (d *ArduinoDriver) TransferAndWait(what byte) (result byte, err error){
+	rx := make([]byte, 1)
+	tx := make([]byte, 1)
+	tx[0] = what
+	err = d.connection.Tx(tx, rx)
+	time.Sleep(20 * time.Microsecond)
+	return rx[0], err
 }
