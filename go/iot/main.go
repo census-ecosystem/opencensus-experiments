@@ -38,10 +38,11 @@ const (
 )
 
 var (
-	soundStrengthMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c", "strength of sound", stats.UnitDimensionless)
-	lightStrengthMeasure = stats.Int64("my.org/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
-	humidityMeasure      = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure   = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	soundStrengthDistMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
+	soundStrengthLastMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
+	lightStrengthMeasure     = stats.Int64("my.org/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
+	humidityMeasure          = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure       = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	lg = logger.NewPackageLogger("main",
 		logger.DebugLevel,
@@ -60,14 +61,14 @@ func main() {
 	}
 	initOpenCensus("opencensus-java-stats-demo-app", 1)
 
-	go recordTemperatureHumidity(ctx)
+	go RecordTemperatureHumidity(ctx, 4)
 	board := raspi.NewAdaptor()
 	ads1015 := i2c.NewADS1015Driver(board)
 	soundSensor := aio.NewGroveSoundSensorDriver(ads1015, "0")
 	lightSensor := aio.NewGroveLightSensorDriver(ads1015, "1")
 
 	work := func() {
-		gobot.Every(1*time.Second, func() {
+		gobot.Every(50*time.Millisecond, func() {
 			recordSound(ctx, soundSensor)
 			recordLight(ctx, lightSensor)
 		})
@@ -75,7 +76,7 @@ func main() {
 
 	robot := gobot.NewRobot("sensorDataCollection",
 		[]gobot.Connection{board},
-		[]gobot.Device{ads1015, soundSensor, lightSensor},
+		[]gobot.Device{ads1015},
 		work,
 	)
 	robot.Start()
@@ -86,7 +87,9 @@ func recordSound(ctx context.Context, soundSensor *aio.GroveSoundSensorDriver) {
 	if soundErr != nil {
 		log.Fatalf("Could not read value from sound sensors\n")
 	} else {
-		stats.Record(ctx, soundStrengthMeasure.M(int64(soundStrength)))
+		stats.Record(ctx, soundStrengthDistMeasure.M(int64(soundStrength)))
+		stats.Record(ctx, soundStrengthLastMeasure.M(int64(soundStrength)))
+		//log.Printf("Sound Strength: %d\n", soundStrength)
 	}
 }
 
@@ -96,13 +99,14 @@ func recordLight(ctx context.Context, lightSensor *aio.GroveLightSensorDriver) {
 		log.Fatalf("Could not read value from light sensors\n")
 	} else {
 		stats.Record(ctx, lightStrengthMeasure.M(int64(lightStrength)))
+		//log.Printf("Light Strength: %d\n", lightStrength)
 	}
 }
 
 func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	min := math.MaxInt32
 	max := math.MinInt32
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 50; i++ {
 		strength, err := sensor.Read()
 		if err != nil {
 			log.Fatalf("Couldn't read data from the sensor\n")
@@ -117,7 +121,7 @@ func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	}
 	return max - min, nil
 }
-func recordTemperatureHumidity(ctx context.Context) {
+func RecordTemperatureHumidity(ctx context.Context, pin int) {
 	for range time.Tick(5 * time.Second) {
 		defer logger.FinalizeLogger()
 		// Uncomment/comment next line to suppress/increase verbosity of output
@@ -130,13 +134,13 @@ func recordTemperatureHumidity(ctx context.Context) {
 		// "boost GPIO performance" parameter for old devices, but it may increase
 		// retry attempts. Play with this parameter.
 		temperature, humidity, retried, err :=
-			dht.ReadDHTxxWithRetry(sensorType, 4, false, 50)
+			dht.ReadDHTxxWithRetry(sensorType, pin, false, 50)
 		if err != nil {
 			lg.Fatal(err)
 		}
 		// print temperature and humidity
-		//lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
-		//	sensorType, temperature, humidity, retried)
+		lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
+			sensorType, temperature, humidity, retried)
 		stats.Record(ctx, temperatureMeasure.M(float64(temperature)))
 		stats.Record(ctx, humidityMeasure.M(float64(humidity)))
 		if retried > 10 {
@@ -166,14 +170,26 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Set reporting period to report data at every second.
 	view.SetReportingPeriod(time.Second * time.Duration(reportPeriod))
 
-	// Create view to see the sound strength instantly.
+	// Create view to see the sound strength distribution.
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
 		Name:        "my.org/views/sound_strength_distribution",
-		Description: "sound strength over time",
-		Measure:     soundStrengthMeasure,
-		Aggregation: view.Distribution(0, 300, 350, 400, 450, 500),
+		Description: "sound strength distribution over time",
+		Measure:     soundStrengthDistMeasure,
+		Aggregation: view.Distribution(0, 10, 20, 40, 80, 160, 320, 640),
+	}); err != nil {
+		log.Fatalf("Cannot subscribe to the view: %v", err)
+	}
+
+	// Create view to see the sound strength instantly.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	if err := view.Register(&view.View{
+		Name:        "my.org/views/sound_strength_instant",
+		Description: "sound strength instantly over time",
+		Measure:     soundStrengthLastMeasure,
+		Aggregation: view.LastValue(),
 	}); err != nil {
 		log.Fatalf("Cannot subscribe to the view: %v", err)
 	}
