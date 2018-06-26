@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Starter codes for the iot application under the OpenCensus framework
-
+//  Program iot uploads sensor data to monitoring backends by using the OpenCensus framework.
 package main
 
 import (
+	"time"
+
 	"github.com/mgutz/logxi/v1"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
-	"time"
 )
 
 const (

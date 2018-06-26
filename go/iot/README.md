@@ -1,11 +1,11 @@
-### Installation 
-
-`cd $GOPATH` 
+### Installation
 
 `go get -u github.com/census-ecosystem/opencensus-experiments`
 
 ### Configuration 
 To run the script, please do the following instructions first 
+
+`cd $(go env GOPATH)/src/github.com/census-ecosystem/opencensus-experiments`
 
 `chmod u+x ./configure.sh` 
 
