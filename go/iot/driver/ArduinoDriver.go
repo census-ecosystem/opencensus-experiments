@@ -1,4 +1,4 @@
-package arduino
+package driver
 
 import (
 	"gobot.io/x/gobot"
