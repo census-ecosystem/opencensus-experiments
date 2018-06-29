@@ -1,13 +1,12 @@
 package main
 
 import (
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/driver"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/openCensus"
 	"github.com/huin/goserial"
 	"io/ioutil"
 	"strings"
-	"fmt"
 	"time"
-	"encoding/json"
-	"io"
 )
 
 func findArduino() string {
@@ -25,36 +24,12 @@ func findArduino() string {
 	// like an Arduino.
 	return ""
 }
-const jsonStream = `
-	{"Sensor": "Ed", "Time": 123}
-	{"Sensor": "Sam", "Time": 456}
-	{"Sensor": "Ed", "Time": 789}
-	{"Sensor": "Sam", "Time": 10}
-	{"Sensor": "Ed", "Time": 15}
-`
-type Message struct {
-	Sensor string
-	Time int
-}
-func main() {
-	// Find the device that represents the arduino serial
-	// connection.
-	c := &goserial.Config{Name: findArduino(), Baud: 115200}
-	s, _ := goserial.OpenPort(c)
-	dec := json.NewDecoder(strings.NewReader(jsonStream))
-	time.Sleep(3 * time.Second)
-	var m Message
-	for true{
-		time.Sleep(time.Millisecond * 600)
-		if err := dec.Decode(&m); err == io.EOF {
-			fmt.Println(err.Error())
-			continue
-		} else if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		fmt.Printf("%s: %d\n", m.Sensor, m.Time)
-	}
-	s.Close()
 
+func main() {
+	c := &goserial.Config{Name: findArduino(), Baud: 9600}
+	var slave driver.Slave
+	var census openCensus.OpenCensusBase
+	slave.Initialize(c)
+	slave.Subscribe(census)
+	slave.Collect(time.Millisecond * 500)
 }

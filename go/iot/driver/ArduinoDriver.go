@@ -1,9 +1,9 @@
 package driver
 
 import (
+	"fmt"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/spi"
-	"fmt"
 	"time"
 )
 
@@ -96,7 +96,7 @@ func (d *ArduinoDriver) AnalogRead(pin string) (value int, err error) {
 	return len(result), err
 }
 
-func (d *ArduinoDriver) TransferAndWait(what byte) (result byte, err error){
+func (d *ArduinoDriver) TransferAndWait(what byte) (result byte, err error) {
 	rx := make([]byte, 1)
 	tx := make([]byte, 1)
 	tx[0] = what
