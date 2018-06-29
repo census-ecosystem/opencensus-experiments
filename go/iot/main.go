@@ -16,30 +16,45 @@
 package main
 
 import (
+	"context"
+	"log"
+	"os"
 	"time"
 
-	"github.com/mgutz/logxi/v1"
+	"contrib.go.opencensus.io/exporter/stackdriver"
+	"go.opencensus.io/stats"
+	"go.opencensus.io/stats/view"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
 const (
-	high int = 1
-	low  int = 0
+	high = 1
+)
+
+var (
+	gpioVoltage = stats.Int64("my.org/measure/gpio_voltage_level", "level of voltage", stats.UnitDimensionless)
 )
 
 func main() {
+	ctx := context.Background()
+	// TODO: It takes around one minute to detect the full edge of voltage change. Needs to tune the report period
+	projectId := os.Getenv("PROJECTID")
+	if projectId == "" {
+		log.Fatal("Cannot detect PROJECTID in the system environment.\n")
+	} else {
+		log.Printf("Project Id is set to be %s\n", projectId)
+	}
+	initOpenCensus(projectId, 1)
 	r := raspi.NewAdaptor()
 	myGPIO := gpio.NewDirectPinDriver(r, "11")
 	led := gpio.NewLedDriver(r, "7")
 	work := func() {
-		// TODO: Since the sample period is 1 seconds, the worst delay would be 1 sec
-		// Since this is a simple demo applciation, we could temporary ignore this part.
 		gobot.Every(1*time.Second, func() {
 			voltage, err := myGPIO.DigitalRead()
 			if err != nil {
-				log.Error("Error with Reading Voltage on the Raspberry Pi Pin 11")
+				log.Fatalf("Error with Reading Voltage on the Raspberry Pi Pin 11")
 			} else {
 				if voltage == high {
 					led.On()
@@ -47,6 +62,7 @@ func main() {
 					led.Off()
 				}
 			}
+			recordVoltage(ctx, int64(voltage))
 		})
 	}
 
@@ -55,6 +71,44 @@ func main() {
 		[]gobot.Device{myGPIO, led},
 		work,
 	)
-
 	robot.Start()
+}
+
+func initOpenCensus(projectId string, reportPeriod int) {
+	// Collected view data will be reported to Stackdriver Monitoring API
+	// via the Stackdriver exporter.
+	//
+	// In order to use the Stackdriver exporter, enable Stackdriver Monitoring API
+	// at https://console.cloud.google.com/apis/dashboard.
+	//
+	// Once API is enabled, you can use Google Application Default Credentials
+	// to setup the authorization.
+	// See https://developers.google.com/identity/protocols/application-default-credentials
+	// for more details.
+	exporter, err := stackdriver.NewExporter(stackdriver.Options{
+		ProjectID: projectId, // Google Cloud Console project ID.
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	view.RegisterExporter(exporter)
+
+	// Set reporting period to report data at every second.
+	view.SetReportingPeriod(time.Second * time.Duration(reportPeriod))
+
+	// Create view to see the processed video size cumulatively.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	if err := view.Register(&view.View{
+		Name:        "my.org/views/gpio_voltage_instant",
+		Description: "voltage level on GPIO over time",
+		Measure:     gpioVoltage,
+		Aggregation: view.LastValue(),
+	}); err != nil {
+		log.Fatalf("Cannot subscribe to the view: %v", err)
+	}
+}
+
+func recordVoltage(ctx context.Context, voltage int64) {
+	stats.Record(ctx, gpioVoltage.M(voltage))
 }
