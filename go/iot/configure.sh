@@ -1,7 +1,8 @@
 #!/bin/bash
 
 if [ "$#" -ne 3 ]; then
-  echo "Illegal number of parameters First is the hostname, second is the ipaddress, third is the ssh password"
+  echo "Illegal number of parameters"
+  echo "First is the hostname, second is the ipaddress, third is the ssh password"
   exit -1
 fi
 

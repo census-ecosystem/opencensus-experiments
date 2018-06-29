@@ -17,8 +17,9 @@ package main
 
 import (
 	"context"
-	"time"
 	"log"
+	"os"
+	"time"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"go.opencensus.io/stats"
@@ -39,7 +40,13 @@ var (
 func main() {
 	ctx := context.Background()
 	// TODO: It takes around one minute to detect the full edge of voltage change. Needs to tune the report period
-	initOpenCensus("opencensus-java-stats-demo-app", 1)
+	projectId := os.Getenv("PROJECTID")
+	if projectId == "" {
+		log.Fatal("Cannot detect PROJECTID in the system environment.\n")
+	} else {
+		log.Printf("Project Id is set to be %s\n", projectId)
+	}
+	initOpenCensus(projectId, 1)
 	r := raspi.NewAdaptor()
 	myGPIO := gpio.NewDirectPinDriver(r, "11")
 	led := gpio.NewLedDriver(r, "7")
