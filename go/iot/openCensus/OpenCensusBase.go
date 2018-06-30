@@ -128,5 +128,3 @@ type RecordArgument struct {
 	measureType int
 }
 
-type Argument interface {
-}
