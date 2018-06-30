@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//  Program iot uploads sensor data to monitoring backends by using the OpenCensus framework.
+// Program iot uploads sensor data including temperature, humidity, sound and light strength to monitoring backend by
+// using the OpenCensus framework.
 package main
 
 import (
 	"context"
 	"log"
+	"math"
 	"os"
 	"time"
-	"math"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/d2r2/go-dht"
@@ -33,16 +34,14 @@ import (
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
-const (
-	high = 1
-)
-
 var (
+	// Apply two kinds of aggregation type to the same metric in order to see the difference.
 	soundStrengthDistMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
 	soundStrengthLastMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
 	lightStrengthMeasure     = stats.Int64("my.org/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
-	humidityMeasure          = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure       = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+
+	humidityMeasure    = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	lg = logger.NewPackageLogger("main",
 		logger.DebugLevel,
@@ -50,6 +49,9 @@ var (
 	)
 )
 
+// The board would connect to the DHT11 with the GPIO4.
+// Communicate with ADS1015S based on the I2C and connect the sound
+// and light sensor to the A0, A1 channel on the ADC module.
 func main() {
 	ctx := context.Background()
 	// TODO: It takes around one minute to detect the full edge of voltage change. Needs to tune the report period
@@ -59,8 +61,9 @@ func main() {
 	} else {
 		log.Printf("Project Id is set to be %s\n", projectId)
 	}
-	initOpenCensus("opencensus-java-stats-demo-app", 1)
+	initOpenCensus(projectId, 1)
 
+	// Create a new go thread to record the temperature and humidity
 	go RecordTemperatureHumidity(ctx, 4)
 	board := raspi.NewAdaptor()
 	ads1015 := i2c.NewADS1015Driver(board)
@@ -69,6 +72,7 @@ func main() {
 
 	work := func() {
 		gobot.Every(50*time.Millisecond, func() {
+			// Since the sample shares the same pin, it cannot be done concurrently.
 			recordSound(ctx, soundSensor)
 			recordLight(ctx, lightSensor)
 		})
@@ -82,6 +86,8 @@ func main() {
 	robot.Start()
 }
 
+// Record the sound strength based on two kinds of aggregation.
+// One is distribution, the other is the lastValue.
 func recordSound(ctx context.Context, soundSensor *aio.GroveSoundSensorDriver) {
 	soundStrength, soundErr := readSound(soundSensor)
 	if soundErr != nil {
@@ -93,6 +99,7 @@ func recordSound(ctx context.Context, soundSensor *aio.GroveSoundSensorDriver) {
 	}
 }
 
+// Record the light strength.
 func recordLight(ctx context.Context, lightSensor *aio.GroveLightSensorDriver) {
 	lightStrength, lightErr := lightSensor.Read()
 	if lightErr != nil {
@@ -103,6 +110,8 @@ func recordLight(ctx context.Context, lightSensor *aio.GroveLightSensorDriver) {
 	}
 }
 
+// Sample 50 sound strength data in a period.
+// Calculate the maximum and minimum value and return their difference
 func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	min := math.MaxInt32
 	max := math.MinInt32
@@ -121,6 +130,9 @@ func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 	}
 	return max - min, nil
 }
+
+// For every five seconds, record the temperature and humidity sensor data.
+// Print the collected data on the console.
 func RecordTemperatureHumidity(ctx context.Context, pin int) {
 	for range time.Tick(5 * time.Second) {
 		defer logger.FinalizeLogger()
@@ -128,7 +140,7 @@ func RecordTemperatureHumidity(ctx context.Context, pin int) {
 		logger.ChangePackageLogLevel("dht", logger.InfoLevel)
 
 		sensorType := dht.DHT11
-		// Read DHT11 sensor data from pin 4, retrying 10 times in case of failure.
+		// Read DHT11 sensor data from pin 4, retrying 50 times in case of failure.
 		// You may enable "boost GPIO performance" parameter, if your device is old
 		// as Raspberry PI 1 (this will require root privileges). You can switch off
 		// "boost GPIO performance" parameter for old devices, but it may increase
@@ -143,11 +155,11 @@ func RecordTemperatureHumidity(ctx context.Context, pin int) {
 			sensorType, temperature, humidity, retried)
 		stats.Record(ctx, temperatureMeasure.M(float64(temperature)))
 		stats.Record(ctx, humidityMeasure.M(float64(humidity)))
-		if retried > 10 {
-		}
 	}
 }
 
+// Initialize the openCensus framework.
+// If there is anything wrong with the registration, directly throw a fatal error.
 func initOpenCensus(projectId string, reportPeriod int) {
 	// Collected view data will be reported to Stackdriver Monitoring API
 	// via the Stackdriver exporter.

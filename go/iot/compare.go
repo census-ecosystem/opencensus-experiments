@@ -12,39 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Starter codes for the iot application under the OpenCensus framework
-
+// Program iot uploads data for same metric but different sensors
+// to monitoring backend by using the OpenCensus framework.
 package main
 
 import (
 	"context"
+	"log"
+	"os"
+	"time"
+
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/d2r2/go-dht"
 	"github.com/d2r2/go-logger"
+	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/i2c"
 	"gobot.io/x/gobot/platforms/raspi"
-	"log"
-	"time"
-	"go.opencensus.io/stats"
 )
 
-// Create measures. The program will record measures for the voltage
-// level on the specific GPIO
+// Create measures. We concurrently upload the data that is from different sensor under the main.go program.
+// In this way, we could easily analyze the difference between sensors on the same metrics.
 var (
-	humidityMeasureCompare          = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasureCompare       = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	temperatureMeasureCompare = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	lgCompare = logger.NewPackageLogger("main",
 		logger.DebugLevel,
 		// logger.InfoLevel,
 	)
 )
+
+// The DHT11 sensor in this program is supposed to connected to the GPIO17 on the raspberry Pi.
 func main() {
 	ctx := context.Background()
 	// TODO: It takes around one minute to detect the full edge of voltage change. Needs to tune the report period
-	initOpenCensusCompare("opencensus-java-stats-demo-app", 1)
+	projectId := os.Getenv("PROJECTID")
+	if projectId == "" {
+		log.Fatal("Cannot detect PROJECTID in the system environment.\n")
+	} else {
+		log.Printf("Project Id is set to be %s\n", projectId)
+	}
+	initOpenCensus(projectId, 1)
 
 	go RecordTemperatureHumidityCompare(ctx, 17)
 	board := raspi.NewAdaptor()
@@ -61,6 +70,8 @@ func main() {
 	robot.Start()
 }
 
+// For every five seconds, record the temperature and humidity sensor data.
+// Print the collected data on the console.
 func RecordTemperatureHumidityCompare(ctx context.Context, pin int) {
 	for range time.Tick(5 * time.Second) {
 		defer logger.FinalizeLogger()
@@ -68,7 +79,7 @@ func RecordTemperatureHumidityCompare(ctx context.Context, pin int) {
 		logger.ChangePackageLogLevel("dht", logger.InfoLevel)
 
 		sensorType := dht.DHT11
-		// Read DHT11 sensor data from pin 4, retrying 10 times in case of failure.
+		// Read DHT11 sensor data from pin 4, retrying 50 times in case of failure.
 		// You may enable "boost GPIO performance" parameter, if your device is old
 		// as Raspberry PI 1 (this will require root privileges). You can switch off
 		// "boost GPIO performance" parameter for old devices, but it may increase
@@ -82,12 +93,12 @@ func RecordTemperatureHumidityCompare(ctx context.Context, pin int) {
 		lgCompare.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
 			sensorType, temperature, humidity, retried)
 		stats.Record(ctx, temperatureMeasureCompare.M(float64(temperature)))
-		stats.Record(ctx, humidityMeasureCompare.M(float64(humidity)))
-		if retried > 10 {
-		}
 	}
 }
 
+// Initialize the openCensus framework.
+// If there is anything wrong with the registration, directly throw a fatal error.
+// Upload the sensor data to the same view on the backend driver.
 func initOpenCensusCompare(projectId string, reportPeriod int) {
 	// Collected view data will be reported to Stackdriver Monitoring API
 	// via the Stackdriver exporter.
