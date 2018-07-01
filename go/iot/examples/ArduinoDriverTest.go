@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/driver"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/openCensus"
 	"github.com/huin/goserial"
 	"io/ioutil"
@@ -27,9 +26,10 @@ func findArduino() string {
 
 func main() {
 	c := &goserial.Config{Name: findArduino(), Baud: 9600}
-	var slave driver.Slave
+	var slave openCensus.Slave
 	var census openCensus.OpenCensusBase
+	census.Initialize()
 	slave.Initialize(c)
 	slave.Subscribe(census)
-	slave.Collect(time.Millisecond * 500)
+	slave.Collect(2 * time.Second)
 }

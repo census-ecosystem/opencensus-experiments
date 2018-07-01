@@ -3,13 +3,13 @@ package openCensus
 import (
 	"context"
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"log"
-	"time"
 	"strconv"
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/driver"
+	"time"
 )
 
 const (
@@ -19,6 +19,8 @@ const (
 
 // TODO: Name of this struct ??
 type OpenCensusBase struct {
+	//TODO: Delete it in the future
+	status       int
 	ctx          context.Context
 	projectIdSet map[string]int
 	// TODO: Use the name of View as the index
@@ -28,6 +30,15 @@ type OpenCensusBase struct {
 	// TODO: Do we need to handle the concurrent problems?
 	// Store all the measure based on their Name. Used for the future record
 	measureMap map[string]stats.Measure
+}
+
+// TODO: There might be better ways to initialize the map
+func (census *OpenCensusBase) Initialize() {
+	census.status = 0
+	census.ctx = context.Background()
+	census.projectIdSet = make(map[string]int)
+	census.viewSet = make(map[string]view.View)
+	census.measureMap = make(map[string]stats.Measure)
 }
 
 // Return whether the view has already been registered
@@ -48,9 +59,13 @@ func (census *OpenCensusBase) containsMeasure(name string) bool {
 }
 
 // Given the censusArgument, initialize the OpenCensus framework
-func (census *OpenCensusBase) InitOpenCensus(arguments *Argument) error {
+func (census *OpenCensusBase) InitOpenCensus(arguments *Protocol.Argument) error {
+	if census.status == 1 {
+		log.Println("Already Registered!\n")
+		return nil
+	}
 	// Register Exporter if necessary
-	projectId := arguments.projectId
+	projectId := arguments.ProjectId
 	if census.containsProjId(projectId) == false {
 		// The exporter has never been registered before.
 		// Create a new stackdriver exporter and register it.
@@ -68,8 +83,8 @@ func (census *OpenCensusBase) InitOpenCensus(arguments *Argument) error {
 	}
 
 	// Register view if necessary
-	viewInput := arguments.view
-	driver.ViewParse(&viewInput, arguments)
+	viewInput := arguments.View
+	Protocol.ViewParse(&viewInput, arguments)
 
 	if census.containsView(viewInput.Name) == false {
 		// The view has never been registered before.
@@ -87,11 +102,14 @@ func (census *OpenCensusBase) InitOpenCensus(arguments *Argument) error {
 		log.Println("View already exists\n")
 	}
 	// Set reporting period to report data
-	view.SetReportingPeriod(time.Second * time.Duration(arguments.reportPeriod))
+	view.SetReportingPeriod(time.Second * time.Duration(arguments.ReportPeriod))
+	census.reportPeriod = arguments.ReportPeriod
+	census.status = 1
+	log.Println("fUCK")
 	return nil
 }
 
-func (census *OpenCensusBase) Record(arguments *Argument) error {
+func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 	measureName := arguments.Measure.Name
 	if census.containsMeasure(measureName) == false {
 		return errors.Errorf("The Measurement has never been registered\n")
@@ -105,9 +123,9 @@ func (census *OpenCensusBase) Record(arguments *Argument) error {
 			if ok == true {
 				// TODO: Do we need to check assertion?
 				value, err := strconv.ParseFloat(arguments.Measure.MeasureValue, 64)
-				if err != nil{
+				if err != nil {
 					log.Printf("Could Parse the Value: %s\n", arguments.Measure.MeasureValue)
-				}else {
+				} else {
 					stats.Record(census.ctx, floatMeasure.M(float64(value)))
 				}
 			} else {
@@ -118,9 +136,9 @@ func (census *OpenCensusBase) Record(arguments *Argument) error {
 			if ok == true {
 				// TODO: Do we need to check assertion?
 				value, err := strconv.ParseFloat(arguments.Measure.MeasureValue, 64)
-				if err != nil{
+				if err != nil {
 					log.Printf("Could Parse the Value: %s\n", arguments.Measure.MeasureValue)
-				}else {
+				} else {
 					stats.Record(census.ctx, intMeasure.M(int64(value)))
 				}
 			} else {
