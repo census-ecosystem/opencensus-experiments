@@ -2,7 +2,8 @@ To run the service, the arduino should firstly send the request for registration
 sending sensor data after it receives the response for agreement. If it doesn't receive the positive response but still
 sends request for sending sensor data, it would receive negative response anyway.
 
-Every time after the arduino sends a request to the Raspberry Pi, it should wait for the response from the Pi.
+Every time after the arduino sends a request to the Raspberry Pi, it should wait for the response from the Pi. Temporarily
+it would block forever if it doesn't receive any response. Maybe would use exponential backoff in the future.
 
 Every request or response is ended with a newline character '\n'.
 
@@ -10,20 +11,21 @@ Temporarily the packet is encapsulated based on the JSON format. It's capital se
 
 Typical example for Registration request would be as below:
 {
+    "ArgumentType" : 0
 	"ProjectId" : "project-id"
 	"View" : {
 		"Name" : "my.org/views/protocol_test"
 		"Description" : "View for Protocol Test"
 	}
 	"Aggregation" : {
-		"AggregationType" : "LastValue" / "Sum" / "Count"
+		"AggregationType" : "LastValue" or "Sum" or "Count"
 		"AggregationValue" : []
 	}
 	"Measure":{
 		"Name" : "my.org/measure/Measure_Test"
 		"Descrption" : "Measure Test"
-		"Unit" : "1" / "By" / "ms"
-		"MeasureType": "int64" / "float64"
+		"Unit" : "1" or "By" or "ms"
+		"MeasureType": "int64" or "float64"
 	}
 	"ReportPeriod" : 1
 
@@ -34,15 +36,19 @@ Note that the distribution is not supported yet.
 
 Typical example for sending data request would be as below:
 {
+    "ArgumentType" : 1
 	"Measure":{
+	    "DeviceId": "arduino-1"
 		"Name": "my.org/measure/Measure_Test"
-		"MeasureType": "int64" / "float64"
+		"MeasureType": "int64" or "float64"
 		"MeasureValue": "1"
 	}
 }
 
+Note that you should add a unique id for your arduino for tag.
+
 Typical example for the response from Raspberry Pi would be as below:
 {
-	"Code": 200 (OK) / 404 (Fail)
+	"Code": 200 (OK) or 404 (Fail)
 	"Info": "Registration Successfully!"
 }

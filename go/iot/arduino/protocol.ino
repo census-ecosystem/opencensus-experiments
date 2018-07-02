@@ -165,6 +165,7 @@ void sendData() {
   JsonObject& root = jsonBuffer.createObject();
 
   root["ArgumentType"] = 1;
+  root["DeviceId"] = "Arduino-1"
   root["ProjectId"] = "opencensus-java-stats-demo-app";
 
   JsonObject& measure = root.createNestedObject("Measure");
