@@ -19,6 +19,7 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	v "go.opencensus.io/stats/view"
+	"go.opencensus.io/tag"
 )
 
 func ViewParse(view *view.View, argument *Argument) error {
@@ -43,11 +44,15 @@ func ViewParse(view *view.View, argument *Argument) error {
 	case "Count":
 		view.Aggregation = v.Count()
 	case "Distribution":
-		// TODO: Don't know how to transfer from Slice to ... argument
-		view.Aggregation = v.Distribution(aggregationString.AggregationValue[0])
-		//view.Aggregation = v.Distribution(aggregationString.AggregationValue[0], aggregationString.AggregationValue[1:]...)
+		view.Aggregation = v.Distribution(aggregationString.AggregationValue...)
 	default:
 		return errors.Errorf("Unsupported Aggregation Type")
+	}
+
+	if newTagKey, err := tag.NewKey(argument.DeviceId); err == nil{
+		view.TagKeys = append(view.TagKeys, newTagKey)
+	} else{
+		return err
 	}
 	return nil
 }

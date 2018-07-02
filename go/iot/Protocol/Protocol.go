@@ -69,6 +69,7 @@ const (
 type Argument struct {
 	ArgumentType int
 	ProjectId    string
+	DeviceId string
 	View         view.View
 	Aggregation  AggregationArgument
 	Measure      MeasureArgument
