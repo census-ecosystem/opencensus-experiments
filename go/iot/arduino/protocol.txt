@@ -13,6 +13,7 @@ Typical example for Registration request would be as below:
 {
     "ArgumentType" : 0
 	"ProjectId" : "project-id"
+	"DeviceId": "arduino-1"
 	"View" : {
 		"Name" : "my.org/views/protocol_test"
 		"Description" : "View for Protocol Test"
@@ -31,8 +32,7 @@ Typical example for Registration request would be as below:
 
 }
 
-Note that the distribution is not supported yet.
-
+Note that you should add a unique id for your arduino for tag keys.
 
 Typical example for sending data request would be as below:
 {
