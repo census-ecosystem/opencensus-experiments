@@ -1,10 +1,24 @@
+// Copyright 2018, OpenCensus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package Protocol
 
 import (
+	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	v "go.opencensus.io/stats/view"
-	"log"
 )
 
 func ViewParse(view *view.View, argument *Argument) error {
@@ -17,7 +31,7 @@ func ViewParse(view *view.View, argument *Argument) error {
 	case "float64":
 		view.Measure = stats.Float64(measureString.Name, measureString.Description, measureString.Unit)
 	default:
-		log.Fatal("Not Supported Measure Type\n")
+		return errors.Errorf("Unsupported Measure Type")
 	}
 
 	aggregationString := argument.Aggregation
@@ -33,7 +47,7 @@ func ViewParse(view *view.View, argument *Argument) error {
 		view.Aggregation = v.Distribution(aggregationString.AggregationValue[0])
 		//view.Aggregation = v.Distribution(aggregationString.AggregationValue[0], aggregationString.AggregationValue[1:]...)
 	default:
-		log.Fatal("Not Supported Aggregation Type\n")
+		return errors.Errorf("Unsupported Aggregation Type")
 	}
 	return nil
 }

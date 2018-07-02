@@ -1,15 +1,29 @@
+// Copyright 2018, OpenCensus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package openCensus
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
-	"log"
-	"strconv"
-	"time"
 )
 
 const (
@@ -19,13 +33,13 @@ const (
 
 // TODO: Name of this struct ??
 type OpenCensusBase struct {
-	//TODO: Delete it in the future
+	//TODO: Should I implement state machine pattern or simply use flag?
 	status       int
 	ctx          context.Context
 	projectIdSet map[string]int
-	// TODO: Use the name of View as the index
+	// Use the name of View as the index
 	viewSet map[string]view.View
-	// TODO: Look like that for different views the report Period is the same
+	// TODO: Look like that the report Period for different views is the same
 	reportPeriod int
 	// TODO: Do we need to handle the concurrent problems?
 	// Store all the measure based on their Name. Used for the future record
@@ -60,9 +74,9 @@ func (census *OpenCensusBase) containsMeasure(name string) bool {
 
 // Given the censusArgument, initialize the OpenCensus framework
 func (census *OpenCensusBase) InitOpenCensus(arguments *Protocol.Argument) error {
+	// TODO: Currently we assume for each arduino there would be only one view.
 	if census.status == 1 {
-		log.Println("Already Registered!\n")
-		return nil
+		return errors.Errorf("View Already Been Registered!")
 	}
 	// Register Exporter if necessary
 	projectId := arguments.ProjectId
@@ -79,12 +93,15 @@ func (census *OpenCensusBase) InitOpenCensus(arguments *Protocol.Argument) error
 			census.projectIdSet[projectId] = 1
 		}
 	} else {
-		log.Println("Exporter already exists\n")
+		// TODO: Log or directly return error?
+		return errors.Errorf("Exporter already been registered!")
 	}
 
 	// Register view if necessary
 	viewInput := arguments.View
-	Protocol.ViewParse(&viewInput, arguments)
+	if err := Protocol.ViewParse(&viewInput, arguments); err != nil {
+		return err
+	}
 
 	if census.containsView(viewInput.Name) == false {
 		// The view has never been registered before.
@@ -99,20 +116,19 @@ func (census *OpenCensusBase) InitOpenCensus(arguments *Protocol.Argument) error
 		}
 	} else {
 		// The view has already been registered before. We don't need to register again
-		log.Println("View already exists\n")
+		return errors.Errorf("View already been registered!")
 	}
 	// Set reporting period to report data
 	view.SetReportingPeriod(time.Second * time.Duration(arguments.ReportPeriod))
 	census.reportPeriod = arguments.ReportPeriod
 	census.status = 1
-	log.Println("fUCK")
 	return nil
 }
 
 func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 	measureName := arguments.Measure.Name
 	if census.containsMeasure(measureName) == false {
-		return errors.Errorf("The Measurement has never been registered\n")
+		return errors.Errorf("Measurement already been registered")
 	} else {
 		measure := census.measureMap[measureName]
 		// TODO: Assume that no conflict between the initial measure type and later one
@@ -124,12 +140,13 @@ func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 				// TODO: Do we need to check assertion?
 				value, err := strconv.ParseFloat(arguments.Measure.MeasureValue, 64)
 				if err != nil {
-					log.Printf("Could Parse the Value: %s\n", arguments.Measure.MeasureValue)
+					return errors.Errorf("Could not Parse the Value: %s because %s",
+						arguments.Measure.MeasureValue, err.Error())
 				} else {
 					stats.Record(census.ctx, floatMeasure.M(float64(value)))
 				}
 			} else {
-				return errors.Errorf("The Measure Assertion Fails\n")
+				return errors.Errorf("Measure Assertion Fails")
 			}
 		case "int64":
 			intMeasure, ok := measure.(*stats.Int64Measure)
@@ -137,15 +154,16 @@ func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 				// TODO: Do we need to check assertion?
 				value, err := strconv.ParseFloat(arguments.Measure.MeasureValue, 64)
 				if err != nil {
-					log.Printf("Could Parse the Value: %s\n", arguments.Measure.MeasureValue)
+					return errors.Errorf("Could not Parse the Value: %s because %s",
+						arguments.Measure.MeasureValue, err.Error())
 				} else {
 					stats.Record(census.ctx, intMeasure.M(int64(value)))
 				}
 			} else {
-				return errors.Errorf("The Measure Assertion Fails\n")
+				return errors.Errorf("Measure Assertion Fails")
 			}
 		default:
-			return errors.Errorf("No Such Kind Errors\n")
+			return errors.Errorf("Unsupported Measure Type")
 		}
 	}
 	return nil

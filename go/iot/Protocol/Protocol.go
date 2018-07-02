@@ -1,44 +1,59 @@
+// Copyright 2018, OpenCensus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package Protocol
 
 import "go.opencensus.io/stats/view"
 
 /*
-Typical Argument for Registration would be as below:
+Typical example for Registration request would be as below:
 {
-	"projectId" : "opencensus-java-stats-demo-app"
-	"view" : {
+	"ProjectId" : "project-id"
+	"View" : {
 		"Name" : "my.org/views/protocol_test"
 		"Description" : "View for Protocol Test"
 	}
-	"aggregation" : {
-		"aggregationType" : "LastValue"
-		"aggregationValue" : []
+	"Aggregation" : {
+		"AggregationType" : "LastValue" / "Sum" / "Count"
+		"AggregationValue" : []
 	}
-	"measure":{
-		"name" : "my.org/measure/Measure_Test"
-		"descrption" : "Measure Test"
-		"unit" : "1"
-		"measureType": "int64"
-		"measureValue": ""
+	"Measure":{
+		"Name" : "my.org/measure/Measure_Test"
+		"Descrption" : "Measure Test"
+		"Unit" : "1" / "By" / "ms"
+		"MeasureType": "int64" / "float64"
 	}
-	"reportPeriod" : 1
+	"ReportPeriod" : 1
 
 }
 
+Note that the distribution is not supported yet.
 
-Typical Argument for Data would be as below:
+
+Typical example for sending data request would be as below:
 {
-	"projectId" :
-	"view" :
-	"aggregation" :
-	"measure":{
-		"name" : "my.org/measure/Measure_Test"
-		"descrption":
-		"unit" :
-		"measureType": "int64"
-		"measureValue": "1"
+	"Measure":{
+		"Name": "my.org/measure/Measure_Test"
+		"MeasureType": "int64" / "float64"
+		"MeasureValue": "1"
 	}
-	"reportPeriod" :
+}
+
+Typical example for the response from Raspberry Pi would be as below:
+{
+	"Code": 200 (OK) / 404 (Fail)
+	"Info": "Registration Successfully!"
 }
 
 */
@@ -47,6 +62,8 @@ Typical Argument for Data would be as below:
 const (
 	REGISTRATION = 0
 	RECORD       = 1
+	OK           = 200
+	FAIL         = 404
 )
 
 type Argument struct {
@@ -69,7 +86,7 @@ type MeasureArgument struct {
 }
 
 type AggregationArgument struct {
-	AggregationType string
+	AggregationType  string
 	AggregationValue []float64
 }
 
