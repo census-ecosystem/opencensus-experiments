@@ -24,10 +24,12 @@ import (
 	"time"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	"fmt"
 	"github.com/d2r2/go-dht"
 	"github.com/d2r2/go-logger"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
+	"go.opencensus.io/tag"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/aio"
 	"gobot.io/x/gobot/drivers/i2c"
@@ -36,12 +38,16 @@ import (
 
 var (
 	// Apply two kinds of aggregation type to the same metric in order to see the difference.
-	soundStrengthDistMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
-	soundStrengthLastMeasure = stats.Int64("my.org/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
-	lightStrengthMeasure     = stats.Int64("my.org/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
+	soundStrengthDistMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
+	soundStrengthLastMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
+	lightStrengthMeasure     = stats.Int64("opencensus.io/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
+	humidityMeasure          = stats.Float64("opencensus.io/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure       = stats.Float64("opencensus.io/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
-	humidityMeasure    = stats.Float64("my.org/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure = stats.Float64("my.org/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	soundSamplePeriod       = 50 * time.Millisecond
+	temperatureSamplePeriod = 5 * time.Second
+
+	sensorKey tag.Key
 
 	lg = logger.NewPackageLogger("main",
 		logger.DebugLevel,
@@ -49,29 +55,36 @@ var (
 	)
 )
 
-// The board would connect to the DHT11 with the GPIO4.
+// The board would connect to two DHT11 temperature sensors with the GPIO4 and GPIO17.
 // Communicate with ADS1015S based on the I2C and connect the sound
 // and light sensor to the A0, A1 channel on the ADC module.
 func main() {
 	ctx := context.Background()
-	// TODO: It takes around one minute to detect the full edge of voltage change. Needs to tune the report period
 	projectId := os.Getenv("PROJECTID")
 	if projectId == "" {
 		log.Fatal("Cannot detect PROJECTID in the system environment.\n")
 	} else {
 		log.Printf("Project Id is set to be %s\n", projectId)
 	}
-	initOpenCensus(projectId, 1)
 
+	var err error
+	sensorKey, err = tag.NewKey("opencensus.io/keys/sensor")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	initOpenCensus(projectId, 1)
 	// Create a new go thread to record the temperature and humidity
 	go RecordTemperatureHumidity(ctx, 4)
+	go RecordTemperatureHumidity(ctx, 17)
+
 	board := raspi.NewAdaptor()
 	ads1015 := i2c.NewADS1015Driver(board)
 	soundSensor := aio.NewGroveSoundSensorDriver(ads1015, "0")
 	lightSensor := aio.NewGroveLightSensorDriver(ads1015, "1")
 
 	work := func() {
-		gobot.Every(50*time.Millisecond, func() {
+		gobot.Every(soundSamplePeriod, func() {
 			// Since the sample shares the same pin, it cannot be done concurrently.
 			recordSound(ctx, soundSensor)
 			recordLight(ctx, lightSensor)
@@ -134,7 +147,13 @@ func readSound(sensor *aio.GroveSoundSensorDriver) (int, error) {
 // For every five seconds, record the temperature and humidity sensor data.
 // Print the collected data on the console.
 func RecordTemperatureHumidity(ctx context.Context, pin int) {
-	for range time.Tick(5 * time.Second) {
+	ctx, err := tag.New(ctx,
+		tag.Insert(sensorKey, fmt.Sprintf("Sensor :%d", pin)),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for range time.Tick(temperatureSamplePeriod) {
 		defer logger.FinalizeLogger()
 		// Uncomment/comment next line to suppress/increase verbosity of output
 		logger.ChangePackageLogLevel("dht", logger.InfoLevel)
@@ -149,6 +168,8 @@ func RecordTemperatureHumidity(ctx context.Context, pin int) {
 			dht.ReadDHTxxWithRetry(sensorType, pin, false, 50)
 		if err != nil {
 			lg.Fatal(err)
+		}
+		if temperature > 0 && humidity > 0 && err != nil && retried > 0 {
 		}
 		// print temperature and humidity
 		lg.Infof("Sensor = %v: Temperature = %v*C, Humidity = %v%% (retried %d times)",
@@ -179,17 +200,17 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	}
 	view.RegisterExporter(exporter)
 
-	// Set reporting period to report data at every second.
+	// Set reporting period to report data based on the given reportPeriod.
 	view.SetReportingPeriod(time.Second * time.Duration(reportPeriod))
 
 	// Create view to see the sound strength distribution.
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/sound_strength_distribution",
+		Name:        "opencensus.io/views/sound_strength_distribution",
 		Description: "sound strength distribution over time",
 		Measure:     soundStrengthDistMeasure,
-		Aggregation: view.Distribution(0, 10, 20, 40, 80, 160, 320, 640),
+		Aggregation: view.Distribution(0, 2, 4, 8, 16, 32, 64, 128),
 	}); err != nil {
 		log.Fatalf("Cannot subscribe to the view: %v", err)
 	}
@@ -198,7 +219,7 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/sound_strength_instant",
+		Name:        "opencensus.io/views/sound_strength_instant",
 		Description: "sound strength instantly over time",
 		Measure:     soundStrengthLastMeasure,
 		Aggregation: view.LastValue(),
@@ -210,7 +231,7 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/light_strength_instant",
+		Name:        "opencensus.io/views/light_strength_instant",
 		Description: "voltage level on GPIO over time",
 		Measure:     lightStrengthMeasure,
 		Aggregation: view.LastValue(),
@@ -222,8 +243,9 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/humidity_instant",
+		Name:        "opencensus.io/views/humidity_instant",
 		Description: "humidity_over time",
+		TagKeys:     []tag.Key{sensorKey},
 		Measure:     humidityMeasure,
 		Aggregation: view.LastValue(),
 	}); err != nil {
@@ -234,8 +256,9 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
 	if err := view.Register(&view.View{
-		Name:        "my.org/views/temperature_instant",
+		Name:        "opencensus.io/views/temperature_instant",
 		Description: "temperature over time",
+		TagKeys:     []tag.Key{sensorKey},
 		Measure:     temperatureMeasure,
 		Aggregation: view.LastValue(),
 	}); err != nil {
