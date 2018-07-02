@@ -22,6 +22,7 @@ import (
 	"github.com/huin/goserial"
 	"log"
 	"time"
+	"io"
 )
 
 type Slave struct {
@@ -29,7 +30,8 @@ type Slave struct {
 	listeners []*OpenCensusBase
 	// TODO: Maybe We could directly use ReaderWriter?
 	reader *bufio.Reader
-	sender *bufio.Writer
+	// The serial library doesn't support bufio.NewWriter(io.ReadWriteCloser)
+	sender io.ReadWriteCloser
 }
 
 func (slave *Slave) notifyCensusToRegister(arguments *Protocol.Argument) {
@@ -67,7 +69,7 @@ func (slave *Slave) Initialize(config *goserial.Config) error {
 		// It should wait for some time to let the serial initialization
 		time.Sleep(2 * time.Second)
 		slave.reader = bufio.NewReader(s)
-		slave.sender = bufio.NewWriter(s)
+		slave.sender = s
 		return nil
 	} else {
 		return err
@@ -80,9 +82,9 @@ func (slave *Slave) respond(code int, info string) {
 	if err != nil {
 		log.Fatal("Could not encode the project\n")
 	}
-	slave.sender.Flush()
 	slave.sender.Write([]byte(b))
-	slave.sender.WriteByte('\n')
+	slave.sender.Write([]byte("\n"))
+	log.Printf("Send Response: Code %d Info %s\n", response.Code, response.Info)
 }
 
 func (slave *Slave) Collect(period time.Duration) {
@@ -93,7 +95,7 @@ func (slave *Slave) Collect(period time.Duration) {
 			input, isPrefix, err := slave.reader.ReadLine()
 			fmt.Println(string(input))
 			if err != nil {
-				log.Println("Could Not Read the data from the Port")
+				log.Println("Could Not Read the data from the Port because %s", err.Error())
 				continue
 			}
 			if isPrefix == true {

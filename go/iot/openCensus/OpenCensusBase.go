@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
+	"github.com/mgutz/logxi/v1"
 )
 
 const (
@@ -143,6 +144,7 @@ func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 					return errors.Errorf("Could not Parse the Value: %s because %s",
 						arguments.Measure.MeasureValue, err.Error())
 				} else {
+					log.Info("Record Data %v", value)
 					stats.Record(census.ctx, floatMeasure.M(float64(value)))
 				}
 			} else {
@@ -157,6 +159,7 @@ func (census *OpenCensusBase) Record(arguments *Protocol.Argument) error {
 					return errors.Errorf("Could not Parse the Value: %s because %s",
 						arguments.Measure.MeasureValue, err.Error())
 				} else {
+					log.Info("Record Data %v", value)
 					stats.Record(census.ctx, intMeasure.M(int64(value)))
 				}
 			} else {
