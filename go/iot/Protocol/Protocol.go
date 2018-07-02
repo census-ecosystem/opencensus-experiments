@@ -43,6 +43,7 @@ Typical Argument for Data would be as below:
 
 */
 
+// TODO: In JSON, we could use this array. Without JSON, we need to implement the parse
 const (
 	REGISTRATION = 0
 	RECORD       = 1
@@ -69,6 +70,10 @@ type MeasureArgument struct {
 
 type AggregationArgument struct {
 	AggregationType string
-	// TODO: In JSON, we could use this array. Without JSON, we need to implement the parse
 	AggregationValue []float64
+}
+
+type Response struct {
+	Code int
+	Info string
 }
