@@ -22,9 +22,9 @@ import (
 	"math"
 	"os"
 	"time"
+	"fmt"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
-	"fmt"
 	"github.com/d2r2/go-dht"
 	"github.com/d2r2/go-logger"
 	"go.opencensus.io/stats"
