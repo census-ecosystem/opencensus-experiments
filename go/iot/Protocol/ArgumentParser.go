@@ -19,6 +19,7 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	v "go.opencensus.io/stats/view"
+	"go.opencensus.io/tag"
 )
 
 func ViewParse(view *view.View, argument *Argument) error {
@@ -48,6 +49,15 @@ func ViewParse(view *view.View, argument *Argument) error {
 		//view.Aggregation = v.Distribution(aggregationString.AggregationValue[0], aggregationString.AggregationValue[1:]...)
 	default:
 		return errors.Errorf("Unsupported Aggregation Type")
+	}
+
+	tagStrings := argument.TagKeys
+	for _, tagString := range tagStrings {
+		newTag, err := tag.NewKey(tagString)
+		if err != nil {
+			return err
+		}
+		view.TagKeys = append(view.TagKeys, newTag)
 	}
 	return nil
 }

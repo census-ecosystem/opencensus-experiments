@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
 	"github.com/huin/goserial"
+	"io"
 	"log"
 	"time"
-	"io"
 )
 
 type Slave struct {

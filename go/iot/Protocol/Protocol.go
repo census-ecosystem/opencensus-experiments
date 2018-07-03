@@ -72,6 +72,7 @@ type Argument struct {
 	View         view.View
 	Aggregation  AggregationArgument
 	Measure      MeasureArgument
+	TagKeys      []string
 	ReportPeriod int
 }
 
@@ -83,6 +84,9 @@ type MeasureArgument struct {
 	// We judge the measure Type based on the users. Which means we assume that user would not input malformed data
 	MeasureType  string
 	MeasureValue string
+
+	TagKeys   []string
+	TagValues []string
 }
 
 type AggregationArgument struct {
