@@ -19,10 +19,7 @@ void setup() {
  * Once receive OK, it would keep sending collected data to the Pi.
  */
 void loop() {
-  request(sendRegistration);
-  while(true){
-    request(sendData);
-  }
+   request(sendData);
 }
 
 /*
@@ -46,10 +43,10 @@ void request(void (*func)()) {
     code = (*response)["Code"];
     const char *info = (*response)["Info"];
 
-    Serial.print("Receive Response: Code ");
-    Serial.print(code);
-    Serial.print(" info: ");
-    Serial.println(info);
+    //Serial.print("Receive Response: Code ");
+    //Serial.print(code);
+    //Serial.print(" info: ");
+    //Serial.println(info);
   }
   while (code != OK);
 }
@@ -66,7 +63,7 @@ void readLine(char * buffer, int maxLength)
     while (Serial.available() == 0) ; // wait for a char this causes the blocking
     // TODO: In reality, it should set a timeout since both ends might wait for each other.
     c = Serial.read();
-    Serial.print(c);
+    //Serial.print(c);
     buffer[idx++] = c;
   }
   while (c != '\n' && c != '\r' && idx < maxLength - 1);
@@ -91,61 +88,11 @@ JsonObject* parseResponse(char *json) {
 
   // Test if parsing succeeds.
   if (!root.success()) {
-    Serial.println("parseObject() failed");
+    //Serial.println("parseObject() failed");
     return NULL;
   }
   else
     return &root;
-}
-
-void sendRegistration() {
-  // Memory pool for JSON object tree.
-  //
-  // Inside the brackets, 200 is the size of the pool in bytes.
-  // Don't forget to change this value to match your JSON document.
-  // Use arduinojson.org/assistant to compute the capacity.
-  StaticJsonBuffer<200> jsonBuffer;
-
-  // StaticJsonBuffer allocates memory on the stack, it can be
-  // replaced by DynamicJsonBuffer which allocates in the heap.
-  //
-  // DynamicJsonBuffer  jsonBuffer(200);
-  JsonObject& root = jsonBuffer.createObject();
-
-  // In other case, you can do root.set<long>("time", 1351824120);
-  root["ArgumentType"] = 0;
-  root["ProjectId"] = "opencensus-java-stats-demo-app";
-
-  // Add a nested array.
-  //
-  // It's also possible to create the array separately and add it to the
-  // JsonObject but it's less efficient.
-  JsonObject& view = root.createNestedObject("View");
-  view["Name"] = "my.org/views/protocol_test";
-  view["Description"] = "View for Protocol Test";
-
-  JsonObject& aggregation = root.createNestedObject("Aggregation");
-  aggregation["AggregationType"] = "LastValue";
-  JsonArray& aggregationValue = aggregation.createNestedArray("AggregationValue");
-
-  JsonObject& measure = root.createNestedObject("Measure");
-  measure["Name"] = "my.org/measure/Measure_Test";
-  measure["Description"] = "Measure Test";
-  measure["Unit"] = "1";
-  measure["MeasureType"] = "int64";
-  //measure["MeasureValue"] = "";
-
-  JsonArray& tagKeys = root.createNestedArray("TagKeys");
-  tagKeys.add("DeviceId");
-  tagKeys.add("Date");
-
-  root["ReportPeriod"] = 1;
-
-  root.printTo(Serial);
-
-  Serial.println();
-
-  Serial.flush();
 }
 
 void sendData() {
@@ -167,18 +114,10 @@ void sendData() {
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
   JsonObject& root = jsonBuffer.createObject();
-
-  root["ArgumentType"] = 1;
-  root["ProjectId"] = "opencensus-java-stats-demo-app";
-
   JsonObject& measure = root.createNestedObject("Measure");
   measure["Name"] = "my.org/measure/Measure_Test";
   measure["MeasureType"] = "int64";
   measure["MeasureValue"] = "9";
-
-  JsonArray& tagKeys = root.createNestedArray("TagKeys");
-  tagKeys.add("DeviceId");
-  tagKeys.add("Date");
 
   JsonArray& tagValues = root.createNestedArray("TagValues");
   tagValues.add("Arduino-1");

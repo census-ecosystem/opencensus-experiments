@@ -1,56 +1,52 @@
-To run the service, the arduino should firstly send the request for registration to the Pi and keep sending requests for
-sending sensor data after it receives the response for agreement. If it doesn't receive the positive response but still
-sends request for sending sensor data, it would receive negative response anyway.
+For raspberry Pi, it would firstly register the views and exporters. Only after the inital setup that Pi could respond
+to the record request from the arduino.
+For Arduino, after it collects sensor data, it encapsulates the sensor data based on the required format and sends the
+record request to the Pi. Then it could not send another record request until it receives a positive response.  If it
+receives a negative response, it would retry sending the request. Temporarily it would block when waiting for the
+response. We might add exponential back-off mechanism in the future.
 
-Every time after the arduino sends a request to the Raspberry Pi, it should wait for the response from the Pi. Temporarily
-it would block forever if it doesn't receive any response. Maybe would use exponential backoff in the future.
+Every request or response is ended with a newline character '\n'. Don't add any newLine character in your argument.
 
-Every request or response is ended with a newline character '\n'.
+The following example could illustrate the process.
 
-Temporarily the packet is encapsulated based on the JSON format. It's capital sensitive. The format is as below.
+Raspberry Pi:
+When the service starts, the following view would be registered.
 
-Typical example for Registration request would be as below:
+	ProjectId : project-id
+	View:
+		Name : "opencensus.io/views/protocol_test"
+		Description : "View for Protocol Test"
+		Aggregation :
+        		AggregationType : view.LastValue()
+        		AggregationValue : []
+        Measure:
+        		Name : "my.org/measure/Measure_Test"
+        		Description : "Measure Test"
+        		Unit : 1
+        		MeasureType: int64
+        TagKeys: ["DeviceId", "SampleDate"]
+
+	ReportPeriod : 1
+
+Before the registration, the Raspberry Pi would make a negative response to the record request from Arduino.
+
+Arduino:
+Every time it collects sensor data, it needs to encapsulate it into a record request based on the following format.
 {
-    "ArgumentType" : 0
-	"ProjectId" : "project-id"
-	"View" : {
-		"Name" : "my.org/views/protocol_test"
-		"Description" : "View for Protocol Test"
-	}
-	"Aggregation" : {
-		"AggregationType" : "LastValue" or "Sum" or "Count"
-		"AggregationValue" : []
-	}
 	"Measure":{
-		"Name" : "my.org/measure/Measure_Test"
-		"Descrption" : "Measure Test"
-		"Unit" : "1" or "By" or "ms"
-		"MeasureType": "int64" or "float64"
-	}
-	"TagKeys": ["DeviceId", "DeviceId"]
-	"ReportPeriod" : 1
-
-}
-
-Note that you should add a unique id for your arduino for tag keys.
-
-Typical example for sending data request would be as below:
-{
-    "ArgumentType" : 1
-	"Measure":{
-	    "DeviceId": "arduino-1"
 		"Name": "my.org/measure/Measure_Test"
 		"MeasureType": "int64" or "float64"
 		"MeasureValue": "1"
 	}
-	"TagKeys": ["DeviceId", "Date"]
 	"TagValues": ["Arduino-1", "2017-01-05"]
 }
 
-Note that you should add a unique id for your arduino for tag.
+Note that the tag Values should follow the order as it is in the tag.Keys defined in the raspberry Pi. In the above
+example, it could be ["", "2017-01-05"] or ["Arduino-1", ""] or ["Arduino-1"]. But it could not be ["2017-01-05"]. You
+need to explicitly use an empty string to represent null tag values if the value for the following tag key is not null.
 
 Typical example for the response from Raspberry Pi would be as below:
 {
 	"Code": 200 (OK) or 404 (Fail)
-	"Info": "Registration Successfully!"
+	"Info": "Record Successfully!"
 }
