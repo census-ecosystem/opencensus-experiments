@@ -134,7 +134,11 @@ void sendRegistration() {
   measure["Unit"] = "1";
   measure["MeasureType"] = "int64";
   //measure["MeasureValue"] = "";
-  
+
+  JsonArray& tagKeys = root.createNestedArray("TagKeys");
+  tagKeys.add("DeviceId");
+  tagKeys.add("Date");
+
   root["ReportPeriod"] = 1;
 
   root.printTo(Serial);
@@ -165,13 +169,20 @@ void sendData() {
   JsonObject& root = jsonBuffer.createObject();
 
   root["ArgumentType"] = 1;
-  root["DeviceId"] = "Arduino-1"
   root["ProjectId"] = "opencensus-java-stats-demo-app";
 
   JsonObject& measure = root.createNestedObject("Measure");
   measure["Name"] = "my.org/measure/Measure_Test";
   measure["MeasureType"] = "int64";
   measure["MeasureValue"] = "9";
+
+  JsonArray& tagKeys = root.createNestedArray("TagKeys");
+  tagKeys.add("DeviceId");
+  tagKeys.add("Date");
+
+  JsonArray& tagValues = root.createNestedArray("TagValues");
+  tagValues.add("Arduino-1");
+  tagValues.add("2018-07-02");
 
   root.printTo(Serial);
 
