@@ -18,39 +18,24 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
-	"github.com/huin/goserial"
 	"io"
 	"log"
 	"time"
+
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
+	"github.com/huin/goserial"
 )
 
 type Slave struct {
-	// TODO: Use pointers?
 	listeners []*OpenCensusBase
-	// TODO: Maybe We could directly use ReaderWriter?
-	reader *bufio.Reader
+	reader    *bufio.Reader
 	// The serial library doesn't support bufio.NewWriter(io.ReadWriteCloser)
 	sender io.ReadWriteCloser
 }
 
-func (slave *Slave) notifyCensusToRegister(arguments *Protocol.Argument) {
-	for _, census := range slave.listeners {
-		err := census.InitOpenCensus(arguments)
-		// TODO: Should I throw back the error or directly respond with error like this
-		if err != nil {
-			slave.respond(Protocol.FAIL, err.Error())
-		} else {
-			slave.respond(Protocol.OK, "Regist Successfully")
-			log.Println("Regist Successfully!")
-		}
-	}
-}
-
-func (slave *Slave) notifyCensusToRecord(arguments *Protocol.Argument) {
+func (slave *Slave) notifyCensusToRecord(arguments *Protocol.MeasureArgument) {
 	for _, census := range slave.listeners {
 		err := census.Record(arguments)
-		// TODO: Should I throw back the error or directly respond with error like this
 		if err != nil {
 			slave.respond(Protocol.FAIL, err.Error())
 		} else {
@@ -88,7 +73,6 @@ func (slave *Slave) respond(code int, info string) {
 }
 
 func (slave *Slave) Collect(period time.Duration) {
-	// TODO: Default is that we regard every time from the arduino might be different measurement.
 	for true {
 		select {
 		case <-time.After(period):
@@ -102,19 +86,12 @@ func (slave *Slave) Collect(period time.Duration) {
 				//TODO: The length of the json is bigger than the buffer size
 				continue
 			} else {
-				var argument Protocol.Argument
+				var argument Protocol.MeasureArgument
 				decodeErr := json.Unmarshal(input, &argument)
 				if decodeErr != nil {
 					log.Println(decodeErr)
 				} else {
-					switch argument.ArgumentType {
-					case Protocol.REGISTRATION:
-						slave.notifyCensusToRegister(&argument)
-					case Protocol.RECORD:
-						slave.notifyCensusToRecord(&argument)
-					default:
-						slave.respond(Protocol.FAIL, "Unsupported Argument Type")
-					}
+					slave.notifyCensusToRecord(&argument)
 				}
 			}
 		}

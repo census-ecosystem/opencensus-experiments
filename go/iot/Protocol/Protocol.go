@@ -14,8 +14,6 @@
 
 package Protocol
 
-import "go.opencensus.io/stats/view"
-
 /*
 Typical example for Registration request would be as below:
 {
@@ -57,8 +55,6 @@ Typical example for the response from Raspberry Pi would be as below:
 }
 
 */
-
-// TODO: In JSON, we could use this array. Without JSON, we need to implement the parse
 const (
 	REGISTRATION = 0
 	RECORD       = 1
@@ -66,32 +62,14 @@ const (
 	FAIL         = 404
 )
 
-type Argument struct {
-	ArgumentType int
-	ProjectId    string
-	View         view.View
-	Aggregation  AggregationArgument
-	Measure      MeasureArgument
-	TagKeys      []string
-	ReportPeriod int
-}
-
 type MeasureArgument struct {
-	Name        string
-	Description string
-	Unit        string
+	Name string
 
-	// We judge the measure Type based on the users. Which means we assume that user would not input malformed data
+	// We judge the measure Type based on the users.
+	// Which means we assume that user would not input malformed data
 	MeasureType  string
 	MeasureValue string
-
-	TagKeys   []string
-	TagValues []string
-}
-
-type AggregationArgument struct {
-	AggregationType  string
-	AggregationValue []float64
+	TagValues    []string
 }
 
 type Response struct {
