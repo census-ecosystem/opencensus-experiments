@@ -17,13 +17,13 @@ package openCensus
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"time"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
 	"github.com/huin/goserial"
+	"fmt"
 )
 
 type Slave struct {
@@ -73,9 +73,8 @@ func (slave *Slave) respond(code int, info string) {
 }
 
 func (slave *Slave) Collect(period time.Duration) {
-	for true {
-		select {
-		case <-time.After(period):
+	go func(){
+		for range time.Tick(period) {
 			input, isPrefix, err := slave.reader.ReadLine()
 			fmt.Println(string(input))
 			if err != nil {
@@ -95,5 +94,5 @@ func (slave *Slave) Collect(period time.Duration) {
 				}
 			}
 		}
-	}
+	}()
 }

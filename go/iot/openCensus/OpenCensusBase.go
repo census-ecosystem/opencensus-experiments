@@ -26,6 +26,7 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"sync"
 )
 
 const (
@@ -35,6 +36,7 @@ const (
 
 type OpenCensusBase struct {
 	status      int // Flag to represent whether the system is initialized or not
+	mu sync.Mutex
 	ctx         context.Context
 	viewNameSet map[string]int           // avoid registering the same view.
 	measureMap  map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
@@ -86,14 +88,19 @@ func (census *OpenCensusBase) ViewRegistration(myView *(view.View)) error {
 		census.tagKeyMap[myView.Measure.Name()] = myView.TagKeys
 	}
 	// There should be some concurrency control.
+	census.mu.Lock()
+	defer census.mu.Unlock()
 	census.status = 1
 	return nil
 }
 
 func (census *OpenCensusBase) Record(arguments *Protocol.MeasureArgument) error {
+	census.mu.Lock()
 	if census.status == 0 {
+		census.mu.Unlock()
 		return errors.Errorf("Registration Unfinished!")
 	}
+	census.mu.Unlock()
 	measureName := arguments.Name
 	if census.containsMeasure(measureName) == false {
 		return errors.Errorf("Measurement is not registered")

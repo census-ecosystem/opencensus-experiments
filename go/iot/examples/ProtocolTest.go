@@ -26,52 +26,59 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"fmt"
 )
 
+
 var (
-	testMeasure  = stats.Int64("my.org/measure/Measure_Test", "Measure Test", stats.UnitDimensionless)
+	testMeasure  = stats.Float64("opencensus.io/measure/Temperature", "Measure Test", stats.UnitDimensionless)
 	reportPeriod = 1
 	ardiunoKey   tag.Key
 	dateKey      tag.Key
 )
 
-func findArduino() string {
+func findArduino() []string {
+	var arduinoList []string
 	contents, _ := ioutil.ReadDir("/dev")
-
 	// Look for what is mostly likely the Arduino device
 	for _, f := range contents {
 		if strings.Contains(f.Name(), "tty.usbserial") ||
 			strings.Contains(f.Name(), "ttyACM") {
-			return "/dev/" + f.Name()
+			arduinoList = append(arduinoList, "/dev/" + f.Name())
 		}
 	}
 
-	// Have not been able to find a USB device that 'looks'
-	// like an Arduino.
-	return ""
+	return arduinoList
 }
 
 func main() {
-	c := &goserial.Config{Name: findArduino(), Baud: 9600}
-	var slave openCensus.Slave
-	var census openCensus.OpenCensusBase
 	projectId := os.Getenv("PROJECTID")
 	if projectId == "" {
 		log.Fatal("Cannot detect PROJECTID in the system environment.\n")
 	} else {
 		log.Printf("Project Id is set to be %s\n", projectId)
 	}
+	var census openCensus.OpenCensusBase
 	census.Initialize(projectId, reportPeriod)
 	census.ViewRegistration(&view.View{
-		Name:        "my.org/views/protocol_test",
+		Name:        "opencensus.io/views/protocol_test",
 		Description: "View for Protocol Test",
 		Aggregation: view.LastValue(),
 		Measure:     testMeasure,
 		TagKeys:     getExampleKey(),
 	})
-	slave.Initialize(c)
-	slave.Subscribe(census)
-	slave.Collect(2 * time.Second)
+
+	for _, slaveName := range findArduino(){
+		c := &goserial.Config{Name: slaveName, Baud: 9600}
+		var slave openCensus.Slave
+		slave.Initialize(c)
+		slave.Subscribe(census)
+		slave.Collect(2 * time.Second)
+	}
+	for true{
+		fmt.Print()
+	}
+
 }
 
 func getExampleKey() []tag.Key {

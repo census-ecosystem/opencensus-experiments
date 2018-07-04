@@ -15,9 +15,10 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
+	"time"
+	"fmt"
 )
 
 type M struct {
@@ -42,43 +43,17 @@ func findArduino2() string {
 }
 
 func main() {
-	var test []int
-	for _, tmp := range test {
-		fmt.Println(tmp)
+	go test()
+	for true{
+		var i = 2
+		if i == 1{
+
+		}
 	}
-	/*
-		c := &goserial.Config{Name: findArduino2(), Baud: 9600}
-		s, err := goserial.OpenPort(c)
-		if err != nil {
+}
 
-		}
-		time.Sleep(2 * time.Second)
-		reader := bufio.NewReader(s)
-		//sender := bufio.NewWriter(s)
-
-		for true {
-			select {
-			case <-time.After(500 * time.Millisecond):
-				input, isPrefix, err := reader.ReadLine()
-				fmt.Println(input)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
-				if isPrefix == true {
-					//TODO: The length of the json is bigger than the buffer size
-					continue
-				} else {
-					var argument M
-					decodeErr := json.Unmarshal(input, &argument)
-					if decodeErr != nil {
-						log.Println(err)
-					} else {
-						log.Println("HellowWorld!")
-					}
-				}
-			}
-		}
-	*/
-
+func test(){
+	for range time.Tick(1 * time.Second){
+		fmt.Println("Test")
+	}
 }
