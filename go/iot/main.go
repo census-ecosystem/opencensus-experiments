@@ -18,11 +18,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math"
 	"os"
 	"time"
-	"fmt"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/d2r2/go-dht"
@@ -37,6 +37,12 @@ import (
 )
 
 var (
+	viewToRegister = &view.View{
+		Name:        "opencensus.io/views/sound_strength_distribution",
+		Description: "sound strength distribution over time",
+		Measure:     soundStrengthDistMeasure,
+		Aggregation: view.Distribution(0, 2, 4, 8, 16, 32, 64, 128),
+	}
 	// Apply two kinds of aggregation type to the same metric in order to see the difference.
 	soundStrengthDistMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
 	soundStrengthLastMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
@@ -206,12 +212,7 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Create view to see the sound strength distribution.
 	// Subscribe will allow view data to be exported.
 	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(&view.View{
-		Name:        "opencensus.io/views/sound_strength_distribution",
-		Description: "sound strength distribution over time",
-		Measure:     soundStrengthDistMeasure,
-		Aggregation: view.Distribution(0, 2, 4, 8, 16, 32, 64, 128),
-	}); err != nil {
+	if err := view.Register(viewToRegister); err != nil {
 		log.Fatalf("Cannot subscribe to the view: %v", err)
 	}
 
