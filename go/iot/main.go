@@ -37,12 +37,58 @@ import (
 )
 
 var (
-	viewToRegister = &view.View{
+	// view to see the sound strength distribution.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	viewSoundDist = &view.View{
 		Name:        "opencensus.io/views/sound_strength_distribution",
 		Description: "sound strength distribution over time",
 		Measure:     soundStrengthDistMeasure,
 		Aggregation: view.Distribution(0, 2, 4, 8, 16, 32, 64, 128),
 	}
+
+	// view to see the sound strength instantly.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	viewSoundLast = &view.View{
+		Name:        "opencensus.io/views/sound_strength_instant",
+		Description: "sound strength instantly over time",
+		Measure:     soundStrengthLastMeasure,
+		Aggregation: view.LastValue(),
+	}
+
+	// view to see the light strength instantly.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	viewLight = &view.View{
+		Name:        "opencensus.io/views/light_strength_instant",
+		Description: "voltage level on GPIO over time",
+		Measure:     lightStrengthMeasure,
+		Aggregation: view.LastValue(),
+	}
+
+	// view to see the humidity instantly.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	viewHumidity = &view.View{
+		Name:        "opencensus.io/views/humidity_instant",
+		Description: "humidity_over time",
+		TagKeys:     []tag.Key{sensorKey},
+		Measure:     humidityMeasure,
+		Aggregation: view.LastValue(),
+	}
+
+	// view to see the temperature instantly.
+	// Subscribe will allow view data to be exported.
+	// Once no longer need, you can unsubscribe from the view.
+	viewTemperature = &view.View{
+		Name:        "opencensus.io/views/temperature_instant",
+		Description: "temperature over time",
+		TagKeys:     []tag.Key{sensorKey},
+		Measure:     temperatureMeasure,
+		Aggregation: view.LastValue(),
+	}
+
 	// Apply two kinds of aggregation type to the same metric in order to see the difference.
 	soundStrengthDistMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
 	soundStrengthLastMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
@@ -209,60 +255,12 @@ func initOpenCensus(projectId string, reportPeriod int) {
 	// Set reporting period to report data based on the given reportPeriod.
 	view.SetReportingPeriod(time.Second * time.Duration(reportPeriod))
 
-	// Create view to see the sound strength distribution.
-	// Subscribe will allow view data to be exported.
-	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(viewToRegister); err != nil {
-		log.Fatalf("Cannot subscribe to the view: %v", err)
+	viewList := []*view.View{viewSoundDist, viewSoundLast, viewLight, viewHumidity, viewTemperature}
+
+	for _, viewToRegister := range viewList {
+		if err := view.Register(viewToRegister); err != nil {
+			log.Fatalf("Cannot subscribe to the view: %v", err)
+		}
 	}
 
-	// Create view to see the sound strength instantly.
-	// Subscribe will allow view data to be exported.
-	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(&view.View{
-		Name:        "opencensus.io/views/sound_strength_instant",
-		Description: "sound strength instantly over time",
-		Measure:     soundStrengthLastMeasure,
-		Aggregation: view.LastValue(),
-	}); err != nil {
-		log.Fatalf("Cannot subscribe to the view: %v", err)
-	}
-
-	// Create view to see the light strength instantly.
-	// Subscribe will allow view data to be exported.
-	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(&view.View{
-		Name:        "opencensus.io/views/light_strength_instant",
-		Description: "voltage level on GPIO over time",
-		Measure:     lightStrengthMeasure,
-		Aggregation: view.LastValue(),
-	}); err != nil {
-		log.Fatalf("Cannot subscribe to the view: %v", err)
-	}
-
-	// Create view to see the humidity instantly.
-	// Subscribe will allow view data to be exported.
-	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(&view.View{
-		Name:        "opencensus.io/views/humidity_instant",
-		Description: "humidity_over time",
-		TagKeys:     []tag.Key{sensorKey},
-		Measure:     humidityMeasure,
-		Aggregation: view.LastValue(),
-	}); err != nil {
-		log.Fatalf("Cannot subscribe to the view: %v", err)
-	}
-
-	// Create view to see the temperature instantly.
-	// Subscribe will allow view data to be exported.
-	// Once no longer need, you can unsubscribe from the view.
-	if err := view.Register(&view.View{
-		Name:        "opencensus.io/views/temperature_instant",
-		Description: "temperature over time",
-		TagKeys:     []tag.Key{sensorKey},
-		Measure:     temperatureMeasure,
-		Aggregation: view.LastValue(),
-	}); err != nil {
-		log.Fatalf("Cannot subscribe to the view: %v", err)
-	}
 }
