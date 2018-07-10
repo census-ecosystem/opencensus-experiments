@@ -36,22 +36,27 @@ When the program starts, the following view would be registered.
 
 Before the registration, the Raspberry Pi would not make any response to the the request from Arduino.
 
-After the registration, the Raspberry Pi would make a negative or positive response to any record request from Arduino.
-
-When the Pi would make a negative response:
-    1. The measure doesn't bind to any views.
-    2. The tag key doesn't bind to any views.
-    2. Pi could not parse the encapsulated data because of the format error.
-    3. The number of tag keys is not equal to the number of tag values.
-
-When the Pi successfully parses and records data, it would make a positive response to the request. Note that it would
-still responds positively if there is something wrong with the OpenCensus framework such as networking failure.
+After the registration, the Raspberry Pi would make a response to the record request from Arduino.
 
 Typical example for the response by Raspberry Pi would be as below:
 {
 	"Code": 200 or 404
 	"Info": "Record Successfully!" or "Registration Not Finished" or ...
 }
+
+In the following cases Pi would make response with the Code 404:
+    1. The measure doesn't bind to any views.
+    2. Pi could not parse the encapsulated data because of the format error.
+    3. The number of tag keys is not equal to the number of tag values.
+
+When the Pi parses and records data successfully, it would make response with the Code 200.
+
+However, in the following corner cases Pi would still respond with Code 200:
+    1. The tag keys in the data request don't bind to any views.
+        In this case, the Pi would record the data without tag key/value.
+    2. The exporter could not work normally such as the backend server crashes.
+        In this case, the Pi would record the data and respond positively.
+
 
 Arduino:
 
@@ -61,8 +66,8 @@ Every time it collects sensor data, it needs to encapsulate it into a record req
 		"Name": "my.org/measure/Measure_Test"
 		"Measurement": "1"
 	}
-	"TagKeys": ["DeviceId", "SampleDate"]
-	"TagValues": ["Arduino-1", "2017-01-05"]
+	"Tag": {
+	    "DeviceId": "Arduino-1
+	    "SampleDate": "2017-01-05"
+	}
 }
-
-Note that the order and number of tag values should be the same as it is for tag keys.

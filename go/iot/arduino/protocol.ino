@@ -131,12 +131,9 @@ void sendData() {
   measure["Name"] = "my.org/measure/Measure_Test";
   measure["Measurement"] = "9";
 
-  JsonArray& tagValues = root.createNestedArray("TagKeys");
-  tagValues.add("DeviceId");
-  tagValues.add("SampleDate");
-  JsonArray& tagValues = root.createNestedArray("TagValues");
-  tagValues.add("Arduino-1");
-  tagValues.add("2018-07-02");
+  JsonObject& tagPairs = root.createNestedObject("Tag");
+  tagPairs["DeviceId"] = "Arduino-1";
+  tagPairs["SampleDate"] = "2018-07-02";
 
   root.printTo(Serial);
 
@@ -144,4 +141,3 @@ void sendData() {
 
   Serial.flush();
 }
-
