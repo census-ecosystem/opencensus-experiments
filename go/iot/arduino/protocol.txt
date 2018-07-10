@@ -5,8 +5,11 @@ to the record request from the arduino.
 
 For Arduino, after it collects sensor data, it encapsulates the sensor data based on the required Json format and sends
 record request to the Pi. Afterwards it could not send another record request until it receives a positive response from
-the Pi. If it receives a negative response, it would retry sending the request. Temporarily it would block when waiting
-for the response. We might add exponential back-off mechanism in the future.
+the Pi. If it receives a negative response, it would retry sending another request and the previous request would be
+dropped. Temporarily the arduino would block when waiting for the response. Since the Arduino doesn't support
+multi-thread, it would stop collecting data when blocked.
+
+We might add time-out and exponential back-off mechanism in the future.
 
 Every request or response should be ended with a newline character '\n'.
 
@@ -31,9 +34,18 @@ When the program starts, the following view would be registered.
         TagKeys: ["DeviceId", "SampleDate"]
 	ReportPeriod : 1
 
-Before the registration, the Raspberry Pi would make a negative response if there is any record request from Arduino.
+Before the registration, the Raspberry Pi would not make any response to the the request from Arduino.
 
-After the registration, the Raspberrry Pi would make a negative or positive response to any record request from Arduino.
+After the registration, the Raspberry Pi would make a negative or positive response to any record request from Arduino.
+
+When the Pi would make a negative response:
+    1. The measure doesn't bind to any views.
+    2. The tag key doesn't bind to any views.
+    2. Pi could not parse the encapsulated data because of the format error.
+    3. The number of tag keys is not equal to the number of tag values.
+
+When the Pi successfully parses and records data, it would make a positive response to the request. Note that it would
+still responds positively if there is something wrong with the OpenCensus framework such as networking failure.
 
 Typical example for the response by Raspberry Pi would be as below:
 {
@@ -47,12 +59,10 @@ Every time it collects sensor data, it needs to encapsulate it into a record req
 {
 	"Measure":{
 		"Name": "my.org/measure/Measure_Test"
-		"MeasureType": "int64" or "float64"
-		"MeasureValue": "1"
+		"Measurement": "1"
 	}
+	"TagKeys": ["DeviceId", "SampleDate"]
 	"TagValues": ["Arduino-1", "2017-01-05"]
 }
 
-Note that the tag Values should follow the order as it is in the tag.Keys defined in the raspberry Pi. In the above
-example, it could be ["", "2017-01-05"] or ["Arduino-1", ""] or ["Arduino-1"]. But it could not be ["2017-01-05"]. You
-need to explicitly use an empty string to represent null tag values if the value for the following tag key is not null.
+Note that the order and number of tag values should be the same as it is for tag keys.

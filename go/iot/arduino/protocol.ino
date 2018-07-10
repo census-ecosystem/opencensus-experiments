@@ -1,6 +1,16 @@
-// Copyright 2018 Google Inc. All rights reserved.
-// Use of this source code is governed by the Apache 2.0
-// license that can be found in the LICENSE file.
+// Copyright 2018, OpenCensus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // This program shows how to send requests of registration and sending data to the raspberry Pi based on the protocols.
 
@@ -8,6 +18,9 @@
 
 #define OK 200
 #define FAIL 404
+#define BUFFER_SIZE 256
+#define JSON_BUFFER_SIZE 200
+
 void setup() {
   // Initialize Serial port
   Serial.begin(9600);
@@ -15,8 +28,7 @@ void setup() {
 }
 
 /*
- * It would first send request of registration to the raspberry Pi.
- * Once receive OK, it would keep sending collected data to the Pi.
+ * Arduino would keep sending record requests to the Pi.
  */
 void loop() {
    request(sendData);
@@ -34,11 +46,10 @@ void request(void (*func)()) {
       // TODO: Currently we hard-code the argument in the code. Would handle the problem that how to solve
       // multiple arguments.
       func();
-      char buffer[256];
-      readLine(buffer, 256);
+      char buffer[BUFFER_SIZE];
+      readLine(buffer, BUFFER_SIZE);
       response = parseResponse(buffer);
-    }
-    while (response == NULL);
+    } while (response == NULL);
 
     code = (*response)["Code"];
     const char *info = (*response)["Info"];
@@ -47,8 +58,11 @@ void request(void (*func)()) {
     //Serial.print(code);
     //Serial.print(" info: ");
     //Serial.println(info);
-  }
-  while (code != OK);
+    if (code != OK){
+      // If it receives a negative response, it would delay for one second
+      delay(1000);
+    }
+  } while (code != OK);
 }
 
 /*
@@ -65,8 +79,7 @@ void readLine(char * buffer, int maxLength)
     c = Serial.read();
     //Serial.print(c);
     buffer[idx++] = c;
-  }
-  while (c != '\n' && c != '\r' && idx < maxLength - 1);
+  } while (c != '\n' && c != '\r' && idx < maxLength - 1);
   // To sure it would not overflow. The last character has to be a \0
   buffer[idx] = 0;
 }
@@ -90,9 +103,9 @@ JsonObject* parseResponse(char *json) {
   if (!root.success()) {
     //Serial.println("parseObject() failed");
     return NULL;
-  }
-  else
+  } else{
     return &root;
+  }
 }
 
 void sendData() {
@@ -101,7 +114,7 @@ void sendData() {
   // Inside the brackets, 200 is the size of the pool in bytes.
   // Don't forget to change this value to match your JSON document.
   // Use arduinojson.org/assistant to compute the capacity.
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
   // StaticJsonBuffer allocates memory on the stack, it can be
   // replaced by DynamicJsonBuffer which allocates in the heap.
@@ -116,9 +129,11 @@ void sendData() {
   JsonObject& root = jsonBuffer.createObject();
   JsonObject& measure = root.createNestedObject("Measure");
   measure["Name"] = "my.org/measure/Measure_Test";
-  measure["MeasureType"] = "int64";
-  measure["MeasureValue"] = "9";
+  measure["Measurement"] = "9";
 
+  JsonArray& tagValues = root.createNestedArray("TagKeys");
+  tagValues.add("DeviceId");
+  tagValues.add("SampleDate");
   JsonArray& tagValues = root.createNestedArray("TagValues");
   tagValues.add("Arduino-1");
   tagValues.add("2018-07-02");
