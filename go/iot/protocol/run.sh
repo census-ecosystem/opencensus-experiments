@@ -4,8 +4,8 @@ if [ "$#" -ne 3 ]; then
   echo "First is the hostname, second is the ipaddress, third is the ssh password"
   exit -1
 fi
-CGO_ENABLED=1 GOARM=7 GOARCH=arm GOOS=linux CC=arm-linux-gnueabihf-gcc go build ./examples/ProtocolTest.go
+CGO_ENABLED=1 GOARM=7 GOARCH=arm GOOS=linux CC=arm-linux-gnueabihf-gcc go build ./examples/pi/ProtocolTest.go
 sshpass -p $3 ssh $1@$2 "rm -rf /home/pi/ProtocolTest"
 sshpass -p $3 scp ./ProtocolTest $1@$2:~/
-#sshpass -p $3 ssh $1@$2 "/home/pi/ProtocolTest"
-#rm -rf ./main
+sshpass -p $3 ssh $1@$2 "/home/pi/ProtocolTest &"
+rm -rf ./main

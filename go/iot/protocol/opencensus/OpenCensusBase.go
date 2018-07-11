@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package openCensus
+package opencensus
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -101,21 +101,21 @@ func (census *OpenCensusBase) insertTag(tagPairs map[string]interface{}) (contex
 	)
 	return ctx, tagExist, err
 }
-func (census *OpenCensusBase) Record(arguments *Protocol.MeasureArgument) (int, error) {
+func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) (int, error) {
 	measureName := arguments.Name
 	if census.containsMeasure(measureName) == false {
-		return Protocol.UNREGISTERMEASURE, errors.Errorf("Measurement is not registered")
+		return protocol.UNREGISTERMEASURE, errors.Errorf("Measurement is not registered")
 	} else {
 		measure := census.measureMap[measureName]
 
 		ctx, tagExist, err := census.insertTag(arguments.Tag)
 
 		if err != nil {
-			return Protocol.FAIL, nil
+			return protocol.FAIL, nil
 		}
 
 		if value, err := strconv.ParseFloat(arguments.MeasureValue, 64); err != nil {
-			return Protocol.FAIL, errors.Errorf("Could not Parse the Value: %s because %s",
+			return protocol.FAIL, errors.Errorf("Could not Parse the Value: %s because %s",
 				arguments.MeasureValue, err.Error())
 		} else {
 			log.Printf("Record Data %v", value)
@@ -125,14 +125,14 @@ func (census *OpenCensusBase) Record(arguments *Protocol.MeasureArgument) (int, 
 			case *stats.Int64Measure:
 				stats.Record(ctx, vv.M(int64(value)))
 			default:
-				return Protocol.FAIL, errors.Errorf("Unsupported Measure Type")
+				return protocol.FAIL, errors.Errorf("Unsupported Measure Type")
 			}
 		}
 
 		if tagExist {
-			return Protocol.OK, nil
+			return protocol.OK, nil
 		} else {
-			return Protocol.UNREGISTERTAG, errors.Errorf("Tag key doesn't exist.")
+			return protocol.UNREGISTERTAG, errors.Errorf("Tag key doesn't exist.")
 		}
 	}
 }

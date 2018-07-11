@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package openCensus
+package opencensus
 
 import (
 	"bufio"
@@ -22,7 +22,7 @@ import (
 	"time"
 	"fmt"
 
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/huin/goserial"
 )
 
@@ -36,13 +36,13 @@ type Slave struct {
 	sender io.ReadWriteCloser
 }
 
-func (slave *Slave) notifyCensusToRecord(arguments *Protocol.MeasureArgument) {
+func (slave *Slave) notifyCensusToRecord(arguments *protocol.MeasureArgument) {
 	for _, census := range slave.listeners {
 		code, err := census.Record(arguments)
 		if err != nil {
 			slave.respond(code, err.Error())
 		} else {
-			slave.respond(Protocol.OK, "Record Successfully")
+			slave.respond(protocol.OK, "Record Successfully")
 			log.Println("Record Successfull!")
 		}
 	}
@@ -65,7 +65,7 @@ func (slave *Slave) Initialize(config *goserial.Config) error {
 }
 
 func (slave *Slave) respond(code int, info string) {
-	response := Protocol.Response{code, info}
+	response := protocol.Response{code, info}
 	b, err := json.Marshal(response)
 	if err != nil {
 		log.Fatal("Could not encode the project\n")
@@ -88,7 +88,7 @@ func (slave *Slave) Collect(period time.Duration) {
 				//TODO: The length of the json is bigger than the buffer size
 				continue
 			} else {
-				var argument Protocol.MeasureArgument
+				var argument protocol.MeasureArgument
 				decodeErr := json.Unmarshal(input, &argument)
 				if decodeErr != nil {
 					log.Println(decodeErr)

@@ -20,13 +20,13 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/openCensus"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/opencensus"
 	"github.com/huin/goserial"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
-	"fmt"
 )
 
 
@@ -58,7 +58,7 @@ func main() {
 	} else {
 		log.Printf("Project Id is set to be %s\n", projectId)
 	}
-	var census openCensus.OpenCensusBase
+	var census opencensus.OpenCensusBase
 	census.Initialize(projectId, reportPeriod)
 	census.ViewRegistration(&view.View{
 		Name:        "opencensus.io/views/protocol_test",
@@ -70,7 +70,7 @@ func main() {
 
 	for _, slaveName := range findArduino(){
 		c := &goserial.Config{Name: slaveName, Baud: 9600}
-		var slave openCensus.Slave
+		var slave opencensus.Slave
 		slave.Initialize(c)
 		slave.Subscribe(census)
 		slave.Collect(2 * time.Second)
