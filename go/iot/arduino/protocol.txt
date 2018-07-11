@@ -40,14 +40,17 @@ After the registration, the Raspberry Pi would make a response to the record req
 
 Typical example for the response by Raspberry Pi would be as below:
 {
-	"Code": 200 or 404
+	"Code": 200 or 404 or 501
 	"Info": "Record Successfully!" or "Registration Not Finished" or ...
 }
 
 In the following cases Pi would make response with the Code 404:
+    1. Pi could not parse the encapsulated data because of the format error.
+    2. The number of tag keys is not equal to the number of tag values.
+
+In the following case Pi would make response with the Code 501:
     1. The measure doesn't bind to any views.
-    2. Pi could not parse the encapsulated data because of the format error.
-    3. The number of tag keys is not equal to the number of tag values.
+
 
 When the Pi parses and records data successfully, it would make response with the Code 200.
 

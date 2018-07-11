@@ -18,6 +18,7 @@
 
 #define OK 200
 #define FAIL 404
+#define MEASUREUNREG 501
 #define BUFFER_SIZE 256
 #define JSON_BUFFER_SIZE 200
 
@@ -58,9 +59,16 @@ void request(void (*func)()) {
     //Serial.print(code);
     //Serial.print(" info: ");
     //Serial.println(info);
-    if (code != OK){
-      // If it receives a negative response, it would delay for one second
-      delay(1000);
+    switch (code){
+      case FAIL:
+        delay(1000);
+      case MEASUREUNREG:
+        exit(-1);
+      case OK:
+        break;
+      default:
+        exit(-1);
+        //TODO
     }
   } while (code != OK);
 }
@@ -141,3 +149,4 @@ void sendData() {
 
   Serial.flush();
 }
+
