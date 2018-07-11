@@ -26,7 +26,6 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
-	"sync"
 )
 
 const (
@@ -35,20 +34,18 @@ const (
 )
 
 type OpenCensusBase struct {
-	status      int // Flag to represent whether the system is initialized or not
-	mu sync.Mutex
-	ctx         context.Context
-	viewNameSet map[string]int           // avoid registering the same view.
-	measureMap  map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
-	tagKeyMap   map[string][]tag.Key
+	status     int // Flag to represent whether the system is initialized or not
+	ctx        context.Context
+	measureMap map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
+	// TODO: What if different views share the same tag key
+	tagKeyMap map[string]tag.Key
 }
 
 func (census *OpenCensusBase) Initialize(projectId string, reportPeriod int) {
 	census.status = 0
 	census.ctx = context.Background()
-	census.viewNameSet = make(map[string]int)
 	census.measureMap = make(map[string]stats.Measure)
-	census.tagKeyMap = make(map[string][]tag.Key)
+	census.tagKeyMap = make(map[string]tag.Key)
 	exporter, err := stackdriver.NewExporter(stackdriver.Options{
 		ProjectID: projectId, // Google Cloud Console project ID.
 	})
@@ -59,12 +56,6 @@ func (census *OpenCensusBase) Initialize(projectId string, reportPeriod int) {
 	view.SetReportingPeriod(time.Second * time.Duration(reportPeriod))
 }
 
-// Return whether the view has already been registered
-func (census *OpenCensusBase) containsView(name string) bool {
-	_, ok := census.viewNameSet[name]
-	return ok
-}
-
 func (census *OpenCensusBase) containsMeasure(name string) bool {
 	_, ok := census.measureMap[name]
 	return ok
@@ -72,9 +63,6 @@ func (census *OpenCensusBase) containsMeasure(name string) bool {
 
 // Given the censusArgument, initialize the OpenCensus framework
 func (census *OpenCensusBase) ViewRegistration(myView *(view.View)) error {
-	if census.containsView(myView.Name) == true {
-		return errors.Errorf("View has been registered bofore\n")
-	}
 	if census.containsMeasure(myView.Measure.Name()) == true {
 		return errors.Errorf("Measure has been registered bofore\n")
 	}
@@ -82,79 +70,69 @@ func (census *OpenCensusBase) ViewRegistration(myView *(view.View)) error {
 	if err := view.Register(myView); err != nil {
 		return err
 	} else {
-		census.viewNameSet[myView.Name] = 1
 		census.measureMap[myView.Measure.Name()] = myView.Measure
-		// One Measure Correspond to One []TagKey
-		census.tagKeyMap[myView.Measure.Name()] = myView.TagKeys
+		// Store the tag name
+		var tagKeys = myView.TagKeys
+		for _, key := range tagKeys {
+			census.tagKeyMap[key.Name()] = key
+		}
 	}
-	// There should be some concurrency control.
-	census.mu.Lock()
-	defer census.mu.Unlock()
-	census.status = 1
 	return nil
 }
 
-func (census *OpenCensusBase) Record(arguments *Protocol.MeasureArgument) error {
-	census.mu.Lock()
-	if census.status == 0 {
-		census.mu.Unlock()
-		return errors.Errorf("Registration Unfinished!")
+func (census *OpenCensusBase) insertTag(tagPairs map[string]interface{}) (context.Context, bool, error) {
+	// Insert tag values to the context if it exists
+	// Normally the program returns the context and nil error
+	// But when any tag key doesn't exist, we still return the context but don't insert that tag key
+	var mutators []tag.Mutator
+	var tagExist = true
+	for key, value := range tagPairs {
+		tagKey, ok := census.tagKeyMap[key]
+		if ok == true {
+			// The tag key exists
+			// TODO: doesn't check the type of the value
+			mutators = append(mutators, tag.Insert(tagKey, value.(string)))
+		} else {
+			tagExist = false
+		}
 	}
-	census.mu.Unlock()
+	ctx, err := tag.New(census.ctx,
+		mutators...,
+	)
+	return ctx, tagExist, err
+}
+func (census *OpenCensusBase) Record(arguments *Protocol.MeasureArgument) (int, error) {
 	measureName := arguments.Name
 	if census.containsMeasure(measureName) == false {
-		return errors.Errorf("Measurement is not registered")
+		return Protocol.UNREGISTERMEASURE, errors.Errorf("Measurement is not registered")
 	} else {
 		measure := census.measureMap[measureName]
 
-		// Insert tag values to the context if it exists
-		tagKeys := census.tagKeyMap[measureName]
-		if len(tagKeys) < len(arguments.TagValues) {
-			return errors.Errorf("Number of tag values is more than number of tag keys")
-		}
-		var mutators []tag.Mutator
-		for index, tagValue := range arguments.TagValues {
-			if tagValue != "" {
-				mutators = append(mutators, tag.Insert(tagKeys[index], tagValue))
-			}
-		}
-		ctx, err := tag.New(census.ctx,
-			mutators...,
-		)
+		ctx, tagExist, err := census.insertTag(arguments.Tag)
+
 		if err != nil {
-			return err
+			return Protocol.FAIL, nil
 		}
 
-		switch arguments.MeasureType {
-		case "float64":
-			if floatMeasure, ok := measure.(*stats.Float64Measure); ok == true {
-				value, err := strconv.ParseFloat(arguments.MeasureValue, 64)
-				if err != nil {
-					return errors.Errorf("Could not Parse the Value: %s because %s",
-						arguments.MeasureValue, err.Error())
-				} else {
-					log.Printf("Record Data %v", value)
-					stats.Record(ctx, floatMeasure.M(float64(value)))
-				}
-			} else {
-				return errors.Errorf("Measure Assertion Fails")
+		if value, err := strconv.ParseFloat(arguments.MeasureValue, 64); err != nil {
+			return Protocol.FAIL, errors.Errorf("Could not Parse the Value: %s because %s",
+				arguments.MeasureValue, err.Error())
+		} else {
+			log.Printf("Record Data %v", value)
+			switch vv := measure.(type) {
+			case *stats.Float64Measure:
+				stats.Record(ctx, vv.M(float64(value)))
+			case *stats.Int64Measure:
+				stats.Record(ctx, vv.M(int64(value)))
+			default:
+				return Protocol.FAIL, errors.Errorf("Unsupported Measure Type")
 			}
-		case "int64":
-			if intMeasure, ok := measure.(*stats.Int64Measure); ok == true {
-				value, err := strconv.ParseFloat(arguments.MeasureValue, 64)
-				if err != nil {
-					return errors.Errorf("Could not Parse the Value: %s because %s",
-						arguments.MeasureValue, err.Error())
-				} else {
-					log.Printf("Record Data %v", value)
-					stats.Record(ctx, intMeasure.M(int64(value)))
-				}
-			} else {
-				return errors.Errorf("Measure Assertion Fails")
-			}
-		default:
-			return errors.Errorf("Unsupported Measure Type")
+		}
+
+		if tagExist {
+			return Protocol.OK, nil
+		} else {
+			return Protocol.UNREGISTERTAG, errors.Errorf("Tag key doesn't exist.")
 		}
 	}
-	return nil
 }

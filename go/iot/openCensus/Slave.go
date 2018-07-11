@@ -20,12 +20,15 @@ import (
 	"io"
 	"log"
 	"time"
+	"fmt"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/Protocol"
 	"github.com/huin/goserial"
-	"fmt"
 )
 
+const (
+	SETUPDURATION = 2
+)
 type Slave struct {
 	listeners []*OpenCensusBase
 	reader    *bufio.Reader
@@ -35,9 +38,9 @@ type Slave struct {
 
 func (slave *Slave) notifyCensusToRecord(arguments *Protocol.MeasureArgument) {
 	for _, census := range slave.listeners {
-		err := census.Record(arguments)
+		code, err := census.Record(arguments)
 		if err != nil {
-			slave.respond(Protocol.FAIL, err.Error())
+			slave.respond(code, err.Error())
 		} else {
 			slave.respond(Protocol.OK, "Record Successfully")
 			log.Println("Record Successfull!")
@@ -52,7 +55,7 @@ func (slave *Slave) Subscribe(listener OpenCensusBase) {
 func (slave *Slave) Initialize(config *goserial.Config) error {
 	if s, err := goserial.OpenPort(config); err == nil {
 		// It should wait for some time to let the serial initialization
-		time.Sleep(2 * time.Second)
+		time.Sleep(SETUPDURATION * time.Second)
 		slave.reader = bufio.NewReader(s)
 		slave.sender = s
 		return nil
@@ -73,7 +76,7 @@ func (slave *Slave) respond(code int, info string) {
 }
 
 func (slave *Slave) Collect(period time.Duration) {
-	go func(){
+	go func() {
 		for range time.Tick(period) {
 			input, isPrefix, err := slave.reader.ReadLine()
 			fmt.Println(string(input))
