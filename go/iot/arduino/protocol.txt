@@ -1,0 +1,74 @@
+Protocol
+
+For raspberry Pi, it would firstly register the views and exporters. Only after the initial setup that Pi could respond
+to the record request from the arduino.
+
+For Arduino, after it collects sensor data, it encapsulates the sensor data based on the required Json format and sends
+record request to the Pi. Afterwards it could not send another record request until it receives a positive response from
+the Pi. If it receives a negative response, it would retry sending another request and the previous request would be
+dropped. Temporarily the arduino would block when waiting for the response. Since the Arduino doesn't support
+multi-thread, it would stop collecting data when blocked.
+
+We might add time-out and exponential back-off mechanism in the future.
+
+Every request or response should be ended with a newline character '\n'.
+
+The following example could illustrate the process.
+
+Raspberry Pi:
+
+When the program starts, the following view would be registered.
+
+	ProjectId : project-id
+	View:
+		Name : "opencensus.io/views/protocol_test"
+		Description : "View for Protocol Test"
+		Aggregation :
+        		AggregationType : view.LastValue()
+        		AggregationValue : []
+        Measure:
+        		Name : "my.org/measure/Measure_Test"
+        		Description : "Measure Test"
+        		Unit : 1
+        		MeasureType: int64
+        TagKeys: ["DeviceId", "SampleDate"]
+	ReportPeriod : 1
+
+Before the registration, the Raspberry Pi would not make any response to the the request from Arduino.
+
+After the registration, the Raspberry Pi would make a response to the record request from Arduino.
+
+Typical example for the response by Raspberry Pi would be as below:
+{
+	"Code": 200 or 404 or 501
+	"Info": "Record Successfully!" or "Registration Not Finished" or ...
+}
+
+In the following cases Pi would make response with the Code 404:
+    1. Pi could not parse the encapsulated data because of the format error.
+
+In the following case Pi would make response with the Code 501:
+    1. The measure doesn't bind to any views.
+
+
+When the Pi parses and records data successfully, it would make response with the Code 200.
+
+However, in the following corner cases Pi would still respond with Code 200:
+    1. The tag keys in the data request don't bind to any views.
+        In this case, the Pi would record the data without tag key/value.
+    2. The exporter could not work normally such as the backend server crashes.
+        In this case, the Pi would record the data and respond positively.
+
+
+Arduino:
+
+Every time it collects sensor data, it needs to encapsulate it into a record request based on the following JSON format.
+{
+
+	"Name": "my.org/measure/Measure_Test"
+	"Measurement": "1"
+	"Tag": {
+	    "DeviceId": "Arduino-1
+	    "SampleDate": "2017-01-05"
+	}
+}
