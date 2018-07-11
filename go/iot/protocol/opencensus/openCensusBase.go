@@ -28,11 +28,6 @@ import (
 	"go.opencensus.io/tag"
 )
 
-const (
-	FLOAT = 0
-	INT   = 1
-)
-
 type OpenCensusBase struct {
 	ctx        context.Context
 	measureMap map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
