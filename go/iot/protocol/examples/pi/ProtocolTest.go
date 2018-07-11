@@ -15,12 +15,12 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"time"
-	"fmt"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/opencensus"
 	"github.com/huin/goserial"
@@ -28,7 +28,6 @@ import (
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
 )
-
 
 var (
 	testMeasure  = stats.Float64("opencensus.io/measure/Temperature", "Measure Test", stats.UnitDimensionless)
@@ -44,7 +43,7 @@ func findArduino() []string {
 	for _, f := range contents {
 		if strings.Contains(f.Name(), "tty.usbserial") ||
 			strings.Contains(f.Name(), "ttyACM") {
-			arduinoList = append(arduinoList, "/dev/" + f.Name())
+			arduinoList = append(arduinoList, "/dev/"+f.Name())
 		}
 	}
 
@@ -68,14 +67,14 @@ func main() {
 		TagKeys:     getExampleKey(),
 	})
 
-	for _, slaveName := range findArduino(){
+	for _, slaveName := range findArduino() {
 		c := &goserial.Config{Name: slaveName, Baud: 9600}
 		var slave opencensus.Slave
 		slave.Initialize(c)
 		slave.Subscribe(census)
 		slave.Collect(2 * time.Second)
 	}
-	for true{
+	for true {
 		fmt.Print()
 	}
 

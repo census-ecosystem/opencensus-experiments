@@ -34,7 +34,6 @@ const (
 )
 
 type OpenCensusBase struct {
-	status     int // Flag to represent whether the system is initialized or not
 	ctx        context.Context
 	measureMap map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
 	// TODO: What if different views share the same tag key
@@ -42,7 +41,6 @@ type OpenCensusBase struct {
 }
 
 func (census *OpenCensusBase) Initialize(projectId string, reportPeriod int) {
-	census.status = 0
 	census.ctx = context.Background()
 	census.measureMap = make(map[string]stats.Measure)
 	census.tagKeyMap = make(map[string]tag.Key)
@@ -114,11 +112,11 @@ func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) (int, 
 			return protocol.FAIL, nil
 		}
 
-		if value, err := strconv.ParseFloat(arguments.MeasureValue, 64); err != nil {
+		if value, err := strconv.ParseFloat(arguments.Measurement, 64); err != nil {
 			return protocol.FAIL, errors.Errorf("Could not Parse the Value: %s because %s",
-				arguments.MeasureValue, err.Error())
+				arguments.Measurement, err.Error())
 		} else {
-			log.Printf("Record Data %v", value)
+			//log.Printf("Record Data %v", value)
 			switch vv := measure.(type) {
 			case *stats.Float64Measure:
 				stats.Record(ctx, vv.M(float64(value)))

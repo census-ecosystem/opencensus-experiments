@@ -43,7 +43,6 @@ func (slave *Slave) notifyCensusToRecord(arguments *protocol.MeasureArgument) {
 			slave.respond(code, err.Error())
 		} else {
 			slave.respond(protocol.OK, "Record Successfully")
-			log.Println("Record Successfull!")
 		}
 	}
 }
@@ -72,7 +71,7 @@ func (slave *Slave) respond(code int, info string) {
 	}
 	slave.sender.Write([]byte(b))
 	slave.sender.Write([]byte("\n"))
-	log.Printf("Send Response: Code %d Info %s\n", response.Code, response.Info)
+	//log.Printf("Send Response: Code %d Info %s\n", response.Code, response.Info)
 }
 
 func (slave *Slave) Collect(period time.Duration) {
@@ -81,7 +80,7 @@ func (slave *Slave) Collect(period time.Duration) {
 			input, isPrefix, err := slave.reader.ReadLine()
 			fmt.Println(string(input))
 			if err != nil {
-				log.Println("Could Not Read the data from the Port because %s", err.Error())
+				log.Printf("Could Not Read the data from the Port because %s", err.Error())
 				continue
 			}
 			if isPrefix == true {
@@ -91,7 +90,7 @@ func (slave *Slave) Collect(period time.Duration) {
 				var argument protocol.MeasureArgument
 				decodeErr := json.Unmarshal(input, &argument)
 				if decodeErr != nil {
-					log.Println(decodeErr)
+					slave.respond(protocol.FAIL, "Json Object could not be unmarshalled")
 				} else {
 					slave.notifyCensusToRecord(&argument)
 				}

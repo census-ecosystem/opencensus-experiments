@@ -23,7 +23,7 @@ const (
 
 type MeasureArgument struct {
 	Name         string
-	MeasureValue string
+	Measurement string
 	Tag          map[string]interface{}
 }
 
