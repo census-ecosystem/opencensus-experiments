@@ -13,6 +13,13 @@
 // limitations under the License.
 //
 // This program shows how to send requests of registration and sending data to the raspberry Pi based on the protocols.
+/*
+ Hardware Connections (Breakoutboard to Arduino):
+ -VCC = 3.3V
+ -GND = GND
+ -SDA = A4 (use inline 330 ohm resistor if your board is 5V)
+ -SCL = A5 (use inline 330 ohm resistor if your board is 5V)
+ */
 
 #include <ArduinoJson.h>
 
@@ -21,10 +28,18 @@
 #define MEASUREUNREG 501
 #define BUFFER_SIZE 256
 #define JSON_BUFFER_SIZE 200
+#include <Wire.h>
+#include "SparkFunHTU21D.h"
+#include "DHT.h"
+
+//Create an instance of the object
+//DHT dht;
+HTU21D myHumidity;
 
 void setup() {
   // Initialize Serial port
   Serial.begin(9600);
+  myHumidity.begin();
   while (!Serial) continue;
 }
 
@@ -62,6 +77,7 @@ void request(void (*func)()) {
     switch (code){
       case FAIL:
         delay(1000);
+        break;
       case MEASUREUNREG:
         exit(-1);
       case OK:
@@ -135,12 +151,13 @@ void sendData() {
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
   JsonObject& root = jsonBuffer.createObject();
-  root["Name"] = "my.org/measure/Measure_Test";
-  root["Measurement"] = "9";
+  root["Name"] = "opencensus.io/measure/Temperature";
+  float temp = myHumidity.readTemperature();
+  root["Measurement"] = String(temp);
 
   JsonObject& tagPairs = root.createNestedObject("Tag");
-  tagPairs["DeviceId"] = "Arduino-1";
-  tagPairs["SampleDate"] = "2018-07-02";
+  tagPairs["ArduinoId"] = "Arduino-1";
+  tagPairs["Date"] = "2018-07-02";
 
   root.printTo(Serial);
 
@@ -148,4 +165,3 @@ void sendData() {
 
   Serial.flush();
 }
-
