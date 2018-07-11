@@ -30,7 +30,14 @@ import (
 )
 
 var (
-	testMeasure  = stats.Float64("opencensus.io/measure/Temperature", "Measure Test", stats.UnitDimensionless)
+	temperatureMeasure  = stats.Float64("opencensus.io/measure/Temperature", "Measure Test", stats.UnitDimensionless)
+	temperatureView = &view.View{
+		Name:        "opencensus.io/views/protocol_test",
+		Description: "View for Protocol Test",
+		Aggregation: view.LastValue(),
+		Measure:     temperatureMeasure,
+		TagKeys:     getExampleKey(),
+	}
 	reportPeriod = 1
 	ardiunoKey   tag.Key
 	dateKey      tag.Key
@@ -59,17 +66,12 @@ func main() {
 	}
 	var census opencensus.OpenCensusBase
 	census.Initialize(projectId, reportPeriod)
-	census.ViewRegistration(&view.View{
-		Name:        "opencensus.io/views/protocol_test",
-		Description: "View for Protocol Test",
-		Aggregation: view.LastValue(),
-		Measure:     testMeasure,
-		TagKeys:     getExampleKey(),
-	})
+	census.ViewRegistration(temperatureView)
 
 	for _, slaveName := range findArduino() {
 		c := &goserial.Config{Name: slaveName, Baud: 9600}
 		var slave opencensus.Slave
+		// Every slave represents one Arduino
 		slave.Initialize(c)
 		slave.Subscribe(census)
 		slave.Collect(2 * time.Second)
