@@ -46,7 +46,6 @@ Typical example for the response by Raspberry Pi would be as below:
 
 In the following cases Pi would make response with the Code 404:
     1. Pi could not parse the encapsulated data because of the format error.
-    2. The number of tag keys is not equal to the number of tag values.
 
 In the following case Pi would make response with the Code 501:
     1. The measure doesn't bind to any views.
