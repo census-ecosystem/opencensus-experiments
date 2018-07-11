@@ -135,9 +135,8 @@ void sendData() {
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
   JsonObject& root = jsonBuffer.createObject();
-  JsonObject& measure = root.createNestedObject("Measure");
-  measure["Name"] = "my.org/measure/Measure_Test";
-  measure["Measurement"] = "9";
+  root["Name"] = "my.org/measure/Measure_Test";
+  root["Measurement"] = "9";
 
   JsonObject& tagPairs = root.createNestedObject("Tag");
   tagPairs["DeviceId"] = "Arduino-1";

@@ -64,10 +64,9 @@ Arduino:
 
 Every time it collects sensor data, it needs to encapsulate it into a record request based on the following JSON format.
 {
-	"Measure":{
-		"Name": "my.org/measure/Measure_Test"
-		"Measurement": "1"
-	}
+
+	"Name": "my.org/measure/Measure_Test"
+	"Measurement": "1"
 	"Tag": {
 	    "DeviceId": "Arduino-1
 	    "SampleDate": "2017-01-05"
