@@ -1,8 +1,8 @@
 ### Introduction
 
-This sub-project, as a prototype application of openCensus on the IoT industry, builds a demo for applying the
-openCensus framework on the IoT platform. In this project, we use the Raspberry Pi to collect data from some sensors and
-export them to the back-end stackDriver server for visualization and persistence.
+This sub-project, as a prototype application of OpenCensus on the IoT industry, builds a demo for applying the
+OpenCensus framework on the IoT platform. In this project, we use the Raspberry Pi to collect data from some sensors and
+export them to the back-end StackDriver server for visualization and persistence.
 
 ### Installation
 

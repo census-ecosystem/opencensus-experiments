@@ -5,8 +5,8 @@ of the costs. In this topology, there would be multiple slave nodes that consist
 master node, which would always be more powerful and expensive. In this way, we could improve the hardware resource
 utilization and decrease costs since slave nodes supporting simple hardware interface would be adequate for the sub-tasks.
 
-In this project, I design a protocol for the IoT systems with the above topology. It allows the slave nodes to transmit
-the collected information to the master node which runs the openCensus framework. Systems that supports this protocol
+In this project, I designed a protocol for the IoT systems with the above topology. It allows the slave nodes to transmit
+the collected information to the master node which runs the OpenCensus framework. Systems that supports this protocol
 would have great flexibility since any MCUs could be the slave node if it follows the protocol.
 
 ### Installation
