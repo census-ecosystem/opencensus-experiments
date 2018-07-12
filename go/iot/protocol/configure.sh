@@ -2,7 +2,7 @@
 
 if [ "$#" -ne 3 ]; then
   echo "Illegal number of parameters"
-  echo "First is the hostname, second is the ipaddress, third is the ssh password"
+  echo "First is the hostname, second is the ip address, third is the ssh password"
   exit -1
 fi
 
@@ -14,7 +14,7 @@ go get -u go get -u go.opencensus.io
 
 sudo apt-get install sshpass
 
-cd $(go env GOPATH)/src/github.com/census-ecosystem/oepncensus-experiments/go/iot/
+cd $(go env GOPATH)/src/github.com/census-ecosystem/oepncensus-experiments/go/iot/protocol
 
 sudo apt-get install gcc-arm-linux-gnueabihf
 
