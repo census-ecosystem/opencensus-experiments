@@ -91,9 +91,9 @@ var (
 
 	// Apply two kinds of aggregation type to the same metric in order to see the difference.
 	soundStrengthMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c", "strength of sound", stats.UnitDimensionless)
-	lightStrengthMeasure     = stats.Int64("opencensus.io/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
-	humidityMeasure          = stats.Float64("opencensus.io/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure       = stats.Float64("opencensus.io/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	lightStrengthMeasure = stats.Int64("opencensus.io/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
+	humidityMeasure      = stats.Float64("opencensus.io/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure   = stats.Float64("opencensus.io/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	soundSamplePeriod       = 50 * time.Millisecond
 	temperatureSamplePeriod = 5 * time.Second
