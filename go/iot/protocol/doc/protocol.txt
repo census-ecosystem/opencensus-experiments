@@ -21,7 +21,7 @@ When the program starts, the following view would be registered.
 
 	ProjectId : project-id
 	View:
-		Name : "opencensus.io/views/protocol_test"
+		Name : "opencensus.io/views/p rotocol_test"
 		Description : "View for Protocol Test"
 		Aggregation :
         		AggregationType : view.LastValue()
@@ -40,7 +40,7 @@ After the registration, the Raspberry Pi would make a response to the record req
 
 Typical example for the response by Raspberry Pi would be as below:
 {
-	"Code": 200 or 404 or 501
+	"Code": 200 or 404 or 501 or 502
 	"Info": "Record Successfully!" or "Registration Not Finished" or ...
 }
 
@@ -49,14 +49,16 @@ In the following cases Pi would make response with the Code 404:
 
 In the following case Pi would make response with the Code 501:
     1. The measure doesn't bind to any views.
+        In this case, the Pi would ignore the request.
 
+In the following case Pi would make response with the Code 502:
+    1. The tag keys in the data request don't bind to any views.
+        In this case, the Pi would record the data without tag key/value.
 
 When the Pi parses and records data successfully, it would make response with the Code 200.
 
 However, in the following corner cases Pi would still respond with Code 200:
-    1. The tag keys in the data request don't bind to any views.
-        In this case, the Pi would record the data without tag key/value.
-    2. The exporter could not work normally such as the backend server crashes.
+    1. The exporter could not work normally such as the backend server crashes.
         In this case, the Pi would record the data and respond positively.
 
 

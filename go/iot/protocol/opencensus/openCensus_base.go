@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	"fmt"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/pkg/errors"
 	"go.opencensus.io/stats"
@@ -29,16 +30,16 @@ import (
 )
 
 type OpenCensusBase struct {
-	ctx        context.Context
-	measureMap map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
+	ctx                context.Context
+	registeredMeasures map[string]stats.Measure // Store all the measure based on their Name. Used for the future record
 	// TODO: What if different views share the same tag key
-	tagKeyMap map[string]tag.Key
+	registeredTagKeys map[string]tag.Key
 }
 
 func (census *OpenCensusBase) Initialize(projectId string, reportPeriod int) {
 	census.ctx = context.Background()
-	census.measureMap = make(map[string]stats.Measure)
-	census.tagKeyMap = make(map[string]tag.Key)
+	census.registeredMeasures = make(map[string]stats.Measure)
+	census.registeredTagKeys = make(map[string]tag.Key)
 	exporter, err := stackdriver.NewExporter(stackdriver.Options{
 		ProjectID: projectId, // Google Cloud Console project ID.
 	})
@@ -50,41 +51,51 @@ func (census *OpenCensusBase) Initialize(projectId string, reportPeriod int) {
 }
 
 func (census *OpenCensusBase) containsMeasure(name string) bool {
-	_, ok := census.measureMap[name]
+	_, ok := census.registeredMeasures[name]
 	return ok
+}
+
+func (census *OpenCensusBase) isMeasureConflict(measure *stats.Measure) bool {
+	var myMeasure = census.registeredMeasures[(*measure).Name()]
+	if myMeasure.Description() != (*measure).Description() || myMeasure.Unit() != (*measure).Unit() {
+		return true
+	}
+	return false
 }
 
 // Given the censusArgument, initialize the OpenCensus framework
 func (census *OpenCensusBase) ViewRegistration(myView *(view.View)) error {
-	if census.containsMeasure(myView.Measure.Name()) == true {
-		return errors.Errorf("Measure has been registered bofore\n")
-	}
 	// The view has never been registered before.
 	if err := view.Register(myView); err != nil {
 		return err
 	} else {
-		census.measureMap[myView.Measure.Name()] = myView.Measure
+		if census.containsMeasure(myView.Measure.Name()) {
+			if flag := census.isMeasureConflict(&myView.Measure); flag == true {
+				return errors.Errorf("Different measures share the same name!")
+			}
+		} else {
+			census.registeredMeasures[myView.Measure.Name()] = myView.Measure
+		}
 		// Store the tag name
 		var tagKeys = myView.TagKeys
 		for _, key := range tagKeys {
-			census.tagKeyMap[key.Name()] = key
+			census.registeredTagKeys[key.Name()] = key
 		}
 	}
 	return nil
 }
 
-func (census *OpenCensusBase) insertTag(tagPairs map[string]interface{}) (context.Context, bool, error) {
+func (census *OpenCensusBase) insertTag(tagPairs map[string]string) (context.Context, bool, error) {
 	// Insert tag values to the context if it exists
 	// Normally the program returns the context and nil error
 	// But when any tag key doesn't exist, we still return the context but don't insert that tag key
 	var mutators []tag.Mutator
 	var tagExist = true
 	for key, value := range tagPairs {
-		tagKey, ok := census.tagKeyMap[key]
+		tagKey, ok := census.registeredTagKeys[key]
 		if ok == true {
 			// The tag key exists
-			// TODO: doesn't check the type of the value
-			mutators = append(mutators, tag.Insert(tagKey, value.(string)))
+			mutators = append(mutators, tag.Insert(tagKey, value))
 		} else {
 			tagExist = false
 		}
@@ -94,22 +105,22 @@ func (census *OpenCensusBase) insertTag(tagPairs map[string]interface{}) (contex
 	)
 	return ctx, tagExist, err
 }
-func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) (int, error) {
+func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) *protocol.Response {
 	measureName := arguments.Name
 	if census.containsMeasure(measureName) == false {
-		return protocol.UNREGISTERMEASURE, errors.Errorf("Measurement is not registered")
+		return &protocol.Response{protocol.UNREGISTERMEASURE, "Value is not registered"}
 	} else {
-		measure := census.measureMap[measureName]
+		measure := census.registeredMeasures[measureName]
 
-		ctx, tagExist, err := census.insertTag(arguments.Tag)
+		ctx, tagExist, err := census.insertTag(arguments.Tags)
 
 		if err != nil {
-			return protocol.FAIL, nil
+			return &protocol.Response{protocol.FAIL, err.Error()}
 		}
 
-		if value, err := strconv.ParseFloat(arguments.Measurement, 64); err != nil {
-			return protocol.FAIL, errors.Errorf("Could not Parse the Value: %s because %s",
-				arguments.Measurement, err.Error())
+		if value, err := strconv.ParseFloat(arguments.Value, 64); err != nil {
+			info := fmt.Sprintf("Could not parse the value: %s because %s", arguments.Value, err.Error())
+			return &protocol.Response{protocol.FAIL, info}
 		} else {
 			//log.Printf("Record Data %v", value)
 			switch vv := measure.(type) {
@@ -118,14 +129,14 @@ func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) (int, 
 			case *stats.Int64Measure:
 				stats.Record(ctx, vv.M(int64(value)))
 			default:
-				return protocol.FAIL, errors.Errorf("Unsupported Measure Type")
+				return &protocol.Response{protocol.FAIL, "Unsupported measure type"}
 			}
 		}
 
 		if tagExist {
-			return protocol.OK, nil
+			return &protocol.Response{protocol.OK, nil}
 		} else {
-			return protocol.UNREGISTERTAG, errors.Errorf("Tag key doesn't exist.")
+			return &protocol.Response{protocol.UNREGISTERTAG, "Tags key doesn't exist."}
 		}
 	}
 }
