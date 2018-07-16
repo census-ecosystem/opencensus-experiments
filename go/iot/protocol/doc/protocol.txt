@@ -21,7 +21,7 @@ When the program starts, the following view would be registered.
 
 	ProjectId : project-id
 	View:
-		Name : "opencensus.io/views/p rotocol_test"
+		Name : "opencensus.io/views/protocol_test"
 		Description : "View for Protocol Test"
 		Aggregation :
         		AggregationType : view.LastValue()
