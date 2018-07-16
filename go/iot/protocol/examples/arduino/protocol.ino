@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 // This program shows how to send requests of registration and sending data to the raspberry Pi based on the protocols.
-/*
- Hardware Connections (Breakoutboard to Arduino):
- -VCC = 3.3V
- -GND = GND
- -SDA = A4 (use inline 330 ohm resistor if your board is 5V)
- -SCL = A5 (use inline 330 ohm resistor if your board is 5V)
- */
+//
+// Hardware Connections (Breakoutboard to Arduino):
+// -VCC = 3.3V
+// -GND = GND
+// -SDA = A4 (use inline 330 ohm resistor if your board is 5V)
+// -SCL = A5 (use inline 330 ohm resistor if your board is 5V)
 
 #include <ArduinoJson.h>
 
