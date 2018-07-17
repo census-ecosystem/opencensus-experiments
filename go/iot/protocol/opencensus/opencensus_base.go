@@ -108,7 +108,7 @@ func (census *OpenCensusBase) insertTag(tagPairs map[string]string) (context.Con
 func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) *protocol.Response {
 	measureName := arguments.Name
 	if census.containsMeasure(measureName) == false {
-		return &protocol.Response{protocol.UNREGISTERMEASURE, "Value is not registered"}
+		return &protocol.Response{protocol.UNREGISTERMEASURE, "Measure is not registered"}
 	} else {
 		measure := census.registeredMeasures[measureName]
 
