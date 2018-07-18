@@ -30,8 +30,8 @@ import (
 )
 
 var (
-	temperatureMeasure  = stats.Float64("opencensus.io/measure/Temperature", "Temperature Measure", stats.UnitDimensionless)
-	temperatureView = &view.View{
+	temperatureMeasure = stats.Float64("opencensus.io/measure/Temperature", "Temperature Measure", stats.UnitDimensionless)
+	temperatureView    = &view.View{
 		Name:        "opencensus.io/views/protocol_demo",
 		Description: "View for Protocol demo",
 		Aggregation: view.LastValue(),

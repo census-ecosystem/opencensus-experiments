@@ -17,10 +17,10 @@ package opencensus
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/huin/goserial"
@@ -29,6 +29,7 @@ import (
 const (
 	SETUPDURATION = 2
 )
+
 type Slave struct {
 	listeners []*OpenCensusBase
 	reader    *bufio.Reader
