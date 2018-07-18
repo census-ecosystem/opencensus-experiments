@@ -43,7 +43,7 @@ var (
 	viewSoundDist = &view.View{
 		Name:        "opencensus.io/views/sound_strength_distribution",
 		Description: "sound strength distribution over time",
-		Measure:     soundStrengthDistMeasure,
+		Measure:     soundStrengthMeasure,
 		Aggregation: view.Distribution(0, 2, 4, 8, 16, 32, 64, 128),
 	}
 
@@ -53,7 +53,7 @@ var (
 	viewSoundLast = &view.View{
 		Name:        "opencensus.io/views/sound_strength_instant",
 		Description: "sound strength instantly over time",
-		Measure:     soundStrengthLastMeasure,
+		Measure:     soundStrengthMeasure,
 		Aggregation: view.LastValue(),
 	}
 
@@ -90,11 +90,10 @@ var (
 	}
 
 	// Apply two kinds of aggregation type to the same metric in order to see the difference.
-	soundStrengthDistMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_dist", "strength of sound", stats.UnitDimensionless)
-	soundStrengthLastMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c_last", "strength of sound", stats.UnitDimensionless)
-	lightStrengthMeasure     = stats.Int64("opencensus.io/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
-	humidityMeasure          = stats.Float64("opencensus.io/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
-	temperatureMeasure       = stats.Float64("opencensus.io/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
+	soundStrengthMeasure = stats.Int64("opencensus.io/measure/sound_strength_svl_mp1_7c3c", "strength of sound", stats.UnitDimensionless)
+	lightStrengthMeasure = stats.Int64("opencensus.io/measure/light_strength_svl_mp1_7c3c", "strength of light", stats.UnitDimensionless)
+	humidityMeasure      = stats.Float64("opencensus.io/measure/humidity_svl_mp1_7c3c", "humidity", stats.UnitDimensionless)
+	temperatureMeasure   = stats.Float64("opencensus.io/measure/temperature_svl_mp1_7c3c", "temperature", stats.UnitDimensionless)
 
 	soundSamplePeriod       = 50 * time.Millisecond
 	temperatureSamplePeriod = 5 * time.Second
@@ -158,8 +157,7 @@ func recordSound(ctx context.Context, soundSensor *aio.GroveSoundSensorDriver) {
 	if soundErr != nil {
 		log.Fatalf("Could not read value from sound sensors\n")
 	} else {
-		stats.Record(ctx, soundStrengthDistMeasure.M(int64(soundStrength)))
-		stats.Record(ctx, soundStrengthLastMeasure.M(int64(soundStrength)))
+		stats.Record(ctx, soundStrengthMeasure.M(int64(soundStrength)))
 		//log.Printf("Sound Strength: %d\n", soundStrength)
 	}
 }
