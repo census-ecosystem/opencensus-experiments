@@ -17,7 +17,6 @@ package opencensus
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"time"
@@ -27,6 +26,7 @@ import (
 )
 
 const (
+	// TODO: We could make it configurable in the future
 	SETUPDURATION = 2
 )
 
@@ -63,7 +63,7 @@ func (slave *Slave) Initialize(config *goserial.Config) error {
 func (slave *Slave) respond(response *protocol.Response) {
 	b, err := json.Marshal(response)
 	if err != nil {
-		log.Fatal("Could not encode the project\n")
+		log.Fatal("Could not encode the project because", err)
 	}
 	slave.sender.Write([]byte(b))
 	// Every response should be ended with the character '\n'
@@ -75,7 +75,7 @@ func (slave *Slave) Collect(period time.Duration) {
 	go func() {
 		for range time.Tick(period) {
 			input, isPrefix, err := slave.reader.ReadLine()
-			fmt.Println(string(input))
+			//fmt.Println(string(input))
 			if err != nil {
 				log.Printf("Could not read the data from the port because %s", err.Error())
 				continue

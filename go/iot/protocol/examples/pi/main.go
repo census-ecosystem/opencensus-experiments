@@ -15,7 +15,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -80,7 +79,7 @@ func main() {
 
 	// Fake work to keep the main thread running
 	for true {
-		fmt.Print()
+		time.Sleep(1 * time.Second)
 	}
 
 }
@@ -90,12 +89,12 @@ func getExampleKey() []tag.Key {
 	if ardiunoKey, err := tag.NewKey("ArduinoId"); err == nil {
 		exampleKey = append(exampleKey, ardiunoKey)
 	} else {
-		log.Fatal("Unable to create new tag Key\n")
+		log.Fatal("Unable to create new tag key because", err)
 	}
 	if dateKey, err := tag.NewKey("Date"); err == nil {
 		exampleKey = append(exampleKey, dateKey)
 	} else {
-		log.Fatal("Unable to create new tag Key\n")
+		log.Fatal("Unable to create new tag key because", err)
 	}
 	return exampleKey
 }
