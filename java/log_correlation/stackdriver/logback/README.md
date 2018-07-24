@@ -10,3 +10,13 @@ the log entries associated with each trace.
 
 The application requires a Google Cloud project with Stackdriver Logging enabled. It can be run with
 `./gradlew run`.
+
+## Screenshots from running the demo
+
+Sampled trace in Stackdriver, with log entries displayed below each span:
+
+![Traces](images/trace.png "Example trace in Stackdriver")
+
+Log entries containing "trace", "spanId", and "openCensusTraceSampled" fields in Stackdriver:
+
+![Logs](images/logs.png "Example logs in Stackdriver")
