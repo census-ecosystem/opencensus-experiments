@@ -1,7 +1,8 @@
 # OpenCensus/java.util.logging/Stackdriver Log Correlation Demo
 
 An application that demonstrates log correlation in Stackdriver with
-`opencensus-contrib-log-correlation-stackdriver`. The application contains `java.util.logging` log
+[`opencensus-contrib-log-correlation-stackdriver`](https://github.com/census-instrumentation/opencensus-java/tree/master/contrib/log_correlation/stackdriver).
+The application contains `java.util.logging` log
 statements and OpenCensus tracing instrumentation. It configures logging with a logging
 `.properties` file and exports logs using the
 [Stackdriver Logging LoggingHandler](https://cloud.google.com/logging/docs/setup/java#jul_handler).
