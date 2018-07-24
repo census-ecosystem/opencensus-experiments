@@ -1,7 +1,8 @@
 # OpenCensus/Logback/Stackdriver Log Correlation Demo
 
 An application that demonstrates log correlation in Stackdriver with
-`opencensus-contrib-log-correlation-stackdriver`. The application contains SLF4J log statements and
+[`opencensus-contrib-log-correlation-stackdriver`](https://github.com/census-instrumentation/opencensus-java/tree/master/contrib/log_correlation/stackdriver).
+The application contains SLF4J log statements and
 OpenCensus tracing instrumentation. It configures logging with a Logback XML configuration and
 exports logs using the
 [Stackdriver Logging Logback appender](https://cloud.google.com/logging/docs/setup/java#logback_appender).
