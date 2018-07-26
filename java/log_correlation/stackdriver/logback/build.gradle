@@ -1,0 +1,32 @@
+description = 'OpenCensus/Logback/Stackdriver Log Correlation Demo'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+group = "io.opencensus"
+version = "0.16.0-SNAPSHOT"
+
+def opencensusVersion = "0.15.0"
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+}
+
+dependencies {
+    compile "io.opencensus:opencensus-api:${opencensusVersion}",
+            "io.opencensus:opencensus-exporter-trace-stackdriver:${opencensusVersion}",
+            "org.slf4j:slf4j-api:1.7.25"
+
+    runtime "io.opencensus:opencensus-contrib-log-correlation-stackdriver:${opencensusVersion}",
+            "io.opencensus:opencensus-impl-lite:${opencensusVersion}",
+            "com.google.cloud:google-cloud-logging-logback:0.48.0-alpha"
+}
+
+apply plugin: 'application'
+
+mainClassName =
+    'io.opencensus.demo.logcorrelation.stackdriver.logback.OpenCensusTraceLoggingEnhancerDemo'

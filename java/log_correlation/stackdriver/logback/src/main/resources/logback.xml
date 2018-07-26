@@ -1,0 +1,22 @@
+<!-- This configuration file is based on the example at
+     https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-clients/google-cloud-contrib/google-cloud-logging-logback#usage -->
+<configuration>
+
+  <!-- Optionally set the span selection. -->
+  <property scope="system" name="io.opencensus.contrib.logcorrelation.stackdriver.OpenCensusTraceLoggingEnhancer.spanSelection" value="ALL_SPANS" />
+
+  <!-- Optionally set the project ID. (This example doesn't set the project ID, because the
+       application is easier to run when google-cloud-java automatically picks up the default
+       project ID.)  -->
+  <!-- <property scope="system" name="io.opencensus.contrib.logcorrelation.stackdriver.OpenCensusTraceLoggingEnhancer.projectId" value="my-project-id" /> -->
+
+  <!-- Add OpenCensusTraceLoggingEnhancer as an enhancer for the google-cloud-logging
+       LoggingAppender. -->
+  <appender name="CLOUD" class="com.google.cloud.logging.logback.LoggingAppender">
+    <enhancer>io.opencensus.contrib.logcorrelation.stackdriver.OpenCensusTraceLoggingEnhancer</enhancer>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="CLOUD" />
+  </root>
+</configuration>
