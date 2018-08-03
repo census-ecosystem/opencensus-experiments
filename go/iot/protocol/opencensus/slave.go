@@ -90,7 +90,7 @@ func (slave *Slave) Collect(period time.Duration) {
 				output, decodeErr := slave.myParser.Parse(input)
 				if decodeErr != nil {
 					// If we don't respond here, there would deadlock between the arduino and Pi.
-					response := protocol.Response{protocol.FAIL, "Json object could not be unmarshalled"}
+					response := protocol.Response{protocol.FAIL, "Fail to parse the message because " + decodeErr.Error()}
 					slave.respond(&response)
 				} else {
 					slave.notifyCensusToRecord(&output)
