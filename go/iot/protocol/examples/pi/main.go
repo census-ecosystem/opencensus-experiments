@@ -26,6 +26,7 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 )
 
 var (
@@ -71,7 +72,9 @@ func main() {
 		c := &goserial.Config{Name: slaveName, Baud: 9600}
 		var slave opencensus.Slave
 		// Every slave represents one Arduino
-		slave.Initialize(c)
+		//var parser parser.JsonParser
+		var parser parser.TextParser
+		slave.Initialize(c, &parser)
 		slave.Subscribe(census)
 		// The collection would be done in the other go routine.
 		slave.Collect(2 * time.Second)
