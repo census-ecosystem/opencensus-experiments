@@ -134,7 +134,7 @@ func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) *proto
 		}
 
 		if tagExist {
-			return &protocol.Response{protocol.OK, nil}
+			return &protocol.Response{protocol.OK, ""}
 		} else {
 			return &protocol.Response{protocol.UNREGISTERTAG, "Tags key doesn't exist."}
 		}
