@@ -13,8 +13,8 @@ func main() {
 		fmt.Println(err)
 	} else{
 		fmt.Println("Name: ",result.Name)
-		fmt.Println("Measurement Value: ", result.Value)
-		for k, v := range result.Tags{
+		fmt.Println("Measurement Value: ", result.Measurement)
+		for k, v := range result.Tag{
 			fmt.Println("Key: ", k, " Value: ", v)
 		}
 	}

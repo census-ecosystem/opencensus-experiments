@@ -24,7 +24,7 @@ import (
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 	"github.com/huin/goserial"
-)
+	)
 
 const (
 	// TODO: We could make it configurable in the future

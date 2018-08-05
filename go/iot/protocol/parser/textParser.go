@@ -39,16 +39,16 @@ func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) 
 		return output, errors.Errorf("Value for Name is not valid string")
 	}
 
-	output.Value, ok = parseResult["Measurement"].(string)
+	output.Measurement, ok = parseResult["Measurement"].(string)
 	if ok == false {
 		return output, errors.Errorf("Value for Measurement is not valid string")
 	}
 
-	output.Tags = make(map[string]string)
+	output.Tag = make(map[string]string)
 
 	// Since we would not assert the type of map[string]interface{} to map[string]string, we need to copy one by one
 	for k, v := range parseResult["Tag"].(map[string]interface{}){
-		output.Tags[k], ok = v.(string)
+		output.Tag[k], ok = v.(string)
 		if ok == false {
 			//fmt.Print(test)
 			return output, errors.Errorf("Value for Tag key pair is not valid string")

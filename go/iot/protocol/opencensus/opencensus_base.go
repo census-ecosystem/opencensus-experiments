@@ -112,14 +112,14 @@ func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) *proto
 	} else {
 		measure := census.registeredMeasures[measureName]
 
-		ctx, tagExist, err := census.insertTag(arguments.Tags)
+		ctx, tagExist, err := census.insertTag(arguments.Tag)
 
 		if err != nil {
 			return &protocol.Response{protocol.FAIL, err.Error()}
 		}
 
-		if value, err := strconv.ParseFloat(arguments.Value, 64); err != nil {
-			info := fmt.Sprintf("Could not parse the value: %s because %s", arguments.Value, err.Error())
+		if value, err := strconv.ParseFloat(arguments.Measurement, 64); err != nil {
+			info := fmt.Sprintf("Could not parse the value: %s because %s", arguments.Measurement, err.Error())
 			return &protocol.Response{protocol.FAIL, info}
 		} else {
 			//log.Printf("Record Data %v", value)

@@ -23,8 +23,8 @@ const (
 
 type MeasureArgument struct {
 	Name  string
-	Value string
-	Tags  map[string]string
+	Measurement string
+	Tag  map[string]string
 }
 
 type Response struct {

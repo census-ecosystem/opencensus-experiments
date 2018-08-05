@@ -18,16 +18,16 @@ func Test_parser_normal (t *testing.T){
 			t.Error("Name of parse result is wrong as ", result.Name, " Correct answer is opencensus.io/measure/Temperature")
 		}
 
-		if result.Value != "23.72"{
-			t.Error("Value of parse result is wrong as ", result.Value, " Correct answer is 23.72")
+		if result.Measurement != "23.72"{
+			t.Error("Measurement of parse result is wrong as ", result.Measurement, " Correct answer is 23.72")
 		}
 
-		if result.Tags["ArduinoId"] != "Arduino-1"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["ArduinoId"], " Correct answer is Arduino-1")
+		if result.Tag["ArduinoId"] != "Arduino-1"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["ArduinoId"], " Correct answer is Arduino-1")
 		}
 
-		if result.Tags["Date"] != "2018-07-02"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["Date"], " Correct answer is 2018-07-02")
+		if result.Tag["Date"] != "2018-07-02"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["Date"], " Correct answer is 2018-07-02")
 		}
 	}
 }
@@ -44,16 +44,16 @@ func Test_parser_normal_with_space (t *testing.T){
 			t.Error("Name of parse result is wrong as ", result.Name, " Correct answer is opencensus.io/measure/Temperature")
 		}
 
-		if result.Value != "23.72"{
-			t.Error("Value of parse result is wrong as ", result.Value, " Correct answer is 23.72")
+		if result.Measurement != "23.72"{
+			t.Error("Measurement of parse result is wrong as ", result.Measurement, " Correct answer is 23.72")
 		}
 
-		if result.Tags["ArduinoId"] != "Arduino-1"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["ArduinoId"], " Correct answer is Arduino-1")
+		if result.Tag["ArduinoId"] != "Arduino-1"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["ArduinoId"], " Correct answer is Arduino-1")
 		}
 
-		if result.Tags["Date"] != "2018-07-02"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["Date"], " Correct answer is 2018-07-02")
+		if result.Tag["Date"] != "2018-07-02"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["Date"], " Correct answer is 2018-07-02")
 		}
 	}
 }
@@ -70,16 +70,16 @@ func Test_parser_normal_unordered (t *testing.T){
 			t.Error("Name of parse result is wrong as ", result.Name, " Correct answer is opencensus.io/measure/Temperature")
 		}
 
-		if result.Value != "23.72"{
-			t.Error("Value of parse result is wrong as ", result.Value, " Correct answer is 23.72")
+		if result.Measurement != "23.72"{
+			t.Error("Measurement of parse result is wrong as ", result.Measurement, " Correct answer is 23.72")
 		}
 
-		if result.Tags["ArduinoId"] != "Arduino-1"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["ArduinoId"], " Correct answer is Arduino-1")
+		if result.Tag["ArduinoId"] != "Arduino-1"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["ArduinoId"], " Correct answer is Arduino-1")
 		}
 
-		if result.Tags["Date"] != "2018-07-02"{
-			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tags["Date"], " Correct answer is 2018-07-02")
+		if result.Tag["Date"] != "2018-07-02"{
+			t.Error("Tag ArduinoId of parse result is wrong as ", result.Tag["Date"], " Correct answer is 2018-07-02")
 		}
 	}
 }
