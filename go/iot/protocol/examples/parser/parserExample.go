@@ -1,8 +1,8 @@
 package main
 
 import (
-	parser2 "github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 	"fmt"
+	parser2 "github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 )
 
 func main() {
@@ -11,10 +11,10 @@ func main() {
 	result, err := parser.Parse([]byte(example))
 	if err != nil {
 		fmt.Println(err)
-	} else{
-		fmt.Println("Name: ",result.Name)
+	} else {
+		fmt.Println("Name: ", result.Name)
 		fmt.Println("Measurement Value: ", result.Measurement)
-		for k, v := range result.Tag{
+		for k, v := range result.Tag {
 			fmt.Println("Key: ", k, " Value: ", v)
 		}
 	}

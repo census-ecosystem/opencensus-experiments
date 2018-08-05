@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/opencensus"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 	"github.com/huin/goserial"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
-	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 )
 
 var (

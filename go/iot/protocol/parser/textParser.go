@@ -4,7 +4,7 @@ import (
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/pkg/errors"
 	"strings"
-	)
+)
 
 type TextParser struct {
 }
@@ -22,11 +22,11 @@ func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) 
 	// First of all, find the outermost layer of bracket.
 	firstBracketPos := strings.Index(ss, "{")
 	lastBracketPos := strings.LastIndex(ss, "}")
-	if firstBracketPos == -1 || lastBracketPos == -1{
+	if firstBracketPos == -1 || lastBracketPos == -1 {
 		return output, errors.Errorf("Unpaired brackets in the two end of input string")
 	}
 	// Then trim the leading and trailing bracket of the string
-	ss = ss[firstBracketPos + 1:lastBracketPos]
+	ss = ss[firstBracketPos+1 : lastBracketPos]
 	err := parser.helper(ss, parseResult)
 
 	// If the error is not empty, return it.
@@ -47,7 +47,7 @@ func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) 
 	output.Tag = make(map[string]string)
 
 	// Since we would not assert the type of map[string]interface{} to map[string]string, we need to copy one by one
-	for k, v := range parseResult["Tag"].(map[string]interface{}){
+	for k, v := range parseResult["Tag"].(map[string]interface{}) {
 		output.Tag[k], ok = v.(string)
 		if ok == false {
 			//fmt.Print(test)
@@ -59,83 +59,83 @@ func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) 
 }
 
 // The input string of helper function is already trimmed of the leading and trailing bracket.
-func (parser *TextParser) helper(ss string, res map[string]interface{}) error{
+func (parser *TextParser) helper(ss string, res map[string]interface{}) error {
 
 	// Judge whether there are nested brackets
 	var pos int = strings.Index(ss, "{")
 
-	if pos == -1{
+	if pos == -1 {
 		// No nested brackets. We could parse the string through the helper function.
 		err := parser.parseWithNoBracket(ss, res)
 		return err
-	} else{
+	} else {
 		// Nested Bracket exists in the string. Currently we know the start of nested string, we firstly find its end
 		count := 1
 		lastBracket := pos + 1
-		for ; lastBracket < len(ss); lastBracket = lastBracket + 1{
-			if ss[lastBracket] == '}'{
-				count = count - 1;
+		for ; lastBracket < len(ss); lastBracket = lastBracket + 1 {
+			if ss[lastBracket] == '}' {
+				count = count - 1
 			}
-			if ss[lastBracket] == '{'{
-				count = count + 1;
+			if ss[lastBracket] == '{' {
+				count = count + 1
 			}
 
-			if count == 0{
+			if count == 0 {
 				break
 			}
 		}
 
 		// If the count is not zero after we traverse the whole string, it means that left and right brackets are not paired
-		if count != 0{
+		if count != 0 {
 			return errors.Errorf("Nested bracket unvalid")
 		}
 
 		var nestedResult map[string]interface{} = make(map[string]interface{})
 
 		// Recursively handle the string without leading and trailing brackets
-		err := parser.helper(ss[pos + 1 : lastBracket], nestedResult)
-		if err != nil{
+		err := parser.helper(ss[pos+1:lastBracket], nestedResult)
+		if err != nil {
 			return nil
-		} else{
+		} else {
 			// We would need to find the key of this nestedResult
 			start := pos - 1
-			for start >= 0 && ss[start] != '"'{
+			for start >= 0 && ss[start] != '"' {
 				start = start - 1
 			}
 
-			if start == -1{
+			if start == -1 {
 				return errors.Errorf("No key found!")
 			}
 
 			end := start - 1
 
-			for (end >= 0 && ss[end] != '"') {
+			for end >= 0 && ss[end] != '"' {
 				end = end - 1
 			}
 
-			if end == -1{
+			if end == -1 {
 				return errors.Errorf("No pair of quatation mark found")
 			}
 
-			key := ss[end + 1 : start]
+			key := ss[end+1 : start]
 
-			if len(key) == 0{
+			if len(key) == 0 {
 				return errors.Errorf("Key is empty string")
 			}
 
 			res[key] = nestedResult
 
 			// Before 'end', there is no bracket, which means there is no nested brackets. So we call the helper function
-			if err := parser.parseWithNoBracket(ss[0 : end], res); err != nil{
+			if err := parser.parseWithNoBracket(ss[0:end], res); err != nil {
 				return err
 			}
 
-			if lastBracket + 1 == len(ss){
+			if lastBracket+1 == len(ss) {
 				// The end of string
 				return nil
-			} else{
+			} else {
 				// There are key-value pairs left behind. We should continue to parse the rest of string
-				if err := parser.helper(ss[lastBracket + 1 : len(ss)], res); err != nil{
+				if err := parser.helper(ss[lastBracket+1:len(ss)], res); err != nil {
 					return err
 				}
 			}
@@ -153,7 +153,7 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 	ss = strings.Trim(ss, ",")
 	ss = strings.Trim(ss, " ")
 
-	if len(ss) == 0{
+	if len(ss) == 0 {
 		// Remaining characters are all whitespaces
 		return nil
 	}
@@ -179,17 +179,17 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 		}
 
 		// Every key / value has a leading / trailing bracket, otherwise it's invalid.
-		if key[0] != '"' || key[len(key) - 1] != '"' {
+		if key[0] != '"' || key[len(key)-1] != '"' {
 			return errors.Errorf("Key not started or ended with quataion marks")
 		}
 
 		// Character on the both side of value has to form a pair of quataion marks
-		if value[0] != '"' || value[len(value) - 1] != '"' {
+		if value[0] != '"' || value[len(value)-1] != '"' {
 			return errors.Errorf("Value not started / ended with quatation marks / brackets")
 		}
 
-		key = key[1 : len(key) - 1]
-		value = value[1 : len(value) - 1]
+		key = key[1 : len(key)-1]
+		value = value[1 : len(value)-1]
 		res[key] = value
 	}
 
