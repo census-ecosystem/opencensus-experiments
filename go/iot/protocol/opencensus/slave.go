@@ -63,7 +63,7 @@ func (slave *Slave) Initialize(config *goserial.Config, parser parser.Parser) er
 }
 
 func (slave *Slave) respond(response *protocol.Response) {
-	b, err := slave.myParser.Encode(response)
+	b, err := slave.myParser.EncodeResponse(response)
 	if err != nil {
 		log.Fatal("Could not encode the project because", err)
 	}
@@ -86,7 +86,7 @@ func (slave *Slave) Collect(period time.Duration) {
 				//TODO: The length of the json is bigger than the buffer size
 				continue
 			} else {
-				output, decodeErr := slave.myParser.Decode(input)
+				output, decodeErr := slave.myParser.DecodeMeasurement(input)
 				if decodeErr != nil {
 					// If we don't respond here, there would deadlock between the arduino and Pi.
 					response := protocol.Response{protocol.FAIL, "Fail to parse the message because " + decodeErr.Error()}

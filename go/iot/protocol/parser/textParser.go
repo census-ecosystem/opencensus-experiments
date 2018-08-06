@@ -13,7 +13,7 @@ type TextParser struct {
 // In this function, it firstly transform the input byte stream into a map of string -> interface{}.
 // If it manages so, it would extract the required variable as defined in the protocol.
 // Otherwise it would return an un-empty error.
-func (parser *TextParser) Decode(input []byte) (protocol.MeasureArgument, error) {
+func (parser *TextParser) DecodeMeasurement(input []byte) (protocol.MeasureArgument, error) {
 	var output protocol.MeasureArgument
 	// parseResult is only the transition result of parse. It is in the form of map[string]interface{}
 	// Using the interface{} can make it more general since we might change the protocol in the future.
@@ -198,7 +198,7 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 }
 
 
-func (parser *TextParser) Encode(myResponse *protocol.Response) ([]byte, error) {
+func (parser *TextParser) EncodeResponse(myResponse *protocol.Response) ([]byte, error) {
 	var res string = "\"Code\":" + string(myResponse.Code) + "\"Info\":" + myResponse.Info
 	return []byte(res), nil
 }

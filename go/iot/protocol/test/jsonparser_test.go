@@ -1,3 +1,17 @@
+// Copyright 2018, OpenCensus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package test
 
 import (
@@ -12,7 +26,7 @@ var jsonParser parser2.JsonParser
 // {"Name":"opencensus.io/measure/Temperature","Value":"23.72","Tags":{"ArduinoId":"Arduino-1","Date":"2018-07-02"}}
 func Test_jsonparser_normal(t *testing.T) {
 	var testEg string = "{\"Name\":\"opencensus.io/measure/Temperature\",\"Value\":\"23.72\",\"Tags\":{\"ArduinoId\":\"Arduino-1\",\"Date\":\"2018-07-02\"}}"
-	result, err := jsonParser.Decode([]byte(testEg))
+	result, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -38,7 +52,7 @@ func Test_jsonparser_normal(t *testing.T) {
 // { "Name": "opencensus.io/measure/Temperature" , "Value":"23.72" , "Tags":{"ArduinoId" : "Arduino-1" , "Date" : "2018-07-02"  } }
 func Test_jsonparser_normal_with_space(t *testing.T) {
 	var testEg string = "{ \"Name\": \"opencensus.io/measure/Temperature\" , \"Value\":\"23.72\" , \"Tags\" : { \"ArduinoId\" : \"Arduino-1\" , \"Date\" : \"2018-07-02\"  } }"
-	result, err := jsonParser.Decode([]byte(testEg))
+	result, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -64,7 +78,7 @@ func Test_jsonparser_normal_with_space(t *testing.T) {
 // { "Name": "opencensus.io/measure/Temperature" , "Tags":{"ArduinoId" : "Arduino-1" , "Date" : "2018-07-02"  } , "Value":"23.72" }
 func Test_jsonparser_normal_unordered(t *testing.T) {
 	var testEg string = "{ \"Name\": \"opencensus.io/measure/Temperature\" , \"Tags\" : { \"ArduinoId\" : \"Arduino-1\" , \"Date\" : \"2018-07-02\"  } , \"Value\":\"23.72\" }"
-	result, err := jsonParser.Decode([]byte(testEg))
+	result, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -90,7 +104,7 @@ func Test_jsonparser_normal_unordered(t *testing.T) {
 // { "Name": "opencensus.io/measure/Temperature" , "Tags":{"ArduinoId" : "Arduino-1" , "Date" : "2018-07-02"  } , "Value":"23.72" }}
 func Test_jsonparser_abnormal_unpaired_brackets(t *testing.T) {
 	var testEg string = "{ \"Name\": \"opencensus.io/measure/Temperature\" , \"Tags\" : { \"ArduinoId\" : \"Arduino-1\" , \"Date\" : \"2018-07-02\"  } , \"Value\":\"23.72\" }}"
-	_, err := jsonParser.Decode([]byte(testEg))
+	_, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err == nil {
 		t.Error("There is one more bracket in the end of input string")
 	}
@@ -100,7 +114,7 @@ func Test_jsonparser_abnormal_unpaired_brackets(t *testing.T) {
 // { "Name": "opencensus.io/measure/Temperature" , "Tags":{"ArduinoId" : "Arduino-1" , "Date" : "2018-07-02"  } , "Meaurement":"23.72" }}
 func Test_jsonparser_abnormal_wrong_key(t *testing.T) {
 	var testEg string = "{ \"Name\": \"opencensus.io/measure/Temperature\" , \"Tags\" : { \"ArduinoId\" : \"Arduino-1\" , \"Date\" : \"2018-07-02\"  } , \"Valu\":\"23.72\" }"
-	_, err := jsonParser.Decode([]byte(testEg))
+	_, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err != nil {
 		// Compared to the text parser, JsonParser won't throw out any error. Instead, it would leave the Value alone.
 		t.Error("It should be Value instead of Valu")
@@ -111,7 +125,7 @@ func Test_jsonparser_abnormal_wrong_key(t *testing.T) {
 // { "Name": "opencensus.io/measure/Temperature" , "Tags":{"ArduinoId" : "Arduino-1" , "Date" : "2018-07-02"  } , "Meaurement":"23.72" ,}}
 func Test_jsonparser_abnormal_more_comma(t *testing.T) {
 	var testEg string = "{ \"Name\": \"opencensus.io/measure/Temperature\" , \"Tags\" : { \"ArduinoId\" : \"Arduino-1\" , \"Date\" : \"2018-07-02\"  } , \"Value\":\"23.72\" ,}"
-	_, err := jsonParser.Decode([]byte(testEg))
+	_, err := jsonParser.DecodeMeasurement([]byte(testEg))
 	if err == nil {
 		// Compared to the text parser, JsonParser won't tolerate any meaningless character in the end or beginning
 		t.Error("It should thow out an error since there is a comma in the end")
