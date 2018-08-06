@@ -5,5 +5,6 @@ import (
 )
 
 type Parser interface {
-	Parse(input []byte) (protocol.MeasureArgument, error)
+	Decode(input []byte) (protocol.MeasureArgument, error)
+	Encode(myResponse *protocol.Response) ([]byte, error)
 }

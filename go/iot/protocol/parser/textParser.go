@@ -1,9 +1,10 @@
 package parser
 
 import (
+	"strings"
+
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 type TextParser struct {
@@ -12,7 +13,7 @@ type TextParser struct {
 // In this function, it firstly transform the input byte stream into a map of string -> interface{}.
 // If it manages so, it would extract the required variable as defined in the protocol.
 // Otherwise it would return an un-empty error.
-func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) {
+func (parser *TextParser) Decode(input []byte) (protocol.MeasureArgument, error) {
 	var output protocol.MeasureArgument
 	// parseResult is only the transition result of parse. It is in the form of map[string]interface{}
 	// Using the interface{} can make it more general since we might change the protocol in the future.
@@ -39,19 +40,19 @@ func (parser *TextParser) Parse(input []byte) (protocol.MeasureArgument, error) 
 		return output, errors.Errorf("Value for Name is not valid string")
 	}
 
-	output.Measurement, ok = parseResult["Measurement"].(string)
+	output.Value, ok = parseResult["Value"].(string)
 	if ok == false {
 		return output, errors.Errorf("Value for Measurement is not valid string")
 	}
 
-	output.Tag = make(map[string]string)
+	output.Tags = make(map[string]string)
 
 	// Since we would not assert the type of map[string]interface{} to map[string]string, we need to copy one by one
-	for k, v := range parseResult["Tag"].(map[string]interface{}) {
-		output.Tag[k], ok = v.(string)
+	for k, v := range parseResult["Tags"].(map[string]interface{}) {
+		output.Tags[k], ok = v.(string)
 		if ok == false {
 			//fmt.Print(test)
-			return output, errors.Errorf("Value for Tag key pair is not valid string")
+			return output, errors.Errorf("Value for Tags key pair is not valid string")
 		}
 	}
 
@@ -194,4 +195,10 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 	}
 
 	return nil
+}
+
+
+func (parser *TextParser) Encode(myResponse *protocol.Response) ([]byte, error) {
+	var res string = "\"Code\":" + string(myResponse.Code) + "\"Info\":" + myResponse.Info
+	return []byte(res), nil
 }
