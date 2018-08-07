@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 // This program shows how to send requests of registration and sending data to the raspberry Pi based on the protocols.
-
+//
 // Hardware Connections (Breakoutboard to Arduino):
 // -VCC = 3.3V
 // -GND = GND
@@ -22,6 +22,16 @@
 
 
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include "SparkFunHTU21D.h"
+#include "DHT.h"
+
+struct response{
+  int code;
+  String info;
+  response(int code_, String info_): code(code_), info(info_) {}
+};
+
 #define OK 200
 #define FAIL 404
 #define MEASUREUNREG 501
@@ -30,18 +40,11 @@
 #define JSON_BUFFER_SIZE 200
 // The maximum backoff waiting time is 32 seconds
 #define MAX_BACKOFF_TIME 32000
-#include <Wire.h>
-#include "SparkFunHTU21D.h"
-#include "DHT.h"
 
 //Create an instance of the object
 //DHT dht;
 HTU21D myHumidity;
-struct response{
-  int code;
-  String info;
-  response(int code_, String info_): code(code_), info(info_) {}
-};
+
 void setup() {
   // Initialize Serial port
   Serial.begin(9600);

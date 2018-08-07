@@ -1,11 +1,11 @@
 package parser
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
 	"github.com/pkg/errors"
-		"strconv"
 )
 
 type TextParser struct {
@@ -197,7 +197,6 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 
 	return nil
 }
-
 
 func (parser *TextParser) EncodeResponse(myResponse *protocol.Response) ([]byte, error) {
 	// Format is {"Code" : 200, "Info" : "TMP"}
