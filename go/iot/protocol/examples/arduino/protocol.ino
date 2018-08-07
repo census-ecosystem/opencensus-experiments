@@ -25,8 +25,11 @@
 #define OK 200
 #define FAIL 404
 #define MEASUREUNREG 501
+#define TAGUNREG 502
 #define BUFFER_SIZE 256
 #define JSON_BUFFER_SIZE 200
+// The maximum backoff waiting time is 32 seconds
+#define MAX_BACKOFF_TIME 32000
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
 #include "DHT.h"
@@ -40,6 +43,7 @@ void setup() {
   Serial.begin(9600);
   myHumidity.begin();
   while (!Serial) continue;
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 /*
@@ -55,8 +59,13 @@ void loop() {
  */
 void request(void (*func)()) {
   int code;
+  // For Arduino UNO, it only supports 4-byte integer.
+  unsigned int failcounts = 0;
+  unsigned int delaytime;
+  // The outer loop is to keep sending requests to the slave until receiving a positive response
   do {
     JsonObject* response;
+    // The inner loop is to receive the response from the slave end after sending the request
     do {
       // TODO: Currently we hard-code the argument in the code. Would handle the problem that how to solve
       // multiple arguments.
@@ -75,11 +84,29 @@ void request(void (*func)()) {
     //Serial.println(info);
     switch (code){
       case FAIL:
-        delay(1000);
+        delaytime = (1 << failcounts) + random(1000);
+        if (delaytime > MAX_BACKOFF_TIME){
+          delaytime = MAX_BACKOFF_TIME;
+          // When there are too many fail attempts, turn on the light to notify
+          // Meanwhile stop increasing the fail attempts counter
+          digitalWrite(LED_BUILTIN, HIGH);
+        }
+        Serial.println(delaytime);
+        delay(delaytime);
+        // In case of the overflow
+        if (failcounts < 15)
+          failcounts = failcounts + 1;
         break;
       case MEASUREUNREG:
         exit(-1);
+        break;
       case OK:
+        failcounts = 0;
+        digitalWrite(LED_BUILTIN, LOW);
+        break;
+      case TAGUNREG:
+        failcounts = 0;
+        digitalWrite(LED_BUILTIN, LOW);
         break;
       default:
         exit(-1);
@@ -164,3 +191,4 @@ void sendData() {
 
   Serial.flush();
 }
+
