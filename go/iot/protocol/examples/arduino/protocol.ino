@@ -20,12 +20,10 @@
 // -SDA = A4 (use inline 330 ohm resistor if your board is 5V)
 // -SCL = A5 (use inline 330 ohm resistor if your board is 5V)
 
-
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
 #include "DHT.h"
-
 struct response{
   int code;
   String info;
@@ -40,6 +38,7 @@ struct response{
 #define JSON_BUFFER_SIZE 200
 // The maximum backoff waiting time is 32 seconds
 #define MAX_BACKOFF_TIME 32000
+
 
 //Create an instance of the object
 //DHT dht;
@@ -149,9 +148,9 @@ void readLine(char * buffer, int maxLength)
   buffer[idx] = 0;
 }
 
-response* parseResponse(char *json){
-  //return parseResponseJson(json);
-  return parseResponseText(json);
+response* parseResponse(char *response){
+  //return parseResponseJson(response);
+  return parseResponseText(response);
 }
 
 response* parseResponseJson(char *json) {
@@ -179,8 +178,8 @@ response* parseResponseJson(char *json) {
 }
 // Typical example is {"Code" : 200, "Info" : "TMP"}
 // There could be whitespace inside the message
-response* parseResponseText(char *json) {
-  String ss(json);
+response* parseResponseText(char *text) {
+  String ss(text);
   String codeKey = "\"Code\"";
   String infoKey = "\"Info\"";
   int codeKeyPos = ss.indexOf(codeKey);
