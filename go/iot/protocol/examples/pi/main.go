@@ -72,8 +72,8 @@ func main() {
 		c := &goserial.Config{Name: slaveName, Baud: 9600}
 		var slave opencensus.Slave
 		// Every slave represents one Arduino
-		var parser parser.JsonParser
-		//var parser parser.TextParser
+		//var parser parser.JsonParser
+		var parser parser.TextParser
 		slave.Initialize(c, &parser)
 		slave.Subscribe(census)
 		// The collection would be done in the other go routine.

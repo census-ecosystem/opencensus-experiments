@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 // This program shows how to send requests of registration and sending data to the raspberry Pi based on the protocols.
-//
+
 // Hardware Connections (Breakoutboard to Arduino):
 // -VCC = 3.3V
 // -GND = GND
 // -SDA = A4 (use inline 330 ohm resistor if your board is 5V)
 // -SCL = A5 (use inline 330 ohm resistor if your board is 5V)
 
-#include <ArduinoJson.h>
 
+#include <ArduinoJson.h>
 #define OK 200
 #define FAIL 404
 #define MEASUREUNREG 501
@@ -37,7 +37,11 @@
 //Create an instance of the object
 //DHT dht;
 HTU21D myHumidity;
-
+struct response{
+  int code;
+  String info;
+  response(int code_, String info_): code(code_), info(info_) {}
+};
 void setup() {
   // Initialize Serial port
   Serial.begin(9600);
@@ -64,7 +68,7 @@ void request(void (*func)()) {
   unsigned int delaytime;
   // The outer loop is to keep sending requests to the slave until receiving a positive response
   do {
-    JsonObject* response;
+    response* response;
     // The inner loop is to receive the response from the slave end after sending the request
     do {
       // TODO: Currently we hard-code the argument in the code. Would handle the problem that how to solve
@@ -73,10 +77,12 @@ void request(void (*func)()) {
       char buffer[BUFFER_SIZE];
       readLine(buffer, BUFFER_SIZE);
       response = parseResponse(buffer);
-    } while (response == NULL);
+      // If fail to parse, it should wait for sometime then resend again
+    } while (response == NULL && delayWithReturn(1000));
 
-    code = (*response)["Code"];
-    const char *info = (*response)["Info"];
+    code = response -> code;
+    String info = response -> info;
+    delete response;
 
     //Serial.print("Receive Response: Code ");
     //Serial.print(code);
@@ -91,7 +97,7 @@ void request(void (*func)()) {
           // Meanwhile stop increasing the fail attempts counter
           digitalWrite(LED_BUILTIN, HIGH);
         }
-        Serial.println(delaytime);
+        //Serial.println(delaytime);
         delay(delaytime);
         // In case of the overflow
         if (failcounts < 15)
@@ -115,6 +121,12 @@ void request(void (*func)()) {
   } while (code != OK);
 }
 
+bool delayWithReturn(int duration){
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(duration);
+  digitalWrite(LED_BUILTIN, LOW);
+  return true;
+}
 /*
  * Implement the readLine in arduino. It would block until receive whitespace character.
  */
@@ -134,8 +146,12 @@ void readLine(char * buffer, int maxLength)
   buffer[idx] = 0;
 }
 
+response* parseResponse(char *json){
+  //return parseResponseJson(json);
+  return parseResponseText(json);
+}
 
-JsonObject* parseResponse(char *json) {
+response* parseResponseJson(char *json) {
   // Memory pool for JSON object tree.
   //
   // Inside the brackets, 200 is the size of the pool in bytes.
@@ -154,11 +170,65 @@ JsonObject* parseResponse(char *json) {
     //Serial.println("parseObject() failed");
     return NULL;
   } else{
-    return &root;
+    response *res = new response(root["Code"], root["Info"]);
+    return res;
   }
+}
+// Typical example is {"Code" : 200, "Info" : "TMP"}
+// There could be whitespace inside the message
+response* parseResponseText(char *json) {
+  String ss(json);
+  String codeKey = "\"Code\"";
+  String infoKey = "\"Info\"";
+  int codeKeyPos = ss.indexOf(codeKey);
+  int infoKeyPos = ss.lastIndexOf(infoKey);
+  if (codeKeyPos == -1 || infoKeyPos == -1)
+    return NULL;
+  codeKeyPos = codeKeyPos + codeKey.length();
+  infoKeyPos = infoKeyPos + infoKey.length();
+  // Find the code value
+  // Value is between the ',' and ':'
+  int colonIndex = codeKeyPos;
+  while(colonIndex < ss.length() && ss[colonIndex] != ':') colonIndex++;
+  if (colonIndex == ss.length()) return NULL;
+  int commaIndex = colonIndex;
+  while(commaIndex < ss.length() && ss[commaIndex] != ',') commaIndex++;
+  if (commaIndex == ss.length()) return NULL;
+  String valuess = ss.substring(colonIndex + 1, commaIndex);
+  valuess.trim();
+  int value = toInteger(valuess);
+  if (value == -1) return NULL;
+
+  //exclusive the right bracket
+  String info = ss.substring(infoKeyPos + 1, ss.length() - 1);
+  int leftMark = info.indexOf('\"');
+  int rightMark = info.lastIndexOf('\"');
+  if (leftMark == -1 || rightMark == -1 || leftMark == rightMark)
+    return NULL;
+  info = info.substring(leftMark + 1, rightMark);
+
+  response *res = new response(value, info);
+  return res;
+}
+
+int toInteger(String code){
+  int res = 0;
+  for (int index = 0; index < code.length(); index++){
+    if (code[index] > '9' || code[index] < '0')
+      return -1;
+    else
+      res = res * 10 + code[index] - '0';
+  }
+  return res;
 }
 
 void sendData() {
+  float temp = myHumidity.readTemperature();
+  //sendDataByJson(temp);
+  sendDataByText(temp);
+}
+
+void sendDataByJson(float temp) {
   // Memory pool for JSON object tree.
   //
   // Inside the brackets, 200 is the size of the pool in bytes.
@@ -178,12 +248,11 @@ void sendData() {
   // Memory is freed when jsonBuffer goes out of scope.
   JsonObject& root = jsonBuffer.createObject();
   root["Name"] = "opencensus.io/measure/Temperature";
-  float temp = myHumidity.readTemperature();
-  root["Measurement"] = String(temp);
+  root["Value"] = String(temp);
 
-  JsonObject& tagPairs = root.createNestedObject("Tag");
+  JsonObject& tagPairs = root.createNestedObject("Tags");
   tagPairs["ArduinoId"] = "Arduino-1";
-  tagPairs["Date"] = "2018-07-02";
+  tagPairs["Date"] = "2018-08-02";
 
   root.printTo(Serial);
 
@@ -192,3 +261,13 @@ void sendData() {
   Serial.flush();
 }
 
+void sendDataByText(float temp){
+  String name = "opencensus.io/measure/Temperature";
+  String tagKeyFirst = "ArduinoId";
+  String tagValueFirst = "Arduino-1";
+  String tagKeySecond = "Date";
+  String tagValueSecond = "2018-08-02";
+  String output = "{ \"Name\":\"" + name + "\",\"Value\":\"" + String(temp) +
+  "\",\"Tags\":{\"" + tagKeyFirst + "\":\"" + tagValueFirst + "\",\"" + tagKeySecond + "\":\"" + tagValueSecond + "\"}}";
+  Serial.println(output);
+}

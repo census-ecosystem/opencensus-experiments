@@ -126,8 +126,10 @@ func (census *OpenCensusBase) Record(arguments *protocol.MeasureArgument) *proto
 			switch vv := measure.(type) {
 			case *stats.Float64Measure:
 				stats.Record(ctx, vv.M(float64(value)))
+				break
 			case *stats.Int64Measure:
 				stats.Record(ctx, vv.M(int64(value)))
+				break
 			default:
 				return &protocol.Response{protocol.FAIL, "Unsupported measure type"}
 			}
