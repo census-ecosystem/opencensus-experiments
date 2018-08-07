@@ -16,12 +16,12 @@ package opencensus
 
 import (
 	"bufio"
-	"encoding/json"
 	"io"
 	"log"
 	"time"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
+	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol/parser"
 	"github.com/huin/goserial"
 )
 
@@ -34,7 +34,8 @@ type Slave struct {
 	listeners []*OpenCensusBase
 	reader    *bufio.Reader
 	// The serial library doesn't support bufio.NewWriter(io.ReadWriteCloser)
-	sender io.ReadWriteCloser
+	sender   io.ReadWriteCloser
+	myParser parser.Parser
 }
 
 func (slave *Slave) notifyCensusToRecord(arguments *protocol.MeasureArgument) {
@@ -48,12 +49,13 @@ func (slave *Slave) Subscribe(listener OpenCensusBase) {
 	slave.listeners = append(slave.listeners, &listener)
 }
 
-func (slave *Slave) Initialize(config *goserial.Config) error {
+func (slave *Slave) Initialize(config *goserial.Config, parser parser.Parser) error {
 	if s, err := goserial.OpenPort(config); err == nil {
 		// It should wait for some time to initialize the arduino end
 		time.Sleep(SETUPDURATION * time.Second)
 		slave.reader = bufio.NewReader(s)
 		slave.sender = s
+		slave.myParser = parser
 		return nil
 	} else {
 		return err
@@ -61,7 +63,7 @@ func (slave *Slave) Initialize(config *goserial.Config) error {
 }
 
 func (slave *Slave) respond(response *protocol.Response) {
-	b, err := json.Marshal(response)
+	b, err := slave.myParser.EncodeResponse(response)
 	if err != nil {
 		log.Fatal("Could not encode the project because", err)
 	}
@@ -84,14 +86,13 @@ func (slave *Slave) Collect(period time.Duration) {
 				//TODO: The length of the json is bigger than the buffer size
 				continue
 			} else {
-				var argument protocol.MeasureArgument
-				decodeErr := json.Unmarshal(input, &argument)
+				output, decodeErr := slave.myParser.DecodeMeasurement(input)
 				if decodeErr != nil {
 					// If we don't respond here, there would deadlock between the arduino and Pi.
-					response := protocol.Response{protocol.FAIL, "Json object could not be unmarshalled"}
+					response := protocol.Response{protocol.FAIL, "Fail to parse the message because " + decodeErr.Error()}
 					slave.respond(&response)
 				} else {
-					slave.notifyCensusToRecord(&argument)
+					slave.notifyCensusToRecord(&output)
 				}
 			}
 		}
