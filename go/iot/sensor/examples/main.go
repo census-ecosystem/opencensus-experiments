@@ -11,9 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//
 // Program iot uploads sensor data including temperature, humidity, sound and light strength to monitoring backend by
 // using the OpenCensus framework.
+//
+// Hardware Connections (Sensors to Raspberry Pi):
+// -DHT11 Out Pin = GPIO 4
+// -DHT11 Out Pin = GPIO 17
+// -ADS1015 SDA = GPIO 2 (SDA)
+// -ADS1015 SCL = GPIO 3 (SCL)
+// -Light Sensor Out Pin = ADS1015 A1
+// -Sound Sensor Out Pin = ADS1015 A0
 package main
 
 import (
