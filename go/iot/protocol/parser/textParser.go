@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/census-ecosystem/opencensus-experiments/go/iot/protocol"
@@ -197,8 +198,8 @@ func (parser *TextParser) parseWithNoBracket(ss string, res map[string]interface
 	return nil
 }
 
-
 func (parser *TextParser) EncodeResponse(myResponse *protocol.Response) ([]byte, error) {
-	var res string = "\"Code\":" + string(myResponse.Code) + "\"Info\":" + myResponse.Info
+	// Format is {"Code" : 200, "Info" : "TMP"}
+	var res string = "{\"Code\":" + strconv.Itoa(myResponse.Code) + ",\"Info\":\"" + myResponse.Info + "\"}"
 	return []byte(res), nil
 }
