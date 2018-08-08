@@ -149,7 +149,6 @@ void readLine(char * buffer, int maxLength)
 }
 
 response* parseResponse(char *response){
-  //return parseResponseJson(response);
   return parseResponseText(response);
 }
 
@@ -184,29 +183,41 @@ response* parseResponseText(char *text) {
   String infoKey = "\"Info\"";
   int codeKeyPos = ss.indexOf(codeKey);
   int infoKeyPos = ss.lastIndexOf(infoKey);
-  if (codeKeyPos == -1 || infoKeyPos == -1)
+  if (codeKeyPos == -1 || infoKeyPos == -1){
     return NULL;
+  }
   codeKeyPos = codeKeyPos + codeKey.length();
   infoKeyPos = infoKeyPos + infoKey.length();
   // Find the code value
   // Value is between the ',' and ':'
   int colonIndex = codeKeyPos;
-  while(colonIndex < ss.length() && ss[colonIndex] != ':') colonIndex++;
-  if (colonIndex == ss.length()) return NULL;
+  while(colonIndex < ss.length() && ss[colonIndex] != ':') {
+    colonIndex++;
+  }
+  if (colonIndex == ss.length()) {
+    return NULL;
+  }
   int commaIndex = colonIndex;
-  while(commaIndex < ss.length() && ss[commaIndex] != ',') commaIndex++;
-  if (commaIndex == ss.length()) return NULL;
+  while(commaIndex < ss.length() && ss[commaIndex] != ',') {
+    commaIndex++;
+  }
+  if (commaIndex == ss.length()) {
+    return NULL;
+  }
   String valuess = ss.substring(colonIndex + 1, commaIndex);
   valuess.trim();
   int value = toInteger(valuess);
-  if (value == -1) return NULL;
+  if (value == -1) {
+    return NULL;
+  }
 
   //exclusive the right bracket
   String info = ss.substring(infoKeyPos + 1, ss.length() - 1);
   int leftMark = info.indexOf('\"');
   int rightMark = info.lastIndexOf('\"');
-  if (leftMark == -1 || rightMark == -1 || leftMark == rightMark)
+  if (leftMark == -1 || rightMark == -1 || leftMark == rightMark){
     return NULL;
+  }
   info = info.substring(leftMark + 1, rightMark);
 
   response *res = new response(value, info);
@@ -216,17 +227,18 @@ response* parseResponseText(char *text) {
 int toInteger(String code){
   int res = 0;
   for (int index = 0; index < code.length(); index++){
-    if (code[index] > '9' || code[index] < '0')
+    if (code[index] > '9' || code[index] < '0'){
       return -1;
-    else
+    }
+    else{
       res = res * 10 + code[index] - '0';
+    }
   }
   return res;
 }
 
 void sendData() {
   float temp = myHumidity.readTemperature();
-  //sendDataByJson(temp);
   sendDataByText(temp);
 }
 
