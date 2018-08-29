@@ -70,6 +70,7 @@ the tag on the first line of the snippet matches the tag in the fluentd configur
     <record>
       severity ${record["level"]}
     </record>
+    remove_keys "level"
   </filter>
   ```
 
