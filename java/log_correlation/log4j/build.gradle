@@ -1,0 +1,43 @@
+description = 'OpenCensus Log4j Log Correlation Demo'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    maven {
+      url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+}
+
+group = "io.opencensus"
+version = "0.16.0-SNAPSHOT"
+
+// TODO(sebright): Use a released version of opencensus-java once
+// io.opencensus:opencensus-contrib-log-correlation-log4j is released.
+def opencensusVersion = "0.16.0-SNAPSHOT"
+
+def jacksonVersion = '2.9.6'
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+}
+
+dependencies {
+    compile "io.opencensus:opencensus-api:${opencensusVersion}",
+            "io.opencensus:opencensus-exporter-trace-stackdriver:${opencensusVersion}",
+            "org.apache.logging.log4j:log4j-core:2.11.1"
+
+    runtime "io.opencensus:opencensus-contrib-log-correlation-log4j:${opencensusVersion}",
+            "io.opencensus:opencensus-impl-lite:${opencensusVersion}",
+            "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
+            "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+}
+
+apply plugin: 'application'
+
+mainClassName =
+    'io.opencensus.demo.logcorrelation.log4j.OpenCensusLog4jLogCorrelationDemo'
+
+applicationDefaultJvmArgs =
+    ["-Dlog4j2.contextDataInjector=io.opencensus.contrib.logcorrelation.log4j.OpenCensusTraceContextDataInjector"]
