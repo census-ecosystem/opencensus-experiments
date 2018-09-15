@@ -22,7 +22,7 @@ dependencies {
 
     runtime "io.opencensus:opencensus-contrib-log-correlation-stackdriver:${opencensusVersion}",
             "io.opencensus:opencensus-impl-lite:${opencensusVersion}",
-            "com.google.cloud:google-cloud-logging:0.48.0-alpha"
+            "com.google.cloud:google-cloud-logging:1.44.0"
 }
 
 apply plugin: 'application'
