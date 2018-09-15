@@ -7,9 +7,9 @@ repositories {
 }
 
 group = "io.opencensus"
-version = "0.16.0-SNAPSHOT"
+version = "0.17.0-SNAPSHOT"
 
-def opencensusVersion = "0.15.0"
+def opencensusVersion = "0.16.0"
 
 tasks.withType(JavaCompile) {
     sourceCompatibility = '1.7'
