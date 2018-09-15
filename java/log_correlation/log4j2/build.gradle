@@ -10,11 +10,9 @@ repositories {
 }
 
 group = "io.opencensus"
-version = "0.16.0-SNAPSHOT"
+version = "0.17.0-SNAPSHOT"
 
-// TODO(sebright): Use a released version of opencensus-java once
-// io.opencensus:opencensus-contrib-log-correlation-log4j is released.
-def opencensusVersion = "0.16.0-SNAPSHOT"
+def opencensusVersion = "0.16.0"
 
 def jacksonVersion = '2.9.6'
 
@@ -28,7 +26,7 @@ dependencies {
             "io.opencensus:opencensus-exporter-trace-stackdriver:${opencensusVersion}",
             "org.apache.logging.log4j:log4j-core:2.11.1"
 
-    runtime "io.opencensus:opencensus-contrib-log-correlation-log4j:${opencensusVersion}",
+    runtime "io.opencensus:opencensus-contrib-log-correlation-log4j2:${opencensusVersion}",
             "io.opencensus:opencensus-impl-lite:${opencensusVersion}",
             "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
             "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
@@ -37,7 +35,7 @@ dependencies {
 apply plugin: 'application'
 
 mainClassName =
-    'io.opencensus.demo.logcorrelation.log4j.OpenCensusLog4jLogCorrelationDemo'
+    'io.opencensus.demo.logcorrelation.log4j2.OpenCensusLog4jLogCorrelationDemo'
 
 applicationDefaultJvmArgs =
-    ["-Dlog4j2.contextDataInjector=io.opencensus.contrib.logcorrelation.log4j.OpenCensusTraceContextDataInjector"]
+    ["-Dlog4j2.contextDataInjector=io.opencensus.contrib.logcorrelation.log4j2.OpenCensusTraceContextDataInjector"]

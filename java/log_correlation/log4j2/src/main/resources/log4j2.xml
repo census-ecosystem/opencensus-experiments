@@ -14,14 +14,14 @@
         TODO(sebright): Allow fluent-plugin-google-cloud to format the trace ID once
         https://github.com/GoogleCloudPlatform/fluent-plugin-google-cloud/issues/239 is implemented.
         -->
-        <KeyValuePair key="logging.googleapis.com/trace" value="projects/${env:DEMO_GOOGLE_CLOUD_PROJECT_ID}/traces/$${ctx:openCensusTraceId}"/>
-        <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:openCensusSpanId}"/>
+        <KeyValuePair key="logging.googleapis.com/trace" value="projects/${env:DEMO_GOOGLE_CLOUD_PROJECT_ID}/traces/$${ctx:opencensusTraceId}"/>
+        <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:opencensusSpanId}"/>
 
         <!--
         There is no field corresponding to traceSampled in the Stackdriver LogEntry, so this field
         can only be added to the "jsonPayload" object.
         -->
-        <KeyValuePair key="traceSampled" value="$${ctx:openCensusTraceSampled}"/>
+        <KeyValuePair key="traceSampled" value="$${ctx:opencensusTraceSampled}"/>
 
      </JsonLayout>
     </File>
