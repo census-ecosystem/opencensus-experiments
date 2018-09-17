@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.demo.logcorrelation.log4j;
+package io.opencensus.demo.logcorrelation.log4j2;
 
 import io.opencensus.common.Scope;
 import io.opencensus.exporter.trace.stackdriver.StackdriverTraceConfiguration;
@@ -26,7 +26,7 @@ import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
-/** Demo for {@code opencensus-contrib-log-correlation-log4j}. */
+/** Demo for {@code opencensus-contrib-log-correlation-log4j2}. */
 public final class OpenCensusLog4jLogCorrelationDemo {
   private static final Logger logger =
       org.apache.logging.log4j.LogManager.getLogger(OpenCensusLog4jLogCorrelationDemo.class);

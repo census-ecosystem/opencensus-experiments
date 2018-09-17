@@ -9,7 +9,7 @@ format that allows Stackdriver to match the log entries with traces.
 
 The application logs messages through the Log4j API and creates local traces with `opencensus-api`.
 It uses
-[`opencensus-contrib-log-correlation-log4j`](https://github.com/census-instrumentation/opencensus-java/tree/master/contrib/log_correlation/log4j)
+[`opencensus-contrib-log-correlation-log4j2`](https://github.com/census-instrumentation/opencensus-java/tree/master/contrib/log_correlation/log4j2)
 to insert the current trace ID, span ID, and sampling decision into the context of every `LogEvent`
 created by Log4j.  That makes the tracing data accessible from Log4j layouts.  Additionally, this
 project configures Log4j to output structured, JSON logs.  Structured logs simplify specifying the
@@ -18,13 +18,13 @@ Stackdriver.  The application also directly exports traces to Stackdriver with
 `opencensus-exporter-trace-stackdriver`.  Then Stackdriver uses the tracing fields to match the
 `LogEntry` and trace on the server side.
 
-### Enabling `opencensus-contrib-log-correlation-log4j`
+### Enabling `opencensus-contrib-log-correlation-log4j2`
 
-The project enables `opencensus-contrib-log-correlation-log4j` by adding it as a runtime dependency
+The project enables `opencensus-contrib-log-correlation-log4j2` by adding it as a runtime dependency
 and specifying its implementation of Log4j's `ContextDataInjector` interface,
 `OpenCensusTraceContextDataInjector`.  The class must be specified with the system property
 `log4j2.contextDataInjector`, so the project passes
-`-Dlog4j2.contextDataInjector=io.opencensus.contrib.logcorrelation.log4j.OpenCensusTraceContextDataInjector`
+`-Dlog4j2.contextDataInjector=io.opencensus.contrib.logcorrelation.log4j2.OpenCensusTraceContextDataInjector`
 to the JVM.
 
 ### Configuring Log4j
