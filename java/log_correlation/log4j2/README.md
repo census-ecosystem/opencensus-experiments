@@ -2,8 +2,9 @@
 
 This directory contains an application with Log4j log statements and OpenCensus tracing
 instrumentation that can be configured to work with Stackdriver's log correlation features.  This
-readme describes how to configure the Stackdriver Logging agent to export the application's log in a
-format that allows Stackdriver to match the log entries with traces.
+readme describes how to configure the
+[Stackdriver Logging agent](https://cloud.google.com/logging/docs/agent/) to export the
+application's log in a format that allows Stackdriver to match the log entries with traces.
 
 ## Design of the project
 
@@ -37,9 +38,11 @@ See the comments in the file for more detail.
 
 ### Prerequisites
 
-1. A Google Cloud project with Stackdriver Logging enabled.
+1. A Google Cloud project with Stackdriver [Trace](https://cloud.google.com/trace/) and
+[Logging](https://cloud.google.com/logging/) enabled.
+
 2. A VM for running the application and the Stackdriver Logging agent.  Note that its logs may be
-uploaded to Stackdriver.
+uploaded to Stackdriver.  The VM should have Git and Java (JDK 7 or above) installed.
 
 ### Setting up log correlation
 
@@ -61,8 +64,8 @@ described in https://cloud.google.com/logging/docs/agent/configuration#structure
 that the demo project's `log4j2.xml` and the fluentd configuration specify the same log file.
 
 5. Add the following fluentd filter to transform Log4j's `level` field into the `severity` field
-that is expected by Stackdriver.  This snippet can be appended to the file from step 3.  Ensure that
-the tag on the first line of the snippet matches the tag in the fluentd configuration file from step 3.
+that is expected by Stackdriver.  This snippet can be appended to the file from step 4.  Ensure that
+the tag on the first line of the snippet matches the tag in the fluentd configuration file from step 4.
 
   ```xml
   <filter structured-log>
@@ -90,15 +93,19 @@ of the `severity` field
   ./gradlew run
   ```
 
-8. Look for the log entries and trace in Stackdriver.
+8. Look for the log entries and one sampled trace in Stackdriver.
 
-### Screenshots from running the demo
+    Find the log entries by going to the Stackdriver Logging page, as described in
+    https://cloud.google.com/logging/docs/view/overview, and filtering by the log name
+    ("structured-log").  This screenshot shows the log entries, which contain "trace", "spanId", and
+    "traceSampled" fields.  All Log4j log entry fields that are not recognized by Stackdriver appear
+    under "jsonPayload":
 
-Sampled trace in Stackdriver, with log entries displayed below each span:
+    ![Logs](images/logs.png "Example logs in Stackdriver")
 
-![Traces](images/trace.png "Example trace in Stackdriver")
+    Find the trace by going to the Trace List page, as described in
+    https://cloud.google.com/trace/docs/finding-traces, and searching for the root span name,
+    "ParentSpan".  Click on the trace and then click "Show logs" to display the log entries
+    associated with each span.
 
-Log entries containing "trace", "spanId", and "traceSampled" fields in Stackdriver.  All Log4j log
-entry fields that are not recognized by Stackdriver appear under "jsonPayload":
-
-![Logs](images/logs.png "Example logs in Stackdriver")
+    ![Traces](images/trace.png "Example trace in Stackdriver")
