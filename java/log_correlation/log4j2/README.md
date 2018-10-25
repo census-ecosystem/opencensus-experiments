@@ -50,20 +50,13 @@ uploaded to Stackdriver.  The VM should have Git and Java (JDK 7 or above) insta
 installation process, as described in
 https://cloud.google.com/logging/docs/structured-logging#structured-log-install.
 
-2. Set the environment variable `DEMO_GOOGLE_CLOUD_PROJECT_ID` to the Google Cloud project's project
-ID.  `log4j2.xml` uses the environment variable to output the trace ID in the format expected by
-Stackdriver, `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
+2. Clone this repository onto the VM and `cd` into this directory.
 
-    TODO(sebright): Remove this step once fluent-plugin-google-cloud supports formatting the trace ID
-    automatically (https://github.com/GoogleCloudPlatform/fluent-plugin-google-cloud/issues/239).
-
-3. Clone this repository onto the VM and `cd` into this directory.
-
-4. Add a fluentd configuration file for reading the JSON log file produced by the application, as
+3. Add a fluentd configuration file for reading the JSON log file produced by the application, as
 described in https://cloud.google.com/logging/docs/agent/configuration#structured-records.  Ensure
 that the demo project's `log4j2.xml` and the fluentd configuration specify the same log file.
 
-5. Add the following fluentd filter to transform Log4j's `level` field into the `severity` field
+4. Add the following fluentd filter to transform Log4j's `level` field into the `severity` field
 that is expected by Stackdriver.  This snippet can be appended to the file from step 4.  Ensure that
 the tag on the first line of the snippet matches the tag in the fluentd configuration file from step 4.
 
@@ -81,19 +74,19 @@ the tag on the first line of the snippet matches the tag in the fluentd configur
 of the `severity` field
 (https://github.com/GoogleCloudPlatform/fluent-plugin-google-cloud/issues/4).
 
-6. Restart the Stackdriver Logging agent so that it picks up the configuration change:
+5. Restart the Stackdriver Logging agent so that it picks up the configuration change:
 
   ```
   sudo service google-fluentd restart
   ```
 
-7. Run the application:
+6. Run the application:
 
   ```
   ./gradlew run
   ```
 
-8. Look for the log entries and one sampled trace in Stackdriver.
+7. Look for the log entries and one sampled trace in Stackdriver.
 
     Find the log entries by going to the Stackdriver Logging page, as described in
     https://cloud.google.com/logging/docs/view/overview, and filtering by the log name
