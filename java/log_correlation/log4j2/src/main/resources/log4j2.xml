@@ -10,14 +10,14 @@
         Stackdriver Logging agent converts to "trace" and "spanId" in the Stackdriver LogEntry
         (https://cloud.google.com/logging/docs/agent/configuration#special_fields_in_structured_payloads).
         -->
-        <KeyValuePair key="logging.googleapis.com/trace" value="$${ctx:opencensusTraceId}"/>
-        <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:opencensusSpanId}"/>
+        <KeyValuePair key="logging.googleapis.com/trace" value="$${ctx:traceId}"/>
+        <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:spanId}"/>
 
         <!--
         There is no field corresponding to traceSampled in the Stackdriver LogEntry, so this field
         can only be added to the "jsonPayload" object.
         -->
-        <KeyValuePair key="traceSampled" value="$${ctx:opencensusTraceSampled}"/>
+        <KeyValuePair key="traceSampled" value="$${ctx:traceSampled}"/>
 
      </JsonLayout>
     </File>
