@@ -10,9 +10,9 @@ repositories {
 }
 
 group = "io.opencensus"
-version = "0.17.0-SNAPSHOT"
+version = "0.18.0-SNAPSHOT"
 
-def opencensusVersion = "0.16.1"
+def opencensusVersion = "0.17.0"
 
 def jacksonVersion = '2.9.6'
 
