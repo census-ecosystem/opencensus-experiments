@@ -29,7 +29,7 @@ import io.opencensus.trace.samplers.Samplers;
 
 import java.io.IOException;
 
-public class OpenCensusTraceUtil {
+public final class OpenCensusTraceUtil {
   public static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
   // Tracing

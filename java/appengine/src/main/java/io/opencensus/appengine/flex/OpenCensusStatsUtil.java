@@ -39,7 +39,7 @@ import java.util.Arrays;
 /**
  * A utility class for using OpenCensus Stats in microservices.
  */
-public class OpenCensusStatsUtil {
+public final class OpenCensusStatsUtil {
   /** The project id, used by all microservices. */
   public static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
