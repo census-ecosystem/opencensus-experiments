@@ -91,8 +91,6 @@ public final class OpenCensusStatsUtil {
       Measure.MeasureDouble.create(
           "my.org/cloud-storage-client/latency", "Latency in milliseconds.", "ms");
 
-
-  @SuppressWarnings("deprecation")
   private static final View CLIENT_LATENCY_VIEW =
       View.create(
           View.Name.create("my.org/cloud-storage-client/latency"),
@@ -100,8 +98,7 @@ public final class OpenCensusStatsUtil {
           CLIENT_LATENCY,
           Distribution.create(BucketBoundaries.create(Arrays.asList(
               1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0))),
-          Arrays.asList(CLIENT_METHOD),
-          View.AggregationWindow.Cumulative.create());
+          Arrays.asList(CLIENT_METHOD));
 
   static {
     if (!PROJECT_ID.isEmpty()) {
