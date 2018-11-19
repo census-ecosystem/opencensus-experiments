@@ -22,7 +22,6 @@ import io.opencensus.exporter.trace.stackdriver.StackdriverTraceExporter;
 
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanBuilder;
-import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
@@ -33,8 +32,7 @@ public final class OpenCensusTraceUtil {
   public static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
   // Tracing
-  public static final TraceOptions SAMPLED = TraceOptions.builder().setIsSampled(true).build();
-  public static final Tracer tracer = Tracing.getTracer();
+  private static final Tracer tracer = Tracing.getTracer();
 
   public static SpanBuilder createSpanBuilder(String name) {
     return tracer
