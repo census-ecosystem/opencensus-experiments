@@ -38,9 +38,9 @@ message Spec {
     HTTP = 1;
   }
   enum Propagation {
-    BINARY = 0;
-    B3 = 1;
-    TRACE_CONTEXT = 2;
+    BINARY_FORMAT_PROPAGATION = 0;
+    B3_FORMAT_PROPAGATION = 1;
+    TRACE_CONTEXT_FORMAT_PROPAGATION = 2;
   }
   Transport transport = 1;
   Propagation propagation = 2;
@@ -81,33 +81,43 @@ message TestResponse {
   repeated CommonResponseStatus status = 2;
 }
 
-// Service for test request.
-service TestRequestService {
+enum BasePort {
+  INVALID_BASE_PORT = 0;
+  JAVA_BASE_PORT = 10100;
+  GO_BASE_PORT = 10200;
+  NODEJS_BASE_PORT = 10300;
+  PYTHON_BASE_PORT = 10400;
+  CPP_BASE_PORT = 10500;
+}
+
+// ------Test Execution Service (Runs on all Server)---------
+service TestExecutionService {
 	rpc test(TestRequest) returns (TestResponse) {}
 }
 
-// Registration Service. Server registers their services to Test-Coordinator.
+
+// ------Registration Service (Runs on Test-Coordinator)-------
 service RegistrationService {
 	rpc register(RegistrationRequest) returns (RegistrationResponse) {}
 }
 
 
-//------------------Test Service -------------
+//------------------Interoperability Service  -------------
 
-message TestRunRequest {
+message InteropRunRequest {
   // Empty for now but can be enhanced to run subset of test.
 }
 
-message TestRunResponse {
+message InteropRunResponse {
   int64 id = 1; // Returns test run id.
 }
 
-message TestResultRequest {
+message InteropResultRequest {
   int64 id = 1;  // Id returned as response when test run was requested.
 }
 
 // Response containing all test cases.
-message TestResultResponse {
+message InteropResultResponse {
   int64 id = 1;
   CommonResponseStatus status = 2;
   repeated TestResult result = 3;
@@ -122,10 +132,10 @@ message TestResult {
   repeated CommonResponseStatus details = 5;
 }
 
-// Test Service t
-service TestService {
-	rpc result(TestResultRequest) returns (TestResultResponse) {}
+// Interop Test Service
+service InteropTestService {
+	rpc result(InteropResultRequest) returns (InteropResultResponse) {}
 
 	// Runs the test asynchronously.
-	rpc run(TestRunRequest) returns (TestRunResponse) {}
+	rpc run(InteropRunRequest) returns (InteropRunResponse) {}
 }

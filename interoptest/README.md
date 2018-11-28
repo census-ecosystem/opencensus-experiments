@@ -12,8 +12,8 @@ TagContexts across service written in different languages
 
 ### Trace Propagation
 
-|  Transport | Propagation Format | Go | Java | Python | Nodejs | C++ |
-|------------|--------------------|----|------|--------|--------|-----|
+| Transport | Propagation Format | Go | Java | Python | Nodejs | C++ |
+|-----------|--------------------|----|------|--------|--------|-----|
 | gRPC | Binary | Y | Y | Y | Y | ? |
 | HTTP | B3 | Y | Y | Y | Y | ? |
 | HTTP | TraceContext | Y | Y | Y | Y | ? |
@@ -28,9 +28,9 @@ TagContexts across service written in different languages
 ## Design
 ![Interoperability Test Design Diagram][InteroperabilityTestDesignDiagram]
 
-### Orchestrator
-Orchestrator is responsible for instantiating all containers and triggering test run by requesting Test Coordinator to run certain tests. 
-TBD: Should it monitor Test Coordinator and post the result somewhere?
+### Controller
+Controller is responsible for instantiating all containers and triggering test run by requesting Test Coordinator to run certain tests. 
+TODO: Should it monitor Test Coordinator and post the result somewhere?
 
 Implement using skaffold, docker, and shell script/python.
 
@@ -47,8 +47,8 @@ TC will be implemented in Go.
 - Provides following services over gRPC.
   - Service Registration. All Servers registers their service using `register` rpc.
   - Test Service. 
-    - Orchestrator can request a test run using 'run' rpc. 
-    - Orchestrator can request a result using 'result' rpc.
+    - Controller can request a test run using 'run' rpc. 
+    - Controller can request a result using 'result' rpc.
 - Executes test cases in background asynchronously upon receiving run request over gRPC.
 - Listens on Port 10001 for trace/stats export from OC Agent.
 - Parses trace export from OC Agent and stitches them together to create a trace.
@@ -80,18 +80,25 @@ propagation format.
     | Java | B3-over-HTTP | 10102 |
     | Java | TraceContext-over-HTTP | 10103 |
   
+  - **GRPC Transport**: Use [TestExecutionService][InteroperabilityTestProto] defined in proto.
+  - **HTTP Transport**: Use 
+     - method: POST 
+     - path: `/test/request`
+     - Payload: TestRequest protobuf
+     - Header: 'Content-type=application/x-protobuf: messageType=X.Y.Z'
 - Enable tracing for all services.
 - Register all services with Test Coordinator on boot up along with host and port. Port can
 be static as long as there are no conflicts.
 - Register OC Agent as an exporter for all the services.
 - All Service should provide TestService, where it would receive a TestRequest and respond with
- TestResponse. The TestRequest may contain one or more servers.
-  - **Request contains at least one server:** Create a new request as per the first server 
-  specification in the payload of the request received. Create a new payload excluding the first 
-  server specification and wait for response for 2 seconds. Create a Test Response and append the 
-  CommonResponseStatus received from the server.
-  - **Request contains no server:** Simply create a TestResponse with CommonResponseStatus and
-  send the response back to the requester.
+ TestResponse. A request may be a single-hop request or a multip-hop request.
+ - **Single-hop Request** If a request is single-hop then the server should reply with the response 
+ immediately. A request is single-hop if the request does not contain any service-hops (see proto
+ for [TestRequest][InteroperabilityTestProto]).
+ - **Multi-hop Requests** If a request is multi-hop then the server creates a new request to
+ a server as specified in the service-hop (first service-hop if there are more than 1). The server
+ Waits for the response and appends it to its own response and sends the reply. See proto for 
+ [TestResponse][InteroperabilityTestProto]
   
 - Request could contain a list of tags. If they do then tags should be propagated along with trace
  context. [TODO] Do all plugins provide propagation?
@@ -126,7 +133,7 @@ be static as long as there are no conflicts.
 OC Agent simply receives export from each server and forwards that to TC.
 
 ## Protos
-All protto definitions used for Interoperability test is defined [here][InteroperabilityTestProto]
+All proto definitions used for Interoperability test is defined [here][InteroperabilityTestProto]
 
 [InteroperabilityTestDesignDiagram]: /interoptest/drawings/InteroperabilityTestDesignDiagram.png "Interoperability Design"
 [InteroperabilityTestProto]: /interoptest/proto/interoperability_test.proto "Interoperability Test Proto"
