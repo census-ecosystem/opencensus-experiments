@@ -18,6 +18,6 @@ Sampled trace in Stackdriver, with log entries displayed below each span:
 
 ![Traces](images/trace.png "Example trace in Stackdriver")
 
-Log entries containing "trace" and "spanId" fields in Stackdriver:
+Log entries containing "trace", "spanId", and "traceSampled" fields in Stackdriver:
 
 ![Logs](images/logs.png "Example logs in Stackdriver")
