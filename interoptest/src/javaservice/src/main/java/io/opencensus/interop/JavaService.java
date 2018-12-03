@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package interop;
+package io.opencensus.interop;
 
 import java.io.BufferedReader;
 import java.io.IOException;
