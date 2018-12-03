@@ -36,3 +36,6 @@ bin
 
 # Other
 TAGS
+
+# Generated Protos
+interoptest/genproto/**
