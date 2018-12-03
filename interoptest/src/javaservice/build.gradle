@@ -1,0 +1,106 @@
+description = 'Java Service'
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.3'
+    }
+}
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'com.google.protobuf'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+group = "javaservice"
+version = "0.1.0-SNAPSHOT" // CURRENT_OPENCENSUS_VERSION
+
+def jettyVersion = "9.4.12.v20180830"
+def jettyServletVersion = "9.4.6.v20170531"
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
+ext {
+    speed = project.hasProperty('speed') ? project.getProperty('speed') : false
+    offlineCompile = new File("$buildDir/output/lib")
+}
+
+dependencies {
+    if (speed) {
+        compile fileTree(dir: offlineCompile, include: '*.jar')
+    } else {
+        compile "com.google.api.grpc:proto-google-common-protos:1.11.0",
+                "org.eclipse.jetty:jetty-server:${jettyVersion}",
+                "org.eclipse.jetty:jetty-servlet:${jettyServletVersion}"
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.5.1-1'
+    }
+    generateProtoTasks {
+        ofSourceSet('main')
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'interop'
+            srcDirs 'build/generated/source/proto/main/java/interop'
+        }
+    }
+}
+
+// Provide convenience executables for trying out the examples.
+apply plugin: 'application'
+
+startScripts.enabled = false
+
+// This to cache dependencies during Docker image building. First build will take time.
+// Subsequent build will be incremental.
+task downloadRepos(type: Copy) {
+    from configurations.compile
+    into offlineCompile
+    from configurations.runtime
+    into offlineCompile
+}
+
+task javaservice(type: CreateStartScripts) {
+    mainClassName = 'interop.JavaService'
+    applicationName = 'javaservice'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+applicationDistribution.into('bin') {
+    from(javaservice)
+    fileMode = 0755
+}
+group 'javaservice'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
