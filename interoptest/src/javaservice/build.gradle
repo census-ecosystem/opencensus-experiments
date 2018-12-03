@@ -98,7 +98,7 @@ task downloadRepos(type: Copy) {
 }
 
 task javaservice(type: CreateStartScripts) {
-    mainClassName = 'interop.JavaService'
+    mainClassName = 'io.opencensus.interop.JavaService'
     applicationName = 'javaservice'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = jar.outputs.files + project.configurations.runtime
