@@ -44,7 +44,7 @@ final class GrpcServer {
 
   void start() throws IOException {
     server = ServerBuilder.forPort(serverPort).addService(new TestExecutionServiceImpl()).build().start();
-    logger.info("Server started, listening on " + serverPort);
+    logger.info("Java gRPC Server started, listening on " + serverPort);
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread() {
@@ -64,15 +64,30 @@ final class GrpcServer {
     }
   }
 
+  static final void serviceHop(ServiceHop hop) {
+    String name = hop.getService().getName();
+    int port = hop.getService().getPort();
+    String host = hop.getService().getHost();
+    Spec spec = hop.getService().getSpec();
+    if (spec.getTransport().equals(Spec.Transport.GRPC) &&
+        spec.getPropagation().equals(Spec.Propagation.BINARY_FORMAT_PROPAGATION)) {
+      // make gprc call ...
+    }
+  }
+
   static class TestExecutionServiceImpl extends TestExecutionServiceGrpc.TestExecutionServiceImplBase {
     @Override
     public void test(TestRequest req, StreamObserver<TestResponse> responseObserver) {
+      logger.info("Java gRPC Test Server RPC: start");
       long id = req.getId();
       String name = req.getName();
       for (ServiceHop hop : req.getServiceHopsList()) {
-
+        serviceHop(hop);
       }
-      return;
+      TestResponse response = TestResponse.newBuilder().setId(id).build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+      logger.info("Java gRPC Test Server RPC: done");
     }
   }
 }
