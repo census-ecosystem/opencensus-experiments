@@ -66,7 +66,15 @@ protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.5.1-1'
     }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
     generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
         ofSourceSet('main')
     }
 }
