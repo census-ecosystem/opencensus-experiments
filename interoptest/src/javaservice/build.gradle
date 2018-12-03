@@ -76,7 +76,6 @@ sourceSets {
     main {
         java {
             srcDirs 'src'
-            srcDirs 'build/generated/source/proto/main/java/interop'
             srcDirs 'build/generated/source/proto/main/grpc'
             srcDirs 'build/generated/source/proto/main/java'
         }
