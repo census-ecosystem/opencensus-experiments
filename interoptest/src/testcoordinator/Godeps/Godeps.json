@@ -1,0 +1,29 @@
+{
+	"ImportPath": "goservice",
+	"GoVersion": "go1.10",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/konsorten/go-windows-terminal-sequences",
+			"Comment": "v1.0.1",
+			"Rev": "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
+		},
+		{
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "v1.2.0-10-g29d7eb2",
+			"Rev": "29d7eb25e8ffa54207ff5a9a5c3d63e95be2cc39"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh/terminal",
+			"Rev": "eb0de9b17e854e9b1ccd9963efafc79862359959"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
+			"Rev": "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+		}
+	]
+}
