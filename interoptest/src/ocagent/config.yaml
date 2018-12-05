@@ -1,0 +1,10 @@
+exporters:
+    ocagent:
+        endpoint: "http://testcoordinator:10000/api/v2/spans"
+
+    zipkin:
+        endpoint: "http://traceui:9411/api/v2/spans"
+
+receivers:
+    opencensus:
+        address: "127.0.0.1:55678"
