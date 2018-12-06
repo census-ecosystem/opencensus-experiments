@@ -70,7 +70,9 @@ public class JavaService {
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/");
 
-    Server server = new Server(10101);
+    new GrpcServer(10101).start();
+
+    Server server = new Server(10100);
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
 

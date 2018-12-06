@@ -16,19 +16,9 @@
 
 package io.opencensus.interop;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
-
-import io.opencensus.trace.AttributeValue;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.SpanBuilder;
-import io.opencensus.trace.Status;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.samplers.Samplers;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +27,6 @@ import java.util.logging.Logger;
 
 final class GrpcServer {
   private static final Logger logger = Logger.getLogger(GrpcServer.class.getName());
-  private static final Tracer tracer = Tracing.getTracer();
 
   private final int serverPort;
   private Server server;
@@ -64,72 +53,19 @@ final class GrpcServer {
 
   private void stop() {
     if (server != null) {
-
+      server.shutdown();
     }
   }
-
-  static final TestResponse serviceHop(ServiceHop hop, List<ServiceHop> hops) {
-    String name = hop.getService().getName();
-    int port = hop.getService().getPort();
-    String host = hop.getService().getHost();
-    Spec spec = hop.getService().getSpec();
-    if (spec.getTransport().equals(Spec.Transport.GRPC) &&
-        spec.getPropagation().equals(Spec.Propagation.BINARY_FORMAT_PROPAGATION)) {
-
-
-    }
-    return null;
-  }
-
-  private static final CommonResponseStatus OK_STATUS = CommonResponseStatus
-      .newBuilder().setStatus(io.opencensus.interop.Status.SUCCESS).setError("").build();
 
   static class TestExecutionServiceImpl extends TestExecutionServiceGrpc.TestExecutionServiceImplBase {
     @Override
     public void test(TestRequest req, StreamObserver<TestResponse> responseObserver) {
-      logger.info("Java gRPC Test Server RPC: start");
-      long id = req.getId();
-      String name = req.getName();
-      TestResponse.Builder respBuilder = TestResponse.newBuilder().setId(id).addStatus(OK_STATUS);
-      if (req.getServiceHopsCount() != 0) {
-        List<ServiceHop> hops = req.getServiceHopsList();
-        ServiceHop hop = hops.remove(0); // dpo: this may not work.
-        TestResponse rest = serviceHop(hop, hops);
-        // null indicates unsupported service hop.
-        if (rest != null) {
-          respBuilder.addAllStatus(rest.getStatusList());
-        }
-      }
-      responseObserver.onNext(respBuilder.build());
+      logger.info("Java gRPC Interop Test Server: start");
+      TestResponse response =
+          ServiceHopper.serviceHop(req.getId(), req.getName(), req.getServiceHopsList());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
-      logger.info("Java gRPC Test Server RPC: done");
-    }
-  }
-
-  static class GrpcClient {
-    private final String host;
-    private final int port;
-
-    // Construct client connecting to server at {@code host:port}.
-    GrpcClient(String host, int port) {
-      this.host = host;
-      this.port = port;
-    }
-
-    TestResponse test(long id, String name, List<ServiceHop> serviceHops) {
-      ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-                               // Channels are secure by default (via SSL/TLS).
-                               // For the example we disable TLS to avoid
-                               // needing certificates.
-                               .usePlaintext(true)
-                               .build();
-      TestExecutionServiceGrpc.TestExecutionServiceBlockingStub blockingStub =
-          TestExecutionServiceGrpc.newBlockingStub(channel);
-      TestRequest request =
-          TestRequest.newBuilder().setId(id).setName(name).addAllServiceHops(serviceHops).build();
-      TestResponse response = blockingStub.test(request);
-      channel.shutdown();//.awaitTermination(5, TimeUnit.SECONDS);
-      return response;
+      logger.info("Java gRPC Interop Test Server: finished");
     }
   }
 }
