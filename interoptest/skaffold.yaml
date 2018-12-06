@@ -28,6 +28,10 @@ build:
     context: src/pythonservice
   - image: gcr.io/opencensus-microservices-demo/testcoordinator
     context: src/testcoordinator
+  - image: gcr.io/opencensus-microservices-demo/ocagent
+    context: src/ocagent
+  - image: gcr.io/opencensus-microservices-demo/traceui
+    context: src/traceui
 deploy:
   kubectl:
     manifests:
