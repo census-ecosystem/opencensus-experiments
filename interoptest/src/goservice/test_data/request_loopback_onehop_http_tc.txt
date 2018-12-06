@@ -1,0 +1,20 @@
+id: 10203
+name: "loopback_onehop_http_textformat"
+service_hops {
+  service {
+    name: "goservice"
+    port: 10203
+    spec {
+      transport: HTTP
+      propagation: TRACE_CONTEXT_FORMAT_PROPAGATION
+    }
+  }
+  tags {
+    key: "key1"
+    value: "value1"
+  }
+  tags {
+    key: "key2"
+    value: "value2"
+  }
+}

@@ -1,0 +1,20 @@
+id: 10301
+name: "loopback_onehop_grpc_binary"
+service_hops {
+  service {
+    name: "nodejsservice"
+    port: 10301
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+  tags {
+    key: "key1"
+    value: "value1"
+  }
+  tags {
+    key: "key2"
+    value: "value2"
+  }
+}

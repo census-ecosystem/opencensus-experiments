@@ -1,0 +1,20 @@
+id: 10201
+name: "loopback_onehop_grpc_binary"
+service_hops {
+  service {
+    name: "goservice"
+    port: 10201
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+  tags {
+    key: "key1"
+    value: "value1"
+  }
+  tags {
+    key: "key2"
+    value: "value2"
+  }
+}
