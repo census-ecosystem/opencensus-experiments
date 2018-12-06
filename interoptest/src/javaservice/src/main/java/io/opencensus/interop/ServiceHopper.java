@@ -40,16 +40,12 @@ import java.util.logging.Logger;
 final class ServiceHopper {
   private static final Logger logger = Logger.getLogger(ServiceHopper.class.getName());
   private static final Tagger tagger = Tags.getTagger();
-
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).setError("").build();
-
   private static final CommonResponseStatus B3_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
       .setStatus(Status.FAILURE).setError("B3 Format Unsupported").build();
-
   private static final CommonResponseStatus TC_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
       .setStatus(Status.FAILURE).setError("Trace Context Format Unsupported").build();
-
 
   static final TestResponse serviceHop(long id, String name, List<ServiceHop> hops) {
     // TODO(dpo): verify base case.

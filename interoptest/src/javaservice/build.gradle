@@ -47,6 +47,7 @@ dependencies {
     } else {
         compile "com.google.api.grpc:proto-google-common-protos:1.11.0",
                 "io.opencensus:opencensus-api:${opencensusVersion}",
+                "io.opencensus:opencensus-contrib-grpc-metrics:${opencensusVersion}",
     		"io.grpc:grpc-protobuf:${grpcVersion}",
      	        "io.grpc:grpc-stub:${grpcVersion}",
                 "io.grpc:grpc-netty:${grpcVersion}",
@@ -54,7 +55,7 @@ dependencies {
                 "org.eclipse.jetty:jetty-servlet:${jettyServletVersion}"
 
         runtime "io.opencensus:opencensus-impl:${opencensusVersion}",
-    	    "io.netty:netty-tcnative-boringssl-static:2.0.8.Final"
+                "io.netty:netty-tcnative-boringssl-static:2.0.8.Final"
     }
 }
 

@@ -16,6 +16,8 @@
 
 package io.opencensus.interop;
 
+import io.opencensus.contrib.grpc.metrics.RpcViews;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -70,6 +72,8 @@ public class JavaService {
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/");
 
+    // Registers all gRPC views.
+    RpcViews.registerAllViews();
     new GrpcServer(10101).start();
 
     Server server = new Server(10100);
