@@ -41,7 +41,7 @@ final class ServiceHopper {
   private static final Logger logger = Logger.getLogger(ServiceHopper.class.getName());
   private static final Tagger tagger = Tags.getTagger();
   private static final CommonResponseStatus SUCCESS =
-      CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).setError("").build();
+      CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError("Really Success").build();
   private static final CommonResponseStatus B3_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
       .setStatus(Status.FAILURE).setError("B3 Format Unsupported").build();
   private static final CommonResponseStatus TC_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
@@ -50,11 +50,13 @@ final class ServiceHopper {
   static final TestResponse serviceHop(long id, String name, List<ServiceHop> hops) {
     // TODO(dpo): verify base case.
     if (hops.size() == 0) {
-      return TestResponse.newBuilder().setId(id).build();
+      return TestResponse.newBuilder().setId(id).addStatus(SUCCESS).build();
     }
     ServiceHop first = hops.get(0);
     List<ServiceHop> rest = new ArrayList(hops.size() - 1);
-    rest.addAll(1, hops);
+    for (int i = 1; i < hops.size(); i++) {
+      rest.add(hops.get(i));
+    }
     Spec.Transport transport = first.getService().getSpec().getTransport();
     Spec.Propagation propagation = first.getService().getSpec().getPropagation();
     try (Scope tagScope = scopeTags(first.getTagsList())) {

@@ -21,6 +21,8 @@ import io.opencensus.contrib.grpc.metrics.RpcViews;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -39,10 +41,59 @@ public class JavaService {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
 
+      System.err.println("GET");
+
+      Spec grpcSpec = Spec.newBuilder()
+                      .setTransport(Spec.Transport.GRPC)
+                      .setPropagation(Spec.Propagation.BINARY_FORMAT_PROPAGATION)
+                      .build();
+
+      Service javaGrpcService = Service.newBuilder()
+                                .setName("grpc java service")
+                                .setPort(10101)
+                                .setHost("localhost")
+                                .setSpec(grpcSpec)
+                                .build();
+
+      Spec httpSpec = Spec.newBuilder()
+                      .setTransport(Spec.Transport.HTTP)
+                      .setPropagation(Spec.Propagation.B3_FORMAT_PROPAGATION)
+                      .build();
+      Service javaHttpService = Service.newBuilder()
+                                .setName("http java service")
+                                .setPort(10102)
+                                .setHost("localhost")
+                                .setSpec(httpSpec)
+                                .build();
+      ServiceHop hop1 = ServiceHop.newBuilder()
+                        .setService(javaGrpcService)
+                        .addTags(Tag.newBuilder().setKey("key1").setValue("val1").build())
+                        .build();
+      ServiceHop hop2 = ServiceHop.newBuilder()
+                        .setService(javaGrpcService)
+                        .addTags(Tag.newBuilder().setKey("key2").setValue("val2").build())
+                        .build();
+      ServiceHop hop3 = ServiceHop.newBuilder()
+                        .setService(javaHttpService)
+                        .addTags(Tag.newBuilder().setKey("key3").setValue("val3").build())
+                        .build();
+      ServiceHop hop4 = ServiceHop.newBuilder()
+                        .setService(javaGrpcService)
+                        .addTags(Tag.newBuilder().setKey("key4").setValue("val4").build())
+                        .build();
+
+      List<ServiceHop> hops = new ArrayList();
+      hops.add(hop1);
+      hops.add(hop2);
+      hops.add(hop3);
+      hops.add(hop4);
+      TestResponse testResponse = ServiceHopper.serviceHop(4242, "JavaService", hops);
+      System.err.println("GET: TestResponse: " + testResponse);
       PrintWriter pout = response.getWriter();
 
       pout.print("<html><body>");
       pout.print("<h3>Hello Servlet</h3>");
+      pout.print("<h3>" + testResponse + "</h3>");
       pout.print("</body></html>");
       return;
     }
@@ -50,6 +101,7 @@ public class JavaService {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+      System.err.println("POST");
       // Read from request
       StringBuilder buffer = new StringBuilder();
       BufferedReader reader = request.getReader();
