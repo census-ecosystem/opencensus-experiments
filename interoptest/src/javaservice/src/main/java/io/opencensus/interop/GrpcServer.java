@@ -57,7 +57,8 @@ final class GrpcServer {
     }
   }
 
-  static class TestExecutionServiceImpl extends TestExecutionServiceGrpc.TestExecutionServiceImplBase {
+  private static class TestExecutionServiceImpl
+      extends TestExecutionServiceGrpc.TestExecutionServiceImplBase {
     @Override
     public void test(TestRequest req, StreamObserver<TestResponse> responseObserver) {
       logger.info("Java gRPC Interop Test Server: start");

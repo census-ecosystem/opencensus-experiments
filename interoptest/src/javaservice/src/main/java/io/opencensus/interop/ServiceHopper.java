@@ -42,13 +42,8 @@ final class ServiceHopper {
   private static final Tagger tagger = Tags.getTagger();
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError("Really Success").build();
-  private static final CommonResponseStatus B3_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
-      .setStatus(Status.FAILURE).setError("B3 Format Unsupported").build();
-  private static final CommonResponseStatus TC_FORMAT_FAILURE = CommonResponseStatus.newBuilder()
-      .setStatus(Status.FAILURE).setError("Trace Context Format Unsupported").build();
 
   static final TestResponse serviceHop(long id, String name, List<ServiceHop> hops) {
-    // TODO(dpo): verify base case.
     if (hops.size() == 0) {
       return TestResponse.newBuilder().setId(id).addStatus(SUCCESS).build();
     }
@@ -68,21 +63,18 @@ final class ServiceHopper {
             case TRACE_CONTEXT_FORMAT_PROPAGATION:
               return httpTraceContextFormatServiceHopper(id, name, first, rest);
             default:
-              logger.info("Unsupported propagation: " + propagation);
-              return null;
+              return fail(id, "Unsupported propagation: " + propagation);
           }
         case GRPC:
           switch (propagation) {
             case BINARY_FORMAT_PROPAGATION:
               return grpcBinaryFormatServiceHopper(id, name, first, rest);
             default:
-              logger.info("Unsupported propagation: " + propagation);
-              return null;
+              return fail(id, "Unsupported propagation: " + propagation);
           }
         default:
-          logger.info("Unknown transport: " + transport);
+          return fail(id, "Unknown transport: " + transport);
       }
-      return null;
     }
   }
 
@@ -92,6 +84,22 @@ final class ServiceHopper {
       builder.put(TagKey.create(tag.getKey()), TagValue.create(tag.getValue()));
     }
     return builder.buildScoped();
+  }
+
+  private static CommonResponseStatus fail(String msg) {
+    return CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError(msg).build();
+  }
+
+  private static TestResponse fail(long id, String msg) {
+    return TestResponse.newBuilder().setId(id).addStatus(fail(msg)).build();
+  }
+
+  private static final TestResponse addSuccessStatus(TestResponse response) {
+    return TestResponse.newBuilder()
+        .setId(response.getId())
+        .addStatus(SUCCESS)
+        .addAllStatus(response.getStatusList())
+        .build();
   }
 
   private static TestResponse grpcBinaryFormatServiceHopper(
@@ -116,19 +124,11 @@ final class ServiceHopper {
 
   private static TestResponse httpB3FormatServiceHopper(
       long id, String name, ServiceHop first, List<ServiceHop> rest) {
-    return TestResponse.newBuilder().setId(id).addStatus(B3_FORMAT_FAILURE).build();
+    return fail(id, "B3 Format Unsupported");
   }
 
   private static TestResponse httpTraceContextFormatServiceHopper(
       long id, String name, ServiceHop first, List<ServiceHop> rest) {
-    return TestResponse.newBuilder().setId(id).addStatus(TC_FORMAT_FAILURE).build();
-  }
-
-  private static final TestResponse addSuccessStatus(TestResponse response) {
-    return TestResponse.newBuilder()
-        .setId(response.getId())
-        .addStatus(SUCCESS)
-        .addAllStatus(response.getStatusList())
-        .build();
+    return fail(id, "Trace Context Format Unsupported");
   }
 }
