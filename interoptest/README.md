@@ -84,8 +84,7 @@ propagation format.
   - **HTTP Transport**: Use 
      - method: POST 
      - path: `/test/request`
-     - Payload: TestRequest protobuf
-     - Header: 'Content-type=application/x-protobuf: messageType=X.Y.Z'
+     - Payload: TestRequest protobuf in textformat
 - Enable tracing for all services.
 - Register all services with Test Coordinator on boot up along with host and port. Port can
 be static as long as there are no conflicts.
