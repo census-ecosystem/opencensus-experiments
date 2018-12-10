@@ -63,7 +63,7 @@ message RegistrationResponse {
 message TestRequest {
   int64 id = 1;
   string name = 2;
-  repeated ServiceHop service_hops = 3;
+  ServiceHop service_hops = 3;
 }
 
 message ServiceHop {
