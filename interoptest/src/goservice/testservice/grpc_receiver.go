@@ -16,7 +16,6 @@ package testservice
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -38,11 +37,6 @@ type GrpcReceiver struct {
 	startServerOnce       sync.Once
 	startRegistrationOnce sync.Once
 }
-
-var (
-	errAlreadyStarted = errors.New("already started")
-	errAlreadyStopped = errors.New("already stopped")
-)
 
 // New just creates the test services for request over GRPC.
 func New(addr string) (*GrpcReceiver, error) {
