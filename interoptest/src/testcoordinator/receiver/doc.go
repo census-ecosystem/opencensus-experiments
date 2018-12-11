@@ -12,21 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
-
-import (
-  "net/http"
-  "strings"
-)
-func sayHello(w http.ResponseWriter, r *http.Request) {
-  message := r.URL.Path
-  message = strings.TrimPrefix(message, "/")
-  message = "Hello, it is testcoordinator " + message
-  w.Write([]byte(message))
-}
-func main() {
-  http.HandleFunc("/", sayHello)
-  if err := http.ListenAndServe(":10000", nil); err != nil {
-    panic(err)
-  }
-}
+// Package receiver is the logic that receives exported TraceData from OC Agents on each
+// test server.
+package receiver
