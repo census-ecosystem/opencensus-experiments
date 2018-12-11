@@ -38,8 +38,8 @@ type GrpcReceiver struct {
 	startRegistrationOnce sync.Once
 }
 
-// New just creates the test services for request over GRPC.
-func New(addr string) (*GrpcReceiver, error) {
+// NewGRPCReciever just creates the test services for request over GRPC.
+func NewGRPCReciever(addr string) (*GrpcReceiver, error) {
 	// TODO: consider using options.
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -131,5 +131,6 @@ type GrpcTestReceiver struct {
 // Test is the gRPC method that handles test requests.
 func (gtr *GrpcTestReceiver) Test(_ context.Context, req *interop.TestRequest) (*interop.TestResponse, error) {
 	// TODO: add servicing test request.
-	return &interop.TestResponse{Id: req.GetId()}, nil
+	var rp *RequestProcessor
+	return rp.getInstance().process(context.Background(), req)
 }

@@ -15,17 +15,36 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"strings"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"context"
 	"contrib.go.opencensus.io/exporter/ocagent"
-	"github.com/gorilla/mux"
+	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
+	"github.com/sirupsen/logrus"
 	"go.opencensus.io/exporter/jaeger"
-	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
+	"goservice/testservice"
 )
+
+var log *logrus.Logger
+
+func init() {
+	log = logrus.New()
+	log.Level = logrus.DebugLevel
+	log.Formatter = &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "timestamp",
+			logrus.FieldKeyLevel: "severity",
+			logrus.FieldKeyMsg:   "message",
+		},
+		TimestampFormat: time.RFC3339Nano,
+	}
+	log.Out = os.Stdout
+}
 
 func registerJaegerExporter() {
 
@@ -54,25 +73,52 @@ func registerOcAgentExporter() {
 	})
 }
 
-func sayHello(w http.ResponseWriter, r *http.Request) {
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
-	message = "Hello, it is goservice " + message
-	w.Write([]byte(message))
-}
-
 func main() {
-	registerOcAgentExporter()
 	registerJaegerExporter()
-	r := mux.NewRouter()
-	r.HandleFunc("/", sayHello)
-
-	var handler http.Handler = r
-	handler = &ochttp.Handler{ // add opencensus instrumentation
-		Handler:     handler,
-		Propagation: &tracecontext.HTTPFormat{}}
-
-	if err := http.ListenAndServe(":10201", handler); err != nil {
-		panic(err)
+	registerOcAgentExporter()
+	grpcServer, err := testservice.NewGRPCReciever(fmt.Sprintf(":%d", interop.ServicePort_GO_GRPC_BINARY_PROPAGATION_PORT))
+	if err != nil {
+		log.Errorf("error creating grpc server: %v", err)
+		os.Exit(-1)
 	}
+	b3Addr := fmt.Sprintf(":%d", interop.ServicePort_GO_HTTP_B3_PROPAGATION_PORT)
+	tcAddr := fmt.Sprintf(":%d", interop.ServicePort_GO_HTTP_TRACECONTEXT_PROPAGATION_PORT)
+	httpServer := testservice.NewHttpReceiver(b3Addr, tcAddr)
+
+	ctx := context.Background()
+	err = grpcServer.Start(ctx)
+	if err != nil {
+		log.Errorf("error starting grpc server: %v", err)
+		os.Exit(-1)
+	}
+
+	err = httpServer.B3Start(ctx)
+	if err != nil {
+		log.Errorf("error starting http b3 server: %v", err)
+		os.Exit(-1)
+	}
+
+	err = httpServer.TcStart(ctx)
+	if err != nil {
+		log.Errorf("error starting http tracecontext server: %v", err)
+		os.Exit(-1)
+	}
+
+	var gracefulStop = make(chan os.Signal)
+
+	signal.Notify(gracefulStop, syscall.SIGTERM)
+	signal.Notify(gracefulStop, syscall.SIGINT)
+
+	<-gracefulStop
+	log.Println("goservice: shutdown hook, Listening signals...")
+
+	if grpcServer != nil {
+		grpcServer.Stop()
+	}
+	if httpServer != nil {
+		httpServer.B3Stop()
+		httpServer.TcStop()
+	}
+	log.Println("goservice terminated. wait for 2 seconds")
+	time.Sleep(2 * time.Second)
 }

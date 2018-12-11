@@ -58,22 +58,25 @@ func (hs *HttpSender) Send(ctx context.Context, serviceHop interop.ServiceHop, r
 		Id: req.GetId(),
 	}
 
-	data, err := proto.Marshal(req)
+	data := proto.MarshalTextString(req)
+	var err error
 	var resp *http.Response
 	url := fmt.Sprintf("http://%s:%d/test/request", serviceHop.Service.Host, serviceHop.Service.Port)
 
 	if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_B3_FORMAT_PROPAGATION {
-		resp, err = hs.b3Client.Post(url, "application/octet-stream", bytes.NewBuffer(data))
+		resp, err = hs.b3Client.Post(url, "text/plain", bytes.NewBufferString(data))
 	} else if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_TRACE_CONTEXT_FORMAT_PROPAGATION {
-		resp, err = hs.tcClient.Post(url, "application/octet-stream", bytes.NewBuffer(data))
+		resp, err = hs.tcClient.Post(url, "text/plain", bytes.NewBufferString(data))
 	}
-	defer resp.Body.Close()
-	if err == nil {
-		data, err = ioutil.ReadAll(resp.Body)
+	if resp != nil {
+		defer resp.Body.Close()
 		if err == nil {
-			err = proto.Unmarshal(data, &res)
+			respData, err := ioutil.ReadAll(resp.Body)
 			if err == nil {
-				return &res, nil
+				err = proto.UnmarshalText(string(respData), &res)
+				if err == nil {
+					return &res, nil
+				}
 			}
 		}
 	}

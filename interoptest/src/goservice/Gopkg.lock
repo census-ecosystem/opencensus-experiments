@@ -2,28 +2,38 @@
 
 
 [[projects]]
-  digest = "1:a10548dfe8dd8900df4534ab6493c4891d8eba3c65814981d935b059e17af7d3"
+  digest = "1:f63b25f93ef15a50ddd639d28603b5953ca5ba8d913456938be65344f91f1ba3"
   name = "contrib.go.opencensus.io/exporter/ocagent"
   packages = ["."]
   pruneopts = ""
-  revision = "7c99379c268784cc5f9eef1e54999232c084db47"
-  version = "v0.3.0"
+  revision = "060bba92d72213ba66cefc082501aaf9690ab0db"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:9c17eb4d4002a94621241a82f94a5cdf7f3d3d6500c0850a3da599b30118cbc5"
+  digest = "1:8c70d81a8172f5dcc712b0577ac5c2d62a53c0bc49e5ff3fd13c643b381a50f7"
   name = "git.apache.org/thrift.git"
   packages = ["lib/go/thrift"]
   pruneopts = ""
-  revision = "dd965c1eb437e0067009492b0d18b1d3f8e79d07"
+  revision = "2b7365c54f823013cc6a4760798051b22743c103"
   source = "github.com/apache/thrift"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e7b244de4788ff40c6c521539f60fe5d96fd47238e52fb0533e1ff39ddf0e54e"
+  name = "github.com/census-ecosystem/opencensus-experiments"
+  packages = ["interoptest/src/goservice/genproto"]
+  pruneopts = ""
+  revision = "bf176b8d1f43ad7ba032258b9016f9a135d069fa"
 
 [[projects]]
   digest = "1:0b2d5839372f6dc106fcaa70b6bd5832789a633c4e470540f76c2ec6c560e1c1"
   name = "github.com/census-instrumentation/opencensus-proto"
   packages = [
     "gen-go/agent/common/v1",
+    "gen-go/agent/metrics/v1",
     "gen-go/agent/trace/v1",
+    "gen-go/metrics/v1",
     "gen-go/resource/v1",
     "gen-go/trace/v1",
   ]
@@ -63,7 +73,32 @@
   version = "v1.6.2"
 
 [[projects]]
-  digest = "1:ad67dfd3799a2c58f6c65871dd141d8b53f61f600aec48ce8d7fa16a4d5476f8"
+  digest = "1:6a874e3ddfb9db2b42bd8c85b6875407c702fa868eed20634ff489bc896ccfd3"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = ""
+  revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
+  version = "v1.0.1"
+
+[[projects]]
+  digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = ""
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  digest = "1:9d57e200ef5ccc4217fe0a34287308bac652435e7c6513f6263e0493d2245c56"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "bcd833dfe83d3cebad139e4a29ed79cb2318bf95"
+  version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:98f63c8942146f9bf4b3925db1d96637b86c1d83693a894a244eae54aa53bb40"
   name = "go.opencensus.io"
   packages = [
     ".",
@@ -72,9 +107,11 @@
     "exporter/jaeger/internal/gen-go/jaeger",
     "internal",
     "internal/tagencoding",
+    "plugin/ocgrpc",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
     "plugin/ochttp/propagation/tracecontext",
+    "resource",
     "stats",
     "stats/internal",
     "stats/view",
@@ -85,12 +122,19 @@
     "trace/tracestate",
   ]
   pruneopts = ""
-  revision = "b7bf3cdb64150a8c8c53b769fdeb2ba581bd4d4b"
-  version = "v0.18.0"
+  revision = "aab39bd6a98b853ab66c8a564f5d6cfcad59ce8a"
 
 [[projects]]
   branch = "master"
-  digest = "1:ea539c13b066dac72a940b62f37600a20ab8e88057397c78f3197c1a48475425"
+  digest = "1:887074c37fcefc2f49b5ae9c6f9f36107341aec23185613d0e9f1ee81db7f94a"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  pruneopts = ""
+  revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
+
+[[projects]]
+  branch = "master"
+  digest = "1:6728b48c3404cbbebd73186cb2de79bf03395e8c3a8e5fe2079367f2c3fa85b0"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -102,7 +146,7 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "351d144fa1fc0bd934e2408202be0c29f25e35a0"
+  revision = "610586996380ceef02dd726cc09df7e00a3f8e56"
 
 [[projects]]
   branch = "master"
@@ -114,11 +158,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f358024b019f87eecaadcb098113a40852c94fe58ea670ef3c3e2d2c7bd93db1"
+  digest = "1:a89bd9b57bfccfbf42a9449a1fc2c94bd9d0e611762d074fdea2f4b9236c9ec0"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+  ]
   pruneopts = ""
-  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+  revision = "7da8ea5c81829e397bdf930c5d8ba4b703616f33"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -145,11 +192,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dbeda1206004397744f88fa9da8b6ed4e0a98209a1d6c1a2e8603c9c1e29a3bd"
+  digest = "1:e44a68650b50394af521cf6b0c77cb0407cbbfdc6ba7b3adcf6bb87edc48c0c4"
   name = "google.golang.org/api"
   packages = ["support/bundler"]
   pruneopts = ""
-  revision = "6142e720c068c6cd71f2258e007ff1991572e1d5"
+  revision = "1a5ef82f9af45ef51c486291ef2b0a16d82fdb95"
 
 [[projects]]
   branch = "master"
@@ -204,12 +251,18 @@
   analyzer-version = 1
   input-imports = [
     "contrib.go.opencensus.io/exporter/ocagent",
+    "github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto",
     "github.com/golang/protobuf/proto",
     "github.com/gorilla/mux",
+    "github.com/pkg/errors",
+    "github.com/sirupsen/logrus",
     "go.opencensus.io/exporter/jaeger",
+    "go.opencensus.io/plugin/ocgrpc",
     "go.opencensus.io/plugin/ochttp",
+    "go.opencensus.io/plugin/ochttp/propagation/b3",
     "go.opencensus.io/plugin/ochttp/propagation/tracecontext",
     "go.opencensus.io/trace",
+    "go.opencensus.io/trace/propagation",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
   ]
