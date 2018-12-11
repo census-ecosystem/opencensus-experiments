@@ -16,102 +16,46 @@
 
 package io.opencensus.interop;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import io.opencensus.contrib.grpc.metrics.RpcViews;
+// TODO(dpo): uncomment when agent is available.
+// import io.opencensus.exporter.trace.ocagent.OcAgentTraceExporter;
+import io.opencensus.contrib.http.servlet.OcHttpServletFilter;
+import io.opencensus.contrib.http.util.HttpViews;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Logger;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 
 public class JavaService {
-  // TODO(dpo): just for testing - remove
-  private static Spec grpcSpec = Spec.newBuilder()
-                                 .setTransport(Spec.Transport.GRPC)
-                                 .setPropagation(Spec.Propagation.BINARY_FORMAT_PROPAGATION)
-                                 .build();
-  private static Spec httpB3Spec = Spec.newBuilder()
-                                   .setTransport(Spec.Transport.HTTP)
-                                   .setPropagation(Spec.Propagation.B3_FORMAT_PROPAGATION)
-                                   .build();
-  private static Spec httpTraceContextSpec = Spec.newBuilder()
-                                      .setTransport(Spec.Transport.HTTP)
-                                      .setPropagation(
-                                          Spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION)
-                                      .build();
-
-
-  private static Service javaGrpcService = Service.newBuilder()
-                                           .setName("grpc java service")
-                                           .setPort(10101)
-                                           .setHost("localhost")
-                                           .setSpec(grpcSpec)
-                                           .build();
-  private static Service javaHttpB3Service = Service.newBuilder()
-                                             .setName("http java b3 service")
-                                             .setPort(10102)
-                                             .setHost("localhost")
-                                             .setSpec(httpB3Spec)
-                                             .build();
-  private static Service javaHttpTraceContextService = Service.newBuilder()
-                                                       .setName("http java trace context service")
-                                                       .setPort(10103)
-                                                       .setHost("localhost")
-                                                       .setSpec(httpTraceContextSpec)
-                                                       .build();
-
-  private static ServiceHop hop1 = ServiceHop.newBuilder()
-                                   .setService(javaGrpcService)
-                                   .addTags(
-                                       Tag.newBuilder().setKey("key1").setValue("val1").build())
-                                   .build();
-  private static ServiceHop hop2 = ServiceHop.newBuilder()
-                                   .setService(javaGrpcService)
-                                   .addTags(
-                                       Tag.newBuilder().setKey("key2").setValue("val2").build())
-                                   .build();
-  private static ServiceHop hop3 = ServiceHop.newBuilder()
-                                   .setService(javaHttpB3Service)
-                                   .addTags(
-                                       Tag.newBuilder().setKey("key3").setValue("val3").build())
-                                   .build();
-  private static ServiceHop hop4 = ServiceHop.newBuilder()
-                                   .setService(javaHttpTraceContextService)
-                                   .addTags(Tag.newBuilder().setKey("key4").setValue("val4").build())
-                                   .build();
-
-  private static List<ServiceHop> hops = new ArrayList();
-  static {
-    hops.add(hop1);
-    hops.add(hop2);
-    hops.add(hop3);
-    hops.add(hop4);
-  }
+  private static final Logger logger = Logger.getLogger(JavaService.class.getName());
 
   public static class HelloServlet extends HttpServlet {
-
     private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-
-      System.err.println("GET");
-
-      TestResponse testResponse = ServiceHopper.serviceHop(4242, "JavaService", hops);
-      System.err.println("GET: TestResponse: " + testResponse);
       PrintWriter pout = response.getWriter();
 
       pout.print("<html><body>");
       pout.print("<h3>Hello Servlet</h3>");
-      pout.print("<h3>" + testResponse + "</h3>");
       pout.print("</body></html>");
       return;
     }
@@ -119,7 +63,8 @@ public class JavaService {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-      System.err.println("POST");
+      logger.info("POST");
+
       // Read from request
       StringBuilder buffer = new StringBuilder();
       BufferedReader reader = request.getReader();
@@ -132,26 +77,42 @@ public class JavaService {
       PrintWriter pout = response.getWriter();
 
       pout.print("<html><body>");
-      pout.print("<h3>Hello Servlet</h3>");
+      pout.print("<h3>Hello Servlet Post</h3>");
       pout.print("</body></html>");
       return;
     }
   }
 
+  public void handle(
+      String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("text/html;charset=utf-8");
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+    response.getWriter().println("<h1>Hello World. default handle</h1>");
+  }
+
   public static void main(String[] args) throws Exception {
+    HttpViews.registerAllServerViews();
+    HttpViews.registerAllClientViews();
+    RpcViews.registerAllViews();
+    // Initialize OpenCensus agent trace exporter.
+    // TODO(dpo): uncomment when agent is available
+    // OcAgentTraceExporter.createAndRegister();
+
+    new GrpcServer(10101).start();
+
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/");
 
-    // Registers all gRPC views.
-    RpcViews.registerAllViews();
-    new GrpcServer(10101).start();
-
-    Server server = new Server(10100);
+    Server server = new Server(10103);
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
 
+    handler.addFilterWithMapping(
+        OcHttpServletFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     handler.addServletWithMapping(HelloServlet.class, "/*");
-
+    logger.info("Java HTTP server started, listening on " + 10103);
     server.start();
     server.join();
   }

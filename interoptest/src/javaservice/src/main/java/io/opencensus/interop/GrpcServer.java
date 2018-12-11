@@ -61,12 +61,12 @@ final class GrpcServer {
       extends TestExecutionServiceGrpc.TestExecutionServiceImplBase {
     @Override
     public void test(TestRequest req, StreamObserver<TestResponse> responseObserver) {
-      logger.info("Java gRPC Interop Test Server: start");
+      logger.info("Java gRPC Interop Test Server: RPC start");
       TestResponse response =
           ServiceHopper.serviceHop(req.getId(), req.getName(), req.getServiceHopsList());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
-      logger.info("Java gRPC Interop Test Server: finished");
+      logger.info("Java gRPC Interop Test Server: RPC finished");
     }
   }
 }

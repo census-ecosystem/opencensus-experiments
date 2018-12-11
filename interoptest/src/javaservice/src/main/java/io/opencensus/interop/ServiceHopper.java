@@ -22,20 +22,25 @@ import static io.opencensus.interop.Spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAG
 import static io.opencensus.interop.Spec.Transport.HTTP;
 import static io.opencensus.interop.Spec.Transport.GRPC;
 
+
+import com.google.protobuf.TextFormat;
+import com.google.protobuf.TextFormat.ParseException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opencensus.common.Scope;
+import io.opencensus.contrib.http.jetty.client.OcJettyHttpClient;
 import io.opencensus.tags.TagContextBuilder;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
-
-// TODO(dpo): decide whether we need this.
-// import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.HttpRequest;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpMethod;
 
 final class ServiceHopper {
   private static final Logger logger = Logger.getLogger(ServiceHopper.class.getName());
@@ -44,36 +49,41 @@ final class ServiceHopper {
       CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError("Really Success").build();
 
   static final TestResponse serviceHop(long id, String name, List<ServiceHop> hops) {
+    logger.info("ServiceHops: " + hops);
     if (hops.size() == 0) {
       return TestResponse.newBuilder().setId(id).addStatus(SUCCESS).build();
     }
     ServiceHop first = hops.get(0);
-    List<ServiceHop> rest = new ArrayList(hops.size() - 1);
-    for (int i = 1; i < hops.size(); i++) {
-      rest.add(hops.get(i));
-    }
+    String host = first.getService().getHost();
+    int port = first.getService().getPort();
     Spec.Transport transport = first.getService().getSpec().getTransport();
     Spec.Propagation propagation = first.getService().getSpec().getPropagation();
+
+    List<ServiceHop> rest = hops.subList(1, hops.size());
+    TestRequest request =
+        TestRequest.newBuilder().setId(id).setName(name).addAllServiceHops(rest).build();
+
+    logger.info("transport: " + transport + ", propagation: " + propagation);
     try (Scope tagScope = scopeTags(first.getTagsList())) {
       switch (transport) {
         case HTTP:
           switch (propagation) {
             case B3_FORMAT_PROPAGATION:
-              return httpB3FormatServiceHopper(id, name, first, rest);
+              return httpB3FormatServiceHopper(id, name, host, port, request);
             case TRACE_CONTEXT_FORMAT_PROPAGATION:
-              return httpTraceContextFormatServiceHopper(id, name, first, rest);
+              return httpTraceContextFormatServiceHopper(id, name, host, port, request);
             default:
-              return fail(id, "Unsupported propagation: " + propagation);
+              return setFailureStatus(id, "Unsupported propagation: " + propagation);
           }
         case GRPC:
           switch (propagation) {
             case BINARY_FORMAT_PROPAGATION:
-              return grpcBinaryFormatServiceHopper(id, name, first, rest);
+              return grpcBinaryFormatServiceHopper(id, name, host, port, request);
             default:
-              return fail(id, "Unsupported propagation: " + propagation);
+              return setFailureStatus(id, "Unsupported propagation: " + propagation);
           }
         default:
-          return fail(id, "Unknown transport: " + transport);
+          return setFailureStatus(id, "Unknown transport: " + transport);
       }
     }
   }
@@ -86,12 +96,10 @@ final class ServiceHopper {
     return builder.buildScoped();
   }
 
-  private static CommonResponseStatus fail(String msg) {
-    return CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError(msg).build();
-  }
-
-  private static TestResponse fail(long id, String msg) {
-    return TestResponse.newBuilder().setId(id).addStatus(fail(msg)).build();
+  private static TestResponse setFailureStatus(long id, String msg) {
+    CommonResponseStatus status =
+        CommonResponseStatus.newBuilder().setStatus(Status.FAILURE).setError(msg).build();
+    return TestResponse.newBuilder().setId(id).addStatus(status).build();
   }
 
   private static final TestResponse addSuccessStatus(TestResponse response) {
@@ -102,11 +110,18 @@ final class ServiceHopper {
         .build();
   }
 
+  private static TestResponse httpB3FormatServiceHopper(
+      long id, String name, String host, int port, TestRequest request) {
+    return httpServiceHopper(id, name, host, port, request, /*useTraceContextFormat=*/false);
+  }
+
+  private static TestResponse httpTraceContextFormatServiceHopper(
+      long id, String name, String host, int port, TestRequest request) {
+    return httpServiceHopper(id, name, host, port, request, /*useTraceContextFormat=*/true);
+  }
+
   private static TestResponse grpcBinaryFormatServiceHopper(
-      long id, String name, ServiceHop first, List<ServiceHop> rest) {
-    String host = first.getService().getHost();
-    int port = first.getService().getPort();
-    // TODO(dpo): we could consider caching these channels and reusing them.
+      long id, String name, String host, int port, TestRequest request) {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
                              // Channels are secure by default (via SSL/TLS).
                              // For the example we disable TLS to avoid
@@ -115,20 +130,38 @@ final class ServiceHopper {
                              .build();
     TestExecutionServiceGrpc.TestExecutionServiceBlockingStub blockingStub =
         TestExecutionServiceGrpc.newBlockingStub(channel);
-    TestRequest request =
-        TestRequest.newBuilder().setId(id).setName(name).addAllServiceHops(rest).build();
     TestResponse response = blockingStub.test(request);
-    channel.shutdown();//.awaitTermination(5, TimeUnit.SECONDS);
+    channel.shutdown();
     return addSuccessStatus(response);
   }
 
-  private static TestResponse httpB3FormatServiceHopper(
-      long id, String name, ServiceHop first, List<ServiceHop> rest) {
-    return fail(id, "B3 Format Unsupported");
-  }
+  private static TestResponse httpServiceHopper(long id, String name, String host, int port,
+      TestRequest request, boolean useTraceContextFormat) {
+    try {
+      OcJettyHttpClient httpClient = new OcJettyHttpClient(/*TODO(dpo): specify format*/);
+      logger.info("TC: http start()");
+      httpClient.start();
+      HttpRequest httpRequest =
+          (HttpRequest) httpClient.newRequest("http://" + host + ":" + port + "/test/request")
+              .method(HttpMethod.POST);
+      httpRequest.content(new StringContentProvider(request.toString()));
+      logger.info("TC: Host:" + host + ", port:" + port);
+      logger.info("TC: Content:" + request.toString());
+      logger.info("TC: httpRequest:" + httpRequest.toString());
 
-  private static TestResponse httpTraceContextFormatServiceHopper(
-      long id, String name, ServiceHop first, List<ServiceHop> rest) {
-    return fail(id, "Trace Context Format Unsupported");
+      TestRequest.Builder reqBuilder = TestRequest.newBuilder();
+      TextFormat.merge(request.toString(), reqBuilder);
+      logger.info("TC: reqBuilder:" + reqBuilder.build());
+
+      logger.info("TC: http send");
+      ContentResponse httpResponse = httpRequest.send();
+      System.err.println("TC: http send done");
+      TestResponse.Builder responseBuilder = TestResponse.newBuilder();
+      TextFormat.merge(httpResponse.getContentAsString(), responseBuilder);
+      System.err.println("TC: Response:" + responseBuilder.build().toString());
+      return addSuccessStatus(responseBuilder.build());
+    } catch (Exception exn) {
+          return setFailureStatus(id, "HTTP Service Hopper Error: " + exn);
+    }
   }
 }
