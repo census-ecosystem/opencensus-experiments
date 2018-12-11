@@ -15,33 +15,32 @@
 package main
 
 import (
-  "net/http"
-  "strings"
-  "log"
+	"log"
+	"net/http"
+	"strings"
 
-  "github.com/gorilla/mux"
-  "go.opencensus.io/exporter/jaeger"
-  "contrib.go.opencensus.io/exporter/ocagent"
-  "go.opencensus.io/trace"
-  "go.opencensus.io/plugin/ochttp"
-  "go.opencensus.io/plugin/ochttp/propagation/tracecontext"
-
+	"contrib.go.opencensus.io/exporter/ocagent"
+	"github.com/gorilla/mux"
+	"go.opencensus.io/exporter/jaeger"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
+	"go.opencensus.io/trace"
 )
 
 func registerJaegerExporter() {
 
-        // Register the Jaeger exporter to be able to retrieve
-        // the collected spans.
-        exporter, err := jaeger.NewExporter(jaeger.Options{
-                Endpoint: "http://traceui:14268",
-                Process: jaeger.Process{
-                        ServiceName: "goservice",
-                },
-        })
-        if err != nil {
-                log.Fatal(err)
-        }
-        trace.RegisterExporter(exporter)
+	// Register the Jaeger exporter to be able to retrieve
+	// the collected spans.
+	exporter, err := jaeger.NewExporter(jaeger.Options{
+		Endpoint: "http://traceui:14268",
+		Process: jaeger.Process{
+			ServiceName: "goservice",
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	trace.RegisterExporter(exporter)
 }
 
 func registerOcAgentExporter() {
@@ -56,24 +55,24 @@ func registerOcAgentExporter() {
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
-  message := r.URL.Path
-  message = strings.TrimPrefix(message, "/")
-  message = "Hello, it is goservice " + message
-  w.Write([]byte(message))
+	message := r.URL.Path
+	message = strings.TrimPrefix(message, "/")
+	message = "Hello, it is goservice " + message
+	w.Write([]byte(message))
 }
 
 func main() {
-        registerOcAgentExporter()
-        registerJaegerExporter()
-        r := mux.NewRouter()
-        r.HandleFunc("/", sayHello)
+	registerOcAgentExporter()
+	registerJaegerExporter()
+	r := mux.NewRouter()
+	r.HandleFunc("/", sayHello)
 
-        var handler http.Handler = r
-        handler = &ochttp.Handler{                     // add opencensus instrumentation
-                Handler:     handler,
-                Propagation: &tracecontext.HTTPFormat{}}
+	var handler http.Handler = r
+	handler = &ochttp.Handler{ // add opencensus instrumentation
+		Handler:     handler,
+		Propagation: &tracecontext.HTTPFormat{}}
 
-  if err := http.ListenAndServe(":10201", handler); err != nil {
-    panic(err)
-  }
+	if err := http.ListenAndServe(":10201", handler); err != nil {
+		panic(err)
+	}
 }
