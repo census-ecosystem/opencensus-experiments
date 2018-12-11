@@ -87,7 +87,7 @@ func (gr *GrpcReceiver) Start(ctx context.Context) error {
 	}
 
 	if err := gr.startGRPCServer(); err != nil && err != errAlreadyStarted {
-		return nil
+		return err
 	}
 
 	// At this point we've successfully started all the services/receivers.
