@@ -15,18 +15,19 @@
 package main
 
 import (
-  "net/http"
-  "strings"
+	"net/http"
+	"strings"
 )
+
 func sayHello(w http.ResponseWriter, r *http.Request) {
-  message := r.URL.Path
-  message = strings.TrimPrefix(message, "/")
-  message = "Hello, it is testcoordinator " + message
-  w.Write([]byte(message))
+	message := r.URL.Path
+	message = strings.TrimPrefix(message, "/")
+	message = "Hello, it is testcoordinator " + message
+	w.Write([]byte(message))
 }
 func main() {
-  http.HandleFunc("/", sayHello)
-  if err := http.ListenAndServe(":10000", nil); err != nil {
-    panic(err)
-  }
+	http.HandleFunc("/", sayHello)
+	if err := http.ListenAndServe(":10000", nil); err != nil {
+		panic(err)
+	}
 }
