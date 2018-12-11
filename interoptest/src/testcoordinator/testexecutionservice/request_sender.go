@@ -97,6 +97,7 @@ func (s *Sender) Start() ([]*interop.TestResponse, []error) {
 	return resps, errs
 }
 
+// TODO: send HTTP TestRequest
 func (s *Sender) send(cc *grpc.ClientConn, reqId int64, reqName string) (*interop.TestResponse, error) {
 	services := s.registeredServices[reqName]
 	var hops []*interop.ServiceHop
