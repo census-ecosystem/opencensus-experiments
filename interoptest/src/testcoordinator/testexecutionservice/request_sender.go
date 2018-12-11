@@ -58,6 +58,10 @@ func NewUnstartedSender(
 	if len(reqIds) != len(reqNames) || len(reqIds) != len(serverAddrs) || len(reqIds) != len(registeredServices) {
 		return nil, errSizeNotMatch
 	}
+	startOnces := make([]sync.Once, len(reqIds))
+	for i := range reqIds {
+		startOnces[i] = sync.Once{}
+	}
 	s := &Sender{
 		canDialInsecure:    canDialInsecure,
 		reqIds:             reqIds,
