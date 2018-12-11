@@ -31,7 +31,7 @@ type Sender struct {
 	mu         sync.RWMutex
 	startOnces []sync.Once
 
-	canDialInsecure    bool
+	canDialInsecure bool
 
 	// The order of reqIds, reqNames and serverAddrs must match.
 	reqIds             []int64
