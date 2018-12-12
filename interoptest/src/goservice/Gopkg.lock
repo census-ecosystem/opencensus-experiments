@@ -20,11 +20,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:390a3a6e661235a60de02708b694fe2541919b94d1140ccc609b9d1e473dba80"
+  digest = "1:44c9970594ba03ca2fe5977acc23a2ba08d03355516be6b5233a5ae9de73a942"
   name = "github.com/census-ecosystem/opencensus-experiments"
-  packages = ["interoptest/src/goservice/genproto"]
+  packages = [
+    "interoptest/src/goservice/genproto",
+    "interoptest/src/goservice/testservice",
+  ]
   pruneopts = ""
-  revision = "9a03654e81594f0c156674a606ac98bdc5c28c3a"
+  revision = "389396f163f89b5991542d18c2805bc933d6ccd9"
 
 [[projects]]
   digest = "1:0b2d5839372f6dc106fcaa70b6bd5832789a633c4e470540f76c2ec6c560e1c1"
@@ -158,14 +161,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a89bd9b57bfccfbf42a9449a1fc2c94bd9d0e611762d074fdea2f4b9236c9ec0"
+  digest = "1:e72faf69788ebc710fd4742e4a823a638f75268f5ee28263fa1f4fe3b69eb825"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = ""
-  revision = "7da8ea5c81829e397bdf930c5d8ba4b703616f33"
+  revision = "b05ddf57801d2239d6ab0ee35f9d981e0420f4ac"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -252,6 +255,7 @@
   input-imports = [
     "contrib.go.opencensus.io/exporter/ocagent",
     "github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto",
+    "github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/testservice",
     "github.com/golang/protobuf/proto",
     "github.com/gorilla/mux",
     "github.com/pkg/errors",
