@@ -64,9 +64,9 @@ func newTcServer(tcAddr string) httpServer {
 	return httpServer{server: &http.Server{Addr: tcAddr, Handler: newHttpHandler(&tracecontext.HTTPFormat{})}}
 }
 
-// New just creates the test HTTP Server that services Test request over HTTP
+// NewHttpReceiver just creates the test HTTP Server that services Test request over HTTP
 // It creates two servers, one for B3 propagation and other for TraceContext propagation.
-func NewHttp(b3Addr, tcAddr string) *HttpReceiver {
+func NewHttpReceiver(b3Addr, tcAddr string) *HttpReceiver {
 	return &HttpReceiver{b3Server: newB3Server(b3Addr), tcServer: newTcServer(tcAddr)}
 }
 
@@ -75,19 +75,11 @@ func httpTestRequestHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
+	var rp *RequestProcessor
 	testRequest := interop.TestRequest{}
-	if err := proto.Unmarshal(data, &testRequest); err == nil {
-		// TDOD: call generic request handler for GRPC and HTTP
-		testResp := &interop.TestResponse{}
-		marshaledResp, _ := proto.Marshal(testResp)
-		_, err = w.Write(marshaledResp)
-		if err != nil {
-			// TODO: log error
-			// log.Printf("error sending response")
-		}
-	} else {
-		// TODO: log error
-		// log.Printf("error unmarshal request. error: %v, data: %v, data len: %d", err, data, len(data))
+	if err := proto.UnmarshalText(string(data), &testRequest); err == nil {
+		testResp, _ := rp.getInstance().process(context.Background(), &testRequest)
+		proto.MarshalText(w, testResp)
 	}
 }
 
@@ -103,12 +95,12 @@ func (hr *HttpReceiver) B3Stop() error {
 
 // TcStart starts the underlying HTTP Server using TraceContext Propagation.
 func (hr *HttpReceiver) TcStart(ctx context.Context) error {
-	return hr.b3Server.start(ctx)
+	return hr.tcServer.start(ctx)
 }
 
 // TcStop stops the underlying HTTP Server using TraceContext Propagation.
 func (hr *HttpReceiver) TcStop() error {
-	return hr.b3Server.stop()
+	return hr.tcServer.stop()
 }
 
 func (hs *httpServer) start(ctx context.Context) error {

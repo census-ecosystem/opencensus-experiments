@@ -20,4 +20,3 @@ var (
 	errAlreadyStarted = errors.New("already started")
 	errAlreadyStopped = errors.New("already stopped")
 )
-
