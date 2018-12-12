@@ -19,4 +19,5 @@ import "github.com/pkg/errors"
 var (
 	errAlreadyStarted = errors.New("already started")
 	errAlreadyStopped = errors.New("already stopped")
+	invalidTransport  = errors.New("invalid transport")
 )

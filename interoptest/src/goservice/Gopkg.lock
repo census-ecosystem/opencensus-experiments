@@ -20,11 +20,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e7b244de4788ff40c6c521539f60fe5d96fd47238e52fb0533e1ff39ddf0e54e"
+  digest = "1:390a3a6e661235a60de02708b694fe2541919b94d1140ccc609b9d1e473dba80"
   name = "github.com/census-ecosystem/opencensus-experiments"
   packages = ["interoptest/src/goservice/genproto"]
   pruneopts = ""
-  revision = "bf176b8d1f43ad7ba032258b9016f9a135d069fa"
+  revision = "9a03654e81594f0c156674a606ac98bdc5c28c3a"
 
 [[projects]]
   digest = "1:0b2d5839372f6dc106fcaa70b6bd5832789a633c4e470540f76c2ec6c560e1c1"
@@ -192,11 +192,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e44a68650b50394af521cf6b0c77cb0407cbbfdc6ba7b3adcf6bb87edc48c0c4"
+  digest = "1:0c9b2df65f462b14ea2eaa78b39aa8c6c15e1db9e43439f9681afbd4f46f4e15"
   name = "google.golang.org/api"
   packages = ["support/bundler"]
   pruneopts = ""
-  revision = "1a5ef82f9af45ef51c486291ef2b0a16d82fdb95"
+  revision = "40e757e92c52ce056bea83c8050054d41443ade8"
 
 [[projects]]
   branch = "master"

@@ -15,7 +15,6 @@
 package testservice
 
 import (
-	"fmt"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"golang.org/x/net/context"
 	"sync"
@@ -43,7 +42,7 @@ func (rp *RequestProcessor) send(ctx context.Context, serviceHop interop.Service
 	} else if serviceHop.GetService().GetSpec().GetTransport() == interop.Spec_HTTP {
 		return rp.httpSender.Send(ctx, serviceHop, req)
 	}
-	return nil, fmt.Errorf("invalid transport")
+	return nil, invalidTransport
 }
 
 func (rp *RequestProcessor) process(ctx context.Context, req *interop.TestRequest) (*interop.TestResponse, error) {
