@@ -25,10 +25,17 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/goservice
+        image: gcr.io/opencensus-interoptest/goservice
+        imagePullPolicy: Never
         ports:
         - containerPort: 10201
-          name: goservice
+          name: grpc-binary
+        ports:
+        - containerPort: 10202
+          name: http-b3
+        ports:
+        - containerPort: 10203
+          name: http-tc
         env:
         - name: PORT
           value: "10201"
@@ -59,6 +66,12 @@ spec:
   selector:
     app: goservice
   ports:
-  - name: goservice
+  - name: grpc-binary
     port: 10201
     targetPort: 10201
+  - name: http-b3
+    port: 10202
+    targetPort: 10202
+  - name: http-tc
+    port: 10203
+    targetPort: 10203

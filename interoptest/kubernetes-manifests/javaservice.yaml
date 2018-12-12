@@ -25,10 +25,17 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/javaservice
+        image: gcr.io/opencensus-interoptest/javaservice
+        imagePullPolicy: Never
         ports:
         - containerPort: 10101
-          name: javaservice
+          name: grpc-binary
+        ports:
+        - containerPort: 10102
+          name: http-b3
+        ports:
+        - containerPort: 10103
+          name: http-tc
         env:
         - name: PORT
           value: "10101"
@@ -59,6 +66,12 @@ spec:
   selector:
     app: javaservice
   ports:
-  - name: javaservice
+  - name: grpc-binary
     port: 10101
     targetPort: 10101
+  - name: http-b3
+    port: 10102
+    targetPort: 10102
+  - name: http-tc
+    port: 10103
+    targetPort: 10103
