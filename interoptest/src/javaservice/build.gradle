@@ -59,7 +59,7 @@ dependencies {
                 "org.eclipse.jetty:jetty-server:${jettyVersion}",
                 "org.eclipse.jetty:jetty-servlet:${jettyServletVersion}"
 
-	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+        compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
         runtime "io.opencensus:opencensus-impl:${opencensusVersion}"
     }
