@@ -25,7 +25,7 @@ repositories {
 group = "javaservice"
 version = "0.19.0-SNAPSHOT" // CURRENT_OPENCENSUS_VERSION
 
-def opencensusVersion = "0.18.0" // LATEST_OPENCENSUS_RELEASE_VERSION
+def opencensusVersion = "0.19.0-SNAPSHOT" // LATEST_OPENCENSUS_RELEASE_VERSION
 def grpcVersion = "1.15.0" // CURRENT_GRPC_VERSION
 
 def jettyVersion = "9.4.12.v20180830"
@@ -47,14 +47,21 @@ dependencies {
     } else {
         compile "com.google.api.grpc:proto-google-common-protos:1.11.0",
                 "io.opencensus:opencensus-api:${opencensusVersion}",
-    		"io.grpc:grpc-protobuf:${grpcVersion}",
-     	        "io.grpc:grpc-stub:${grpcVersion}",
+                "io.opencensus:opencensus-contrib-grpc-metrics:${opencensusVersion}",
+                "io.opencensus:opencensus-contrib-http-util:${opencensusVersion}",
+                "io.opencensus:opencensus-contrib-http-servlet:${opencensusVersion}",
+                "io.opencensus:opencensus-contrib-http-jetty-client:${opencensusVersion}",
+                "io.opencensus:opencensus-exporter-trace-ocagent:${opencensusVersion}",
+                "io.grpc:grpc-protobuf:${grpcVersion}",
+                "io.grpc:grpc-stub:${grpcVersion}",
                 "io.grpc:grpc-netty:${grpcVersion}",
+                "org.eclipse.jetty:jetty-client:${jettyVersion}",
                 "org.eclipse.jetty:jetty-server:${jettyVersion}",
                 "org.eclipse.jetty:jetty-servlet:${jettyServletVersion}"
 
-        runtime "io.opencensus:opencensus-impl:${opencensusVersion}",
-    	    "io.netty:netty-tcnative-boringssl-static:2.0.8.Final"
+        compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+
+        runtime "io.opencensus:opencensus-impl:${opencensusVersion}"
     }
 }
 
@@ -66,7 +73,15 @@ protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.5.1-1'
     }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
     generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
         ofSourceSet('main')
     }
 }
@@ -76,7 +91,6 @@ sourceSets {
     main {
         java {
             srcDirs 'src'
-            srcDirs 'build/generated/source/proto/main/java/interop'
             srcDirs 'build/generated/source/proto/main/grpc'
             srcDirs 'build/generated/source/proto/main/java'
         }
