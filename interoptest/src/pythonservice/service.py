@@ -23,6 +23,9 @@ from uuid import uuid4
 import logging
 import sys
 
+from opencensus.trace.exporters import logging_exporter
+from opencensus.trace.ext.grpc import server_interceptor
+from opencensus.trace.samplers import always_on
 import grpc
 import requests
 
@@ -215,8 +218,12 @@ class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
 
 @contextmanager
 def serve_grpc_binary(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
+    interceptor = server_interceptor.OpenCensusServerInterceptor(
+        always_on.AlwaysOnSampler(), logging_exporter.LoggingExporter())
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=GRPC_TPE_WORKERS))
+        futures.ThreadPoolExecutor(max_workers=GRPC_TPE_WORKERS),
+        interceptors=(interceptor,)
+    )
     pb2_grpc.add_TestExecutionServiceServicer_to_server(
         GRPCBinaryTestServer(),
         server
