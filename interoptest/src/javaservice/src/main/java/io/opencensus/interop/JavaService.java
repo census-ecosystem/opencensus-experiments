@@ -23,7 +23,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-public class JavaService {
+public final class JavaService {
   public static void main(String[] args) throws Exception {
     BasicConfigurator.configure();
     Logger.getRootLogger().setLevel(Level.INFO);

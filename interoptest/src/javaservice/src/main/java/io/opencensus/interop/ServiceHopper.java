@@ -46,7 +46,7 @@ final class ServiceHopper {
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).build();
 
-  static final TestResponse serviceHop(TestRequest request) {
+  static TestResponse serviceHop(TestRequest request) {
     long id = request.getId();
     String name = request.getName();
     List<ServiceHop> hops = request.getServiceHopsList();
@@ -99,7 +99,7 @@ final class ServiceHopper {
     return TestResponse.newBuilder().setId(id).addStatus(status).build();
   }
 
-  private static final TestResponse addSuccessStatus(TestResponse response) {
+  private static TestResponse addSuccessStatus(TestResponse response) {
     return TestResponse.newBuilder()
         .setId(response.getId())
         .addStatus(SUCCESS)
