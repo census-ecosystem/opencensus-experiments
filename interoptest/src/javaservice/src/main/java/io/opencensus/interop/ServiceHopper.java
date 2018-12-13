@@ -21,6 +21,7 @@ import static io.opencensus.interop.Spec.Propagation.BINARY_FORMAT_PROPAGATION;
 import static io.opencensus.interop.Spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION;
 import static io.opencensus.interop.Spec.Transport.HTTP;
 import static io.opencensus.interop.Spec.Transport.GRPC;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.google.protobuf.TextFormat;
 import com.google.protobuf.TextFormat.ParseException;
@@ -107,6 +108,8 @@ final class ServiceHopper {
         .build();
   }
 
+  private static final int WAIT_SECONDS = 1;
+
   private static TestResponse grpcServiceHop(
       long id, String name, String host, int port, TestRequest request) {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
@@ -116,10 +119,14 @@ final class ServiceHopper {
                              .usePlaintext(true)
                              .build();
     TestExecutionServiceGrpc.TestExecutionServiceBlockingStub blockingStub =
-        TestExecutionServiceGrpc.newBlockingStub(channel);
-    TestResponse response = blockingStub.test(request);
-    channel.shutdown();
-    return addSuccessStatus(response);
+        TestExecutionServiceGrpc.newBlockingStub(channel).withDeadlineAfter(WAIT_SECONDS, SECONDS);
+    try {
+      TestResponse response = blockingStub.test(request);
+      channel.shutdown();
+      return addSuccessStatus(response);
+    } catch (Exception exn) {
+      return setFailureStatus(id, "gRPC Service Hopper Error: " + exn);
+    }
   }
 
   private static TestResponse httpServiceHop(long id, String name, String host, int port,
@@ -127,7 +134,8 @@ final class ServiceHopper {
     try {
       HttpRequest httpRequest = (HttpRequest) httpClient
           .newRequest("http://" + host + ":" + port + "/test/request")
-          .method(HttpMethod.POST);
+          .method(HttpMethod.POST)
+          .timeout(WAIT_SECONDS, SECONDS);
       httpRequest.content(new StringContentProvider(request.toString()));
       ContentResponse httpResponse = httpRequest.send();
       TestResponse.Builder responseBuilder = TestResponse.newBuilder();
