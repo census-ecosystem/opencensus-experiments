@@ -1,3 +1,5 @@
-protobuf
 grpcio
+opencensus
+protobuf
 requests
+wrapt  # see https://github.com/census-instrumentation/opencensus-python/pull/432

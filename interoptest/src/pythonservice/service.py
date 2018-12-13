@@ -23,8 +23,10 @@ from uuid import uuid4
 import logging
 import sys
 
+from opencensus.trace.tracers import context_tracer
 from opencensus.trace.exporters import logging_exporter
 from opencensus.trace.ext.grpc import server_interceptor
+from opencensus.trace.ext import requests as requests_wrapper
 from opencensus.trace.samplers import always_on
 import grpc
 import requests
@@ -40,6 +42,10 @@ except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler
     from BaseHTTPServer import HTTPServer
     import SocketServer as socketserver
+
+
+# Monkey patch the requests library
+requests_wrapper.trace.trace_integration(context_tracer.ContextTracer())
 
 
 logger = logging.getLogger(__name__)
