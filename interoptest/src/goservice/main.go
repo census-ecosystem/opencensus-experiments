@@ -27,7 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.opencensus.io/exporter/jaeger"
 	"go.opencensus.io/trace"
-	"goservice/testservice"
+	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/testservice"
 )
 
 var log *logrus.Logger
