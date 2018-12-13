@@ -16,67 +16,28 @@
 
 package io.opencensus.interop;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
+import io.opencensus.contrib.grpc.metrics.RpcViews;
+import io.opencensus.exporter.trace.ocagent.OcAgentTraceExporter;
+import io.opencensus.contrib.http.util.HttpViews;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 public class JavaService {
-
-  public static class HelloServlet extends HttpServlet {
-
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-
-      PrintWriter pout = response.getWriter();
-
-      pout.print("<html><body>");
-      pout.print("<h3>Hello Servlet</h3>");
-      pout.print("</body></html>");
-      return;
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-      // Read from request
-      StringBuilder buffer = new StringBuilder();
-      BufferedReader reader = request.getReader();
-      String line;
-      while ((line = reader.readLine()) != null) {
-        buffer.append(line);
-      }
-      String data = buffer.toString();
-
-      PrintWriter pout = response.getWriter();
-
-      pout.print("<html><body>");
-      pout.print("<h3>Hello Servlet</h3>");
-      pout.print("</body></html>");
-      return;
-    }
-  }
-
   public static void main(String[] args) throws Exception {
-    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-    context.setContextPath("/");
+    BasicConfigurator.configure();
+    Logger.getRootLogger().setLevel(Level.INFO);
+    HttpViews.registerAllServerViews();
+    HttpViews.registerAllClientViews();
+    RpcViews.registerAllViews();
+    // Initialize OpenCensus agent trace exporter.
+    OcAgentTraceExporter.createAndRegister();
 
-    Server server = new Server(10101);
-    ServletHandler handler = new ServletHandler();
-    server.setHandler(handler);
-
-    handler.addServletWithMapping(HelloServlet.class, "/*");
-
-    server.start();
-    server.join();
+    GrpcServer.createWithBinaryFormatPropagation(
+        ServicePort.JAVA_GRPC_BINARY_PROPAGATION_PORT.getNumber()).start();
+    HttpServer.createWithB3FormatPropagation(
+        ServicePort.JAVA_HTTP_B3_PROPAGATION_PORT.getNumber()).start();
+    HttpServer.createWithTraceContextFormatPropagation(
+        ServicePort.JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT.getNumber()).start();
   }
 }
