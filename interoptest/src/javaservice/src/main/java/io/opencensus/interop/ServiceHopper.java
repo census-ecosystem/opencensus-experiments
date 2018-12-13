@@ -46,6 +46,7 @@ final class ServiceHopper {
   private static final Tagger tagger = Tags.getTagger();
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).build();
+  private static final int WAIT_SECONDS = 1;
 
   static TestResponse serviceHop(TestRequest request) {
     long id = request.getId();
@@ -107,8 +108,6 @@ final class ServiceHopper {
         .addAllStatus(response.getStatusList())
         .build();
   }
-
-  private static final int WAIT_SECONDS = 1;
 
   private static TestResponse grpcServiceHop(
       long id, String name, String host, int port, TestRequest request) {
