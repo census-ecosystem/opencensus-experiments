@@ -32,9 +32,9 @@ var (
 )
 
 func TestReconstructTraces(t *testing.T) {
-	got, err := ReconstructTraces(span3, span4, span1, span5, span2)
-	if err != nil {
-		t.Fatalf("Failed to reconstruct trace: %v", err)
+	got, errs := ReconstructTraces(span3, span4, span1, span5, span2)
+	if len(errs) > 0 {
+		t.Fatalf("Failed to reconstruct trace: %v", errs)
 	}
 	want := map[trace.TraceID]*SimpleSpan{
 		traceID1: {
@@ -72,22 +72,72 @@ func TestReconstructTraces(t *testing.T) {
 }
 
 func TestReconstructTraces_alreadyExists(t *testing.T) {
-	_, err := ReconstructTraces(span1, span1)
-	if err != errAlreadyExists {
-		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errAlreadyExists, err)
+	roots, errs := ReconstructTraces(span1, span1)
+	wantErrs := map[trace.TraceID]error{traceID1: errAlreadyExists}
+	if !reflect.DeepEqual(errs, wantErrs) {
+		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errs, wantErrs)
+	}
+	wantRoots := map[trace.TraceID]*SimpleSpan{}
+	if !reflect.DeepEqual(roots, wantRoots) {
+		t.Fatalf("Want traces\n\tGot  %+v\n\tWant %+v", roots, wantRoots)
 	}
 }
 
 func TestReconstructTraces_orphan(t *testing.T) {
-	_, err := ReconstructTraces(span1, span2, span3, span4, span6)
-	if err != errOrphanSpan {
-		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errOrphanSpan, err)
+	roots, errs := ReconstructTraces(span1, span2, span3, span4, span6)
+	wantErrs := map[trace.TraceID]error{traceID2: errOrphanSpan}
+	if !reflect.DeepEqual(errs, wantErrs) {
+		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errs, wantErrs)
+	}
+	wantRoots := map[trace.TraceID]*SimpleSpan{
+		traceID1: {
+			traceID: traceID1,
+			spanID:  spanID1,
+			children: map[trace.SpanID]*SimpleSpan{
+				spanID2: {
+					traceID: traceID1,
+					spanID:  spanID2,
+					children: map[trace.SpanID]*SimpleSpan{
+						spanID3: {
+							traceID:  traceID1,
+							spanID:   spanID3,
+							children: map[trace.SpanID]*SimpleSpan{},
+						},
+						spanID4: {
+							traceID:  traceID1,
+							spanID:   spanID4,
+							children: map[trace.SpanID]*SimpleSpan{},
+						},
+					},
+				},
+			},
+		},
+	}
+	if !reflect.DeepEqual(roots, wantRoots) {
+		t.Fatalf("Want traces\n\tGot  %+v\n\tWant %+v", roots, wantRoots)
 	}
 }
 
 func TestReconstructTraces_duplicatedRoots(t *testing.T) {
-	_, err := ReconstructTraces(span5, span7)
-	if err != errDuplicatedRootSpan {
-		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errDuplicatedRootSpan, err)
+	roots, errs := ReconstructTraces(span5, span7)
+	wantErrs := map[trace.TraceID]error{traceID2: errDuplicatedRootSpan}
+	if !reflect.DeepEqual(errs, wantErrs) {
+		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errs, wantErrs)
+	}
+	wantRoots := map[trace.TraceID]*SimpleSpan{}
+	if !reflect.DeepEqual(roots, wantRoots) {
+		t.Fatalf("Want traces\n\tGot  %+v\n\tWant %+v", roots, wantRoots)
+	}
+}
+
+func TestReconstructTraces_mixedErrs(t *testing.T) {
+	roots, errs := ReconstructTraces(span5, span7, span2)
+	wantErrs := map[trace.TraceID]error{traceID1: errOrphanSpan, traceID2: errDuplicatedRootSpan}
+	if !reflect.DeepEqual(errs, wantErrs) {
+		t.Fatalf("Want error\n\tGot  %+v\n\tWant %+v", errs, wantErrs)
+	}
+	wantRoots := map[trace.TraceID]*SimpleSpan{}
+	if !reflect.DeepEqual(roots, wantRoots) {
+		t.Fatalf("Want traces\n\tGot  %+v\n\tWant %+v", roots, wantRoots)
 	}
 }

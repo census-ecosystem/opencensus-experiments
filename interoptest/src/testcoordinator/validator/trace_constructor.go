@@ -39,11 +39,13 @@ var (
 )
 
 // ReconstructTraces tries to reconstruct traces from the given spans. If the spans are valid, it will return the root
-// spans for each trace.
-func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, error) {
+// spans for each trace. If there are broken traces, an error for each broken one will be returned instead.
+func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, map[trace.TraceID]error) {
 	dict := groupSpansByTraceID(spans)
 	roots := map[trace.TraceID]*SimpleSpan{}
+	errs := map[trace.TraceID]error{}
 	processedSpans := map[trace.SpanID]*SimpleSpan{} // cache processed spans for faster loop-up
+	outerLoop:
 	for tid, spans := range dict {                   // iterate each trace
 		for len(spans) > 0  {
 			// The order of spans in the list are non-deterministic,
@@ -54,7 +56,9 @@ func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, e
 			for i, span := range spans {
 				ok, err := processSpan(tid, roots, processedSpans, span)
 				if err != nil {
-					return nil, err
+					errs[tid] = err
+					deleteIfExists(roots, tid)
+					continue outerLoop
 				}
 				if ok { // if processed, remove the span from the to-be-processed slice.
 					spans = removeFromSpanList(i, spans)
@@ -64,11 +68,13 @@ func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, e
 			// After processing, check if we processed a span. If not, either there's no root span, or there're spans
 			// whose parent doesn't exist. Either cases indicate there's an orphan spans.
 			if size == len(spans) {
-				return nil, errOrphanSpan
+				errs[tid] = errOrphanSpan
+				deleteIfExists(roots, tid)
+				continue outerLoop
 			}
 		}
 	}
-	return roots, nil
+	return roots, errs
 }
 
 func groupSpansByTraceID(spans []*tracepb.Span) map[trace.TraceID][]*tracepb.Span {
@@ -150,4 +156,11 @@ func removeFromSpanList(i int, spans []*tracepb.Span) []*tracepb.Span {
 	}
 	spans[i] = spans[len(spans)-1]
 	return spans[:len(spans)-1]
+}
+
+func deleteIfExists(roots map[trace.TraceID]*SimpleSpan, id trace.TraceID) {
+	_, ok := roots[id]
+	if ok {
+		delete(roots, id)
+	}
 }
