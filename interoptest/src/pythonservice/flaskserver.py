@@ -50,6 +50,7 @@ def healthcheck():
 
 @app.route(service.HTTP_POST_PATH, methods=['POST'])
 def test():
+    """Handle a test request by calling other test services"""
     request = pb2.TestRequest.FromString(flask.request.get_data())
     logger.debug("Got request: %s", request)
 
@@ -67,6 +68,7 @@ def test():
 
 # http://flask.pocoo.org/snippets/67/
 def shutdown_server():
+    """Shug down the server."""
     func = flask.request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -75,12 +77,14 @@ def shutdown_server():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
+    """Handler to shut down the server."""
     shutdown_server()
     return "Shutting down server"
 
 
 @app.route('/register', methods=['POST'])
 def register(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
+    """Register the server at host:port with the test registration service."""
     request = pb2.RegistrationRequest(
         server_name='python',
         services=[
@@ -123,6 +127,7 @@ def block_until_ready(host, port, timeout=10):
 @contextmanager
 def serve_http_tracecontext(
         port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
+    """Run the HTTP/tracecontext server, shut down on exiting context."""
     host = 'localhost'
     with futures.ThreadPoolExecutor(max_workers=1) as tpe:
         tpe.submit(app.run, host=host, port=port)

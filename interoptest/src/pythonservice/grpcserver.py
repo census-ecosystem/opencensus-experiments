@@ -37,13 +37,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-
 GRPC_TPE_WORKERS = 10
 
 
 class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
 
     def test(self, request, context):
+        """Handle a test request by calling other test services"""
         logger.debug("grpc service recieved: %s", request)
         if not request.service_hops:
             response = pb2.TestResponse(
@@ -58,6 +58,7 @@ class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
 
 
 def register(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
+    """Register the server at host:port with the test registration service."""
     request = pb2.RegistrationRequest(
         server_name='python',
         services=[
@@ -79,6 +80,7 @@ def register(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
 
 @contextmanager
 def serve_grpc_binary(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
+    """Run the GRPC/binary server, shut down on exiting context."""
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         always_on.AlwaysOnSampler(), logging_exporter.LoggingExporter())
     server = grpc.server(

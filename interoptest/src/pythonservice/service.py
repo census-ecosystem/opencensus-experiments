@@ -21,14 +21,13 @@ from uuid import uuid4
 import logging
 import sys
 
-from opencensus.trace.tracers import context_tracer
 from opencensus.trace.ext import requests as requests_wrapper
+from opencensus.trace.tracers import context_tracer
 import grpc
 import requests
 
 import interoperability_test_pb2 as pb2
 import interoperability_test_pb2_grpc as pb2_grpc
-
 
 # Monkey patch the requests library
 requests_wrapper.trace.trace_integration(context_tracer.ContextTracer())
@@ -46,32 +45,32 @@ HTTP_POST_PATH = "/test/request/"
 PORT_MAP = {
     pb2.JAVA_GRPC_BINARY_PROPAGATION_PORT:
     (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.JAVA_HTTP_B3_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.B3_FORMAT_PROPAGATION),
+    pb2.JAVA_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
+                                        pb2.Spec.B3_FORMAT_PROPAGATION),
     pb2.JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT:
     (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.GO_GRPC_BINARY_PROPAGATION_PORT:
-    (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.GO_HTTP_B3_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.B3_FORMAT_PROPAGATION),
+    pb2.GO_GRPC_BINARY_PROPAGATION_PORT: (pb2.Spec.GRPC,
+                                          pb2.Spec.BINARY_FORMAT_PROPAGATION),
+    pb2.GO_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
+                                      pb2.Spec.B3_FORMAT_PROPAGATION),
     pb2.GO_HTTP_TRACECONTEXT_PROPAGATION_PORT:
     (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
     pb2.NODEJS_GRPC_BINARY_PROPAGATION_PORT:
     (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.NODEJS_HTTP_B3_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.B3_FORMAT_PROPAGATION),
+    pb2.NODEJS_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
+                                          pb2.Spec.B3_FORMAT_PROPAGATION),
     pb2.NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT:
     (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
     pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT:
     (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.PYTHON_HTTP_B3_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.B3_FORMAT_PROPAGATION),
+    pb2.PYTHON_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
+                                          pb2.Spec.B3_FORMAT_PROPAGATION),
     pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT:
     (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.CPP_GRPC_BINARY_PROPAGATION_PORT:
-    (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.CPP_HTTP_B3_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.B3_FORMAT_PROPAGATION),
+    pb2.CPP_GRPC_BINARY_PROPAGATION_PORT: (pb2.Spec.GRPC,
+                                           pb2.Spec.BINARY_FORMAT_PROPAGATION),
+    pb2.CPP_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
+                                       pb2.Spec.B3_FORMAT_PROPAGATION),
     pb2.CPP_HTTP_TRACECONTEXT_PROPAGATION_PORT:
     (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
 }
@@ -89,9 +88,7 @@ def call_http(host, port, request):
                  len(request.service_hops))
     data = request.SerializeToString()
     response = requests.post(
-        'http://{}:{}{}'.format(host, port, HTTP_POST_PATH),
-        data=data
-    )
+        'http://{}:{}{}'.format(host, port, HTTP_POST_PATH), data=data)
     response.raise_for_status()
     logger.debug("http service responded: %s", response)
     return pb2.TestResponse.FromString(response.content)
@@ -107,8 +104,7 @@ def call_grpc_binary(host, port, request):
     logger.debug("Called call_grpc_binary at %s:%s, hops left: %s", host, port,
                  len(request.service_hops))
     client = pb2_grpc.TestExecutionServiceStub(
-        channel=grpc.insecure_channel('{}:{}'.format(host, port))
-    )
+        channel=grpc.insecure_channel('{}:{}'.format(host, port)))
     response = client.test(request)
     logger.debug("grpc service responded: %s", response)
     return response
@@ -123,8 +119,7 @@ def call_next(request):
     new_request = pb2.TestRequest(
         id=request.id,
         name=request.name,
-        service_hops=request.service_hops[1:]
-    )
+        service_hops=request.service_hops[1:])
 
     next_hop = request.service_hops[0]
     transport = next_hop.service.spec.transport
@@ -137,8 +132,7 @@ def call_next(request):
     if (transport, prop) != PORT_MAP[port]:
         raise ValueError()
 
-    if (transport == pb2.Spec.HTTP
-            and prop == pb2.Spec.B3_FORMAT_PROPAGATION):
+    if (transport == pb2.Spec.HTTP and prop == pb2.Spec.B3_FORMAT_PROPAGATION):
         return call_http_b3(host, port, new_request)
     if (transport == pb2.Spec.HTTP
             and prop == pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION):
