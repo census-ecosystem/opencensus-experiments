@@ -23,6 +23,7 @@ from collections import namedtuple
 
 import interoperability_test_pb2 as pb2
 import flaskserver
+import grpcserver
 import service
 
 TRANSPORT_TO_TRANSPORT_NAME = {
@@ -105,7 +106,7 @@ def test_http_server():
         Hop(OWN_HOST, OWN_HTTP_PORT, HTTP, TRACECONTEXT),
         Hop(OWN_HOST, OWN_HTTP_PORT, HTTP, TRACECONTEXT),
     ])
-    with service.serve_http_tracecontext():
+    with flaskserver.serve_http_tracecontext():
         return service.call_http_tracecontext(
             OWN_HOST, OWN_HTTP_PORT, test_request)
 
@@ -115,7 +116,7 @@ def test_grpc_server():
         Hop(OWN_HOST, OWN_GRPC_PORT, GRPC, BINARY),
         Hop(OWN_HOST, OWN_GRPC_PORT, GRPC, BINARY),
     ])
-    with service.serve_grpc_binary():
+    with grpcserver.serve_grpc_binary():
         return service.call_grpc_binary(
             'localhost', OWN_GRPC_PORT, test_request)
 
