@@ -17,45 +17,31 @@
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
-from concurrent import futures
-from contextlib import contextmanager
 from uuid import uuid4
 import logging
 import sys
 
 from opencensus.trace.tracers import context_tracer
-from opencensus.trace.exporters import logging_exporter
-from opencensus.trace.ext.grpc import server_interceptor
 from opencensus.trace.ext import requests as requests_wrapper
-from opencensus.trace.samplers import always_on
 import grpc
 import requests
 
 import interoperability_test_pb2 as pb2
 import interoperability_test_pb2_grpc as pb2_grpc
 
-try:
-    from http.server import BaseHTTPRequestHandler
-    from http.server import HTTPServer
-    import socketserver
-except ImportError:
-    from BaseHTTPServer import BaseHTTPRequestHandler
-    from BaseHTTPServer import HTTPServer
-    import SocketServer as socketserver
-
 
 # Monkey patch the requests library
 requests_wrapper.trace.trace_integration(context_tracer.ContextTracer())
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
+REGISTRATION_SERVER_HOST = ''
+REGISTRATION_SERVER_PORT = ''
 
 GRPC_TPE_WORKERS = 10
 HTTP_POST_PATH = "/test/request/"
-
 
 PORT_MAP = {
     pb2.JAVA_GRPC_BINARY_PROPAGATION_PORT:
@@ -161,82 +147,3 @@ def call_next(request):
             and prop == pb2.Spec.BINARY_FORMAT_PROPAGATION):
         return call_grpc_binary(host, port, new_request)
     raise ValueError("No service for transport/propagation")
-
-
-class HTTPTraceContextTestServer(BaseHTTPRequestHandler):
-
-    def do_POST(self):
-        if self.path != HTTP_POST_PATH:
-            self.send_error(404)
-            return
-
-        length = int(self.headers['Content-Length'])
-        message = self.rfile.read(length)
-        request = pb2.TestRequest.FromString(message)
-        logger.debug("http service recieved: %s", request)
-
-        if not request.service_hops:
-            response = pb2.TestResponse(
-                id=request.id,
-                status=[pb2.CommonResponseStatus(
-                    status=pb2.SUCCESS,
-                )],
-            )
-        else:
-            response = call_next(request)
-
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(response.SerializeToString())
-
-
-# Stolen from http.server in python 3.7, here for backwards compatability. See
-# https://docs.python.org/3.7/library/http.server.html.
-class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
-    daemon_threads = True
-
-
-@contextmanager
-def serve_http_tracecontext(
-        port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
-    httpd = ThreadingHTTPServer(('', port), HTTPTraceContextTestServer)
-    with futures.ThreadPoolExecutor(max_workers=1) as tpe:
-        tpe.submit(httpd.serve_forever)
-        yield httpd
-        httpd.shutdown()
-
-
-class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
-
-    def test(self, request, context):
-        logger.debug("grpc service recieved: %s", request)
-        if not request.service_hops:
-            response = pb2.TestResponse(
-                id=request.id,
-                status=[pb2.CommonResponseStatus(
-                    status=pb2.SUCCESS,
-                )],
-            )
-        else:
-            response = call_next(request)
-        return response
-
-
-@contextmanager
-def serve_grpc_binary(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
-    interceptor = server_interceptor.OpenCensusServerInterceptor(
-        always_on.AlwaysOnSampler(), logging_exporter.LoggingExporter())
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=GRPC_TPE_WORKERS),
-        interceptors=(interceptor,)
-    )
-    pb2_grpc.add_TestExecutionServiceServicer_to_server(
-        GRPCBinaryTestServer(),
-        server
-    )
-    server.add_insecure_port('[::]:{}'.format(port))
-    try:
-        server.start()
-        yield server
-    finally:
-        server.stop(0)

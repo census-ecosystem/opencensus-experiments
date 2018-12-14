@@ -22,6 +22,7 @@
 from collections import namedtuple
 
 import interoperability_test_pb2 as pb2
+import flaskserver
 import service
 
 TRANSPORT_TO_TRANSPORT_NAME = {
@@ -52,7 +53,6 @@ PORT_TO_LANG_NAME = {
     pb2.CPP_HTTP_B3_PROPAGATION_PORT: 'cpp',
     pb2.CPP_HTTP_TRACECONTEXT_PROPAGATION_PORT: 'cpp',
 }
-
 
 Hop = namedtuple('Hop', ('host', 'port', 'transport', 'prop'))
 

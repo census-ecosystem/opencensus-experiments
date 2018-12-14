@@ -30,11 +30,11 @@ import requests
 import interoperability_test_pb2 as pb2
 import interoperability_test_pb2_grpc as pb2_grpc
 import service
-import test_service
+import util
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 app = flask.Flask(__name__)
@@ -43,8 +43,9 @@ app = flask.Flask(__name__)
 flask_middleware.FlaskMiddleware(app)
 
 
-REGISTRATION_SERVER_HOST = ''
-REGISTRATION_SERVER_PORT = ''
+@app.route('/', methods=['GET'])
+def healthcheck():
+    return "OK"
 
 
 @app.route(service.HTTP_POST_PATH, methods=['POST'])
@@ -93,7 +94,8 @@ def register(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
             )])
     client = pb2_grpc.RegistrationServiceStub(
         channel=grpc.insecure_channel(
-            '{}:{}'.format(REGISTRATION_SERVER_HOST, REGISTRATION_SERVER_PORT))
+            '{}:{}'.format(service.REGISTRATION_SERVER_HOST,
+                           service.REGISTRATION_SERVER_PORT))
     )
     try:
         return client.register(request)
@@ -102,30 +104,76 @@ def register(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
         return "Failed to register"
 
 
+def block_until_ready(host, port, timeout=10):
+    """Block until the server responds to a request, up to timeout."""
+    def keep_pinging():
+        ready = False
+        while not ready:
+            try:
+                requests.get('http://{}:{}{}'.format(host, port, '/'),
+                             timeout=.01)
+                ready = True
+            except requests.ConnectionError:
+                pass
+    with futures.ThreadPoolExecutor(max_workers=1) as tpe:
+        ff = tpe.submit(keep_pinging)
+        ff.result(timeout=timeout)
+
+
 @contextmanager
 def serve_http_tracecontext(
         port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
     host = 'localhost'
     with futures.ThreadPoolExecutor(max_workers=1) as tpe:
         tpe.submit(app.run, host=host, port=port)
+        block_until_ready(host, port)
         yield app
         requests.post('http://{}:{}{}'.format(host, port, '/shutdown'))
     logger.debug("Shut down flask server")
 
 
-def test_server():
+def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
     """Send a single multi-hop request to the server and shut it down."""
+
+    test_request = pb2.TestRequest(
+        name="python:http:tracecontext",
+        service_hops=[
+            pb2.ServiceHop(
+                service=pb2.Service(
+                    name="python:http:tracecontext",
+                    port=port,
+                    host="localhost",
+                    spec=pb2.Spec(
+                        transport=pb2.Spec.HTTP,
+                        propagation=pb2.Spec.
+                        TRACE_CONTEXT_FORMAT_PROPAGATION))),
+            pb2.ServiceHop(
+                service=pb2.Service(
+                    name="python:http:tracecontext",
+                    port=port,
+                    host="localhost",
+                    spec=pb2.Spec(
+                        transport=pb2.Spec.HTTP,
+                        propagation=pb2.Spec.
+                        TRACE_CONTEXT_FORMAT_PROPAGATION)))
+        ])
+
     with serve_http_tracecontext():
-        test_service.test_http_server()
+        return service.call_http_tracecontext('localhost', port, test_request)
 
 
-def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
+def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
+         exit_event=None):
     """Runs the service and registers it with the test coordinator."""
     with serve_http_tracecontext():
         logger.debug("Registering with test coordinator")
         requests.post('http://{}:{}{}'.format(host, port, '/register'))
         logger.debug("Serving...")
+        if exit_event is not None:
+            while not exit_event.is_set():
+                exit_event.wait(60)
 
 
 if __name__ == "__main__":
-    main()
+    with util.get_signal_exit() as _exit_event:
+        main(exit_event=_exit_event)
