@@ -62,7 +62,10 @@ def test():
             )],
         )
     else:
-        response = service.call_next(request)
+        status = ([pb2.CommonResponseStatus(status=pb2.SUCCESS)] +
+                  list(service.call_next(request).status))
+        response = pb2.TestResponse(id=request.id, status=status)
+
     return response.SerializeToString()
 
 
