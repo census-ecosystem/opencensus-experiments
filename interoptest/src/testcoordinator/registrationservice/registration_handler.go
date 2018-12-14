@@ -59,7 +59,7 @@ func (h *Handler) registerRegistrationReceiver() error {
 	var err = errAlreadyStarted
 
 	h.startRegistrationOnce.Do(func() {
-		h.Receiver = &RegistrationReceiver{registeredServices: make(map[string][]*interop.Service)}
+		h.Receiver = &RegistrationReceiver{RegisteredServices: make(map[string][]*interop.Service)}
 		srv := h.grpcServer()
 		interop.RegisterRegistrationServiceServer(srv, h.Receiver)
 		err = nil
