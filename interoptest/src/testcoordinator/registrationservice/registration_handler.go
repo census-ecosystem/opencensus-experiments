@@ -31,7 +31,7 @@ type Handler struct {
 	ln     net.Listener
 	server *grpc.Server
 
-	receiver *RegistrationReceiver
+	Receiver *RegistrationReceiver
 
 	stopOnce              sync.Once
 	startServerOnce       sync.Once
@@ -59,9 +59,9 @@ func (h *Handler) registerRegistrationReceiver() error {
 	var err = errAlreadyStarted
 
 	h.startRegistrationOnce.Do(func() {
-		h.receiver = &RegistrationReceiver{registeredServices: make(map[string][]*interop.Service)}
+		h.Receiver = &RegistrationReceiver{registeredServices: make(map[string][]*interop.Service)}
 		srv := h.grpcServer()
-		interop.RegisterRegistrationServiceServer(srv, h.receiver)
+		interop.RegisterRegistrationServiceServer(srv, h.Receiver)
 		err = nil
 	})
 
