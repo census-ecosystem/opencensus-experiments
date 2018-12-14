@@ -1,4 +1,5 @@
 grpcio
+flask
 opencensus
 protobuf
 requests
