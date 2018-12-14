@@ -42,39 +42,6 @@ REGISTRATION_SERVER_PORT = ''
 GRPC_TPE_WORKERS = 10
 HTTP_POST_PATH = "/test/request/"
 
-PORT_MAP = {
-    pb2.JAVA_GRPC_BINARY_PROPAGATION_PORT:
-    (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.JAVA_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
-                                        pb2.Spec.B3_FORMAT_PROPAGATION),
-    pb2.JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.GO_GRPC_BINARY_PROPAGATION_PORT: (pb2.Spec.GRPC,
-                                          pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.GO_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
-                                      pb2.Spec.B3_FORMAT_PROPAGATION),
-    pb2.GO_HTTP_TRACECONTEXT_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.NODEJS_GRPC_BINARY_PROPAGATION_PORT:
-    (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.NODEJS_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
-                                          pb2.Spec.B3_FORMAT_PROPAGATION),
-    pb2.NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT:
-    (pb2.Spec.GRPC, pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.PYTHON_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
-                                          pb2.Spec.B3_FORMAT_PROPAGATION),
-    pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-    pb2.CPP_GRPC_BINARY_PROPAGATION_PORT: (pb2.Spec.GRPC,
-                                           pb2.Spec.BINARY_FORMAT_PROPAGATION),
-    pb2.CPP_HTTP_B3_PROPAGATION_PORT: (pb2.Spec.HTTP,
-                                       pb2.Spec.B3_FORMAT_PROPAGATION),
-    pb2.CPP_HTTP_TRACECONTEXT_PROPAGATION_PORT:
-    (pb2.Spec.HTTP, pb2.Spec.TRACE_CONTEXT_FORMAT_PROPAGATION),
-}
-
 
 def rand63():
     """Get a random positive 63 bit int"""
@@ -126,11 +93,6 @@ def call_next(request):
     prop = next_hop.service.spec.propagation
     host = next_hop.service.host
     port = next_hop.service.port
-
-    if port not in PORT_MAP:
-        raise ValueError()
-    if (transport, prop) != PORT_MAP[port]:
-        raise ValueError()
 
     if (transport == pb2.Spec.HTTP and prop == pb2.Spec.B3_FORMAT_PROPAGATION):
         return call_http_b3(host, port, new_request)
