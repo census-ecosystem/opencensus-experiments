@@ -21,16 +21,16 @@ import (
 
 // RegistrationReceiver is the type used to handle registration requests.
 type RegistrationReceiver struct {
-	registeredServices map[string][]*interop.Service
+	RegisteredServices map[string][]*interop.Service
 }
 
 // Register is the gRPC method that handles registration requests from interop test servers.
 func (rr *RegistrationReceiver) Register(_ context.Context, req *interop.RegistrationRequest) (*interop.RegistrationResponse, error) {
 	sn := req.GetServerName()
-	if _, exists := rr.registeredServices[sn]; exists {
+	if _, exists := rr.RegisteredServices[sn]; exists {
 		err := sn + " already registered"
 		return &interop.RegistrationResponse{Status: &interop.CommonResponseStatus{Status: interop.Status_FAILURE, Error: err}}, nil
 	}
-	rr.registeredServices[sn] = req.GetServices()
+	rr.RegisteredServices[sn] = req.GetServices()
 	return &interop.RegistrationResponse{Status: &interop.CommonResponseStatus{Status: interop.Status_SUCCESS}}, nil
 }
