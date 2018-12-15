@@ -25,7 +25,8 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/testcoordinator
+        image: gcr.io/opencensus-interoptest/testcoordinator
+        imagePullPolicy: Never
         ports:
         - containerPort: 10000
           name: testcoordinator

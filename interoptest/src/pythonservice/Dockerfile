@@ -1,6 +1,6 @@
 FROM python:2.7-slim
 RUN apt-get update -qqy && \
-	apt-get -qqy install wget curl && \
+	apt-get -qqy install wget curl git && \
 	rm -rf /var/lib/apt/lists/*
 # show python logs as they occur
 ENV PYTHONUNBUFFERED=0
@@ -17,4 +17,4 @@ COPY . .
 ENV PORT "10401"
 EXPOSE 10401 10402 10403
 
-ENTRYPOINT ["python", "/pythonservice/pythonservice.py"]
+ENTRYPOINT ["python", "/pythonservice/grpcserver.py"]

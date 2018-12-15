@@ -25,7 +25,8 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/ocagent
+        image: gcr.io/opencensus-interoptest/ocagent
+        imagePullPolicy: Never
         ports:
         - containerPort: 55678
           name: ocagent

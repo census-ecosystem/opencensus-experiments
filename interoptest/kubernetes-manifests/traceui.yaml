@@ -25,7 +25,8 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/traceui
+        image: gcr.io/opencensus-interoptest/traceui
+        imagePullPolicy: Never
         ports:
         - containerPort: 9411
           name: zipkin

@@ -1,5 +1,6 @@
 flask
--e git+git@github.com:census-instrumentation/opencensus-python.git#egg=opencensus
+-e git+git://github.com/census-instrumentation/opencensus-python.git@master#egg=opencensus
+contextlib2
 grpcio
 protobuf
 requests
