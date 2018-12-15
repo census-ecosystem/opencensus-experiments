@@ -1,3 +1,6 @@
-cachetools==2.1.0
-certifi==2018.4.16
-python-json-logger==0.1.9
+flask
+-e git+git@github.com:census-instrumentation/opencensus-python.git#egg=opencensus
+grpcio
+protobuf
+requests
+wrapt  # see https://github.com/census-instrumentation/opencensus-python/pull/432
