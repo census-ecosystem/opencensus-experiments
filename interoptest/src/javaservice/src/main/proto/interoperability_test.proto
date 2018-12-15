@@ -34,22 +34,25 @@ message Service {
 
 message Spec {
   enum Transport {
-    GRPC = 0;
-    HTTP = 1;
+    UNDEFINED_TRANSPORT = 0;
+    GRPC = 1;
+    HTTP = 2;
   }
   enum Propagation {
-    BINARY_FORMAT_PROPAGATION = 0;
-    B3_FORMAT_PROPAGATION = 1;
-    TRACE_CONTEXT_FORMAT_PROPAGATION = 2;
+    UNDEFINED_PROPAGATION = 0;
+    BINARY_FORMAT_PROPAGATION = 1;
+    B3_FORMAT_PROPAGATION = 2;
+    TRACE_CONTEXT_FORMAT_PROPAGATION = 3;
   }
   Transport transport = 1;
   Propagation propagation = 2;
 }
 
 enum Status {
-  SUCCESS = 0;
-  FAILURE = 1;
-  RUNNING = 2;  // Used for asynchronous request status.
+  UNDEFINED = 0;
+  SUCCESS = 1;
+  FAILURE = 2;
+  RUNNING = 3;  // Used for asynchronous request status.
 }
 
 message CommonResponseStatus {

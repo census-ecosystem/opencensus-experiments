@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='interop',
   syntax='proto3',
   serialized_options=_b('\n\025io.opencensus.interopB\030RegistrationServiceProtoP\001'),
-  serialized_pb=_b('\n\x1binteroperability_test.proto\x12\x07interop\"N\n\x13RegistrationRequest\x12\x13\n\x0bserver_name\x18\x01 \x01(\t\x12\"\n\x08services\x18\x02 \x03(\x0b\x32\x10.interop.Service\"P\n\x07Service\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0c\n\x04host\x18\x03 \x01(\t\x12\x1b\n\x04spec\x18\x04 \x01(\x0b\x32\r.interop.Spec\"\xf2\x01\n\x04Spec\x12*\n\ttransport\x18\x01 \x01(\x0e\x32\x17.interop.Spec.Transport\x12.\n\x0bpropagation\x18\x02 \x01(\x0e\x32\x19.interop.Spec.Propagation\"\x1f\n\tTransport\x12\x08\n\x04GRPC\x10\x00\x12\x08\n\x04HTTP\x10\x01\"m\n\x0bPropagation\x12\x1d\n\x19\x42INARY_FORMAT_PROPAGATION\x10\x00\x12\x19\n\x15\x42\x33_FORMAT_PROPAGATION\x10\x01\x12$\n TRACE_CONTEXT_FORMAT_PROPAGATION\x10\x02\"F\n\x14\x43ommonResponseStatus\x12\x1f\n\x06status\x18\x01 \x01(\x0e\x32\x0f.interop.Status\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"E\n\x14RegistrationResponse\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\"R\n\x0bTestRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12)\n\x0cservice_hops\x18\x03 \x03(\x0b\x32\x13.interop.ServiceHop\"K\n\nServiceHop\x12!\n\x07service\x18\x01 \x01(\x0b\x32\x10.interop.Service\x12\x1a\n\x04tags\x18\x02 \x03(\x0b\x32\x0c.interop.Tag\"!\n\x03Tag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"I\n\x0cTestResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12-\n\x06status\x18\x02 \x03(\x0b\x32\x1d.interop.CommonResponseStatus\"\x13\n\x11InteropRunRequest\" \n\x12InteropRunResponse\x12\n\n\x02id\x18\x01 \x01(\x03\"\"\n\x14InteropResultRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"w\n\x15InteropResultResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12-\n\x06status\x18\x02 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\x12#\n\x06result\x18\x03 \x03(\x0b\x32\x13.interop.TestResult\"\xb0\x01\n\nTestResult\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12-\n\x06status\x18\x03 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\x12)\n\x0cservice_hops\x18\x04 \x03(\x0b\x32\x13.interop.ServiceHop\x12.\n\x07\x64\x65tails\x18\x05 \x03(\x0b\x32\x1d.interop.CommonResponseStatus*/\n\x06Status\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0b\n\x07\x46\x41ILURE\x10\x01\x12\x0b\n\x07RUNNING\x10\x02*\xf3\x05\n\x0bServicePort\x12\x15\n\x11INVALID_BASE_PORT\x10\x00\x12\x13\n\x0eJAVA_BASE_PORT\x10\xf4N\x12&\n!JAVA_GRPC_BINARY_PROPAGATION_PORT\x10\xf5N\x12\"\n\x1dJAVA_HTTP_B3_PROPAGATION_PORT\x10\xf6N\x12,\n\'JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xf7N\x12\x11\n\x0cGO_BASE_PORT\x10\xd8O\x12$\n\x1fGO_GRPC_BINARY_PROPAGATION_PORT\x10\xd9O\x12 \n\x1bGO_HTTP_B3_PROPAGATION_PORT\x10\xdaO\x12*\n%GO_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xdbO\x12\x15\n\x10NODEJS_BASE_PORT\x10\xbcP\x12(\n#NODEJS_GRPC_BINARY_PROPAGATION_PORT\x10\xbdP\x12$\n\x1fNODEJS_HTTP_B3_PROPAGATION_PORT\x10\xbeP\x12.\n)NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xbfP\x12\x15\n\x10PYTHON_BASE_PORT\x10\xa0Q\x12(\n#PYTHON_GRPC_BINARY_PROPAGATION_PORT\x10\xa1Q\x12$\n\x1fPYTHON_HTTP_B3_PROPAGATION_PORT\x10\xa2Q\x12.\n)PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xa3Q\x12\x12\n\rCPP_BASE_PORT\x10\x84R\x12%\n CPP_GRPC_BINARY_PROPAGATION_PORT\x10\x85R\x12!\n\x1c\x43PP_HTTP_B3_PROPAGATION_PORT\x10\x86R\x12+\n&CPP_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\x87R2M\n\x14TestExecutionService\x12\x35\n\x04test\x12\x14.interop.TestRequest\x1a\x15.interop.TestResponse\"\x00\x32`\n\x13RegistrationService\x12I\n\x08register\x12\x1c.interop.RegistrationRequest\x1a\x1d.interop.RegistrationResponse\"\x00\x32\xa1\x01\n\x12InteropTestService\x12I\n\x06result\x12\x1d.interop.InteropResultRequest\x1a\x1e.interop.InteropResultResponse\"\x00\x12@\n\x03run\x12\x1a.interop.InteropRunRequest\x1a\x1b.interop.InteropRunResponse\"\x00\x42\x33\n\x15io.opencensus.interopB\x18RegistrationServiceProtoP\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1binteroperability_test.proto\x12\x07interop\"N\n\x13RegistrationRequest\x12\x13\n\x0bserver_name\x18\x01 \x01(\t\x12\"\n\x08services\x18\x02 \x03(\x0b\x32\x10.interop.Service\"P\n\x07Service\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0c\n\x04host\x18\x03 \x01(\t\x12\x1b\n\x04spec\x18\x04 \x01(\x0b\x32\r.interop.Spec\"\xa7\x02\n\x04Spec\x12*\n\ttransport\x18\x01 \x01(\x0e\x32\x17.interop.Spec.Transport\x12.\n\x0bpropagation\x18\x02 \x01(\x0e\x32\x19.interop.Spec.Propagation\"8\n\tTransport\x12\x17\n\x13UNDEFINED_TRANSPORT\x10\x00\x12\x08\n\x04GRPC\x10\x01\x12\x08\n\x04HTTP\x10\x02\"\x88\x01\n\x0bPropagation\x12\x19\n\x15UNDEFINED_PROPAGATION\x10\x00\x12\x1d\n\x19\x42INARY_FORMAT_PROPAGATION\x10\x01\x12\x19\n\x15\x42\x33_FORMAT_PROPAGATION\x10\x02\x12$\n TRACE_CONTEXT_FORMAT_PROPAGATION\x10\x03\"F\n\x14\x43ommonResponseStatus\x12\x1f\n\x06status\x18\x01 \x01(\x0e\x32\x0f.interop.Status\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"E\n\x14RegistrationResponse\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\"R\n\x0bTestRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12)\n\x0cservice_hops\x18\x03 \x03(\x0b\x32\x13.interop.ServiceHop\"K\n\nServiceHop\x12!\n\x07service\x18\x01 \x01(\x0b\x32\x10.interop.Service\x12\x1a\n\x04tags\x18\x02 \x03(\x0b\x32\x0c.interop.Tag\"!\n\x03Tag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"I\n\x0cTestResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12-\n\x06status\x18\x02 \x03(\x0b\x32\x1d.interop.CommonResponseStatus\"\x13\n\x11InteropRunRequest\" \n\x12InteropRunResponse\x12\n\n\x02id\x18\x01 \x01(\x03\"\"\n\x14InteropResultRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"w\n\x15InteropResultResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12-\n\x06status\x18\x02 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\x12#\n\x06result\x18\x03 \x03(\x0b\x32\x13.interop.TestResult\"\xb0\x01\n\nTestResult\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12-\n\x06status\x18\x03 \x01(\x0b\x32\x1d.interop.CommonResponseStatus\x12)\n\x0cservice_hops\x18\x04 \x03(\x0b\x32\x13.interop.ServiceHop\x12.\n\x07\x64\x65tails\x18\x05 \x03(\x0b\x32\x1d.interop.CommonResponseStatus*>\n\x06Status\x12\r\n\tUNDEFINED\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\x0b\n\x07\x46\x41ILURE\x10\x02\x12\x0b\n\x07RUNNING\x10\x03*\xf3\x05\n\x0bServicePort\x12\x15\n\x11INVALID_BASE_PORT\x10\x00\x12\x13\n\x0eJAVA_BASE_PORT\x10\xf4N\x12&\n!JAVA_GRPC_BINARY_PROPAGATION_PORT\x10\xf5N\x12\"\n\x1dJAVA_HTTP_B3_PROPAGATION_PORT\x10\xf6N\x12,\n\'JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xf7N\x12\x11\n\x0cGO_BASE_PORT\x10\xd8O\x12$\n\x1fGO_GRPC_BINARY_PROPAGATION_PORT\x10\xd9O\x12 \n\x1bGO_HTTP_B3_PROPAGATION_PORT\x10\xdaO\x12*\n%GO_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xdbO\x12\x15\n\x10NODEJS_BASE_PORT\x10\xbcP\x12(\n#NODEJS_GRPC_BINARY_PROPAGATION_PORT\x10\xbdP\x12$\n\x1fNODEJS_HTTP_B3_PROPAGATION_PORT\x10\xbeP\x12.\n)NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xbfP\x12\x15\n\x10PYTHON_BASE_PORT\x10\xa0Q\x12(\n#PYTHON_GRPC_BINARY_PROPAGATION_PORT\x10\xa1Q\x12$\n\x1fPYTHON_HTTP_B3_PROPAGATION_PORT\x10\xa2Q\x12.\n)PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\xa3Q\x12\x12\n\rCPP_BASE_PORT\x10\x84R\x12%\n CPP_GRPC_BINARY_PROPAGATION_PORT\x10\x85R\x12!\n\x1c\x43PP_HTTP_B3_PROPAGATION_PORT\x10\x86R\x12+\n&CPP_HTTP_TRACECONTEXT_PROPAGATION_PORT\x10\x87R2M\n\x14TestExecutionService\x12\x35\n\x04test\x12\x14.interop.TestRequest\x1a\x15.interop.TestResponse\"\x00\x32`\n\x13RegistrationService\x12I\n\x08register\x12\x1c.interop.RegistrationRequest\x1a\x1d.interop.RegistrationResponse\"\x00\x32\xa1\x01\n\x12InteropTestService\x12I\n\x06result\x12\x1d.interop.InteropResultRequest\x1a\x1e.interop.InteropResultResponse\"\x00\x12@\n\x03run\x12\x1a.interop.InteropRunRequest\x1a\x1b.interop.InteropRunResponse\"\x00\x42\x33\n\x15io.opencensus.interopB\x18RegistrationServiceProtoP\x01\x62\x06proto3')
 )
 
 _STATUS = _descriptor.EnumDescriptor(
@@ -30,22 +30,26 @@ _STATUS = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='SUCCESS', index=0, number=0,
+      name='UNDEFINED', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FAILURE', index=1, number=1,
+      name='SUCCESS', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='RUNNING', index=2, number=2,
+      name='FAILURE', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='RUNNING', index=3, number=3,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1252,
-  serialized_end=1299,
+  serialized_start=1305,
+  serialized_end=1367,
 )
 _sym_db.RegisterEnumDescriptor(_STATUS)
 
@@ -143,15 +147,16 @@ _SERVICEPORT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1302,
-  serialized_end=2057,
+  serialized_start=1370,
+  serialized_end=2125,
 )
 _sym_db.RegisterEnumDescriptor(_SERVICEPORT)
 
 ServicePort = enum_type_wrapper.EnumTypeWrapper(_SERVICEPORT)
-SUCCESS = 0
-FAILURE = 1
-RUNNING = 2
+UNDEFINED = 0
+SUCCESS = 1
+FAILURE = 2
+RUNNING = 3
 INVALID_BASE_PORT = 0
 JAVA_BASE_PORT = 10100
 JAVA_GRPC_BINARY_PROPAGATION_PORT = 10101
@@ -182,18 +187,22 @@ _SPEC_TRANSPORT = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='GRPC', index=0, number=0,
+      name='UNDEFINED_TRANSPORT', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='HTTP', index=1, number=1,
+      name='GRPC', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='HTTP', index=2, number=2,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=303,
-  serialized_end=334,
+  serialized_end=359,
 )
 _sym_db.RegisterEnumDescriptor(_SPEC_TRANSPORT)
 
@@ -204,22 +213,26 @@ _SPEC_PROPAGATION = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='BINARY_FORMAT_PROPAGATION', index=0, number=0,
+      name='UNDEFINED_PROPAGATION', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='B3_FORMAT_PROPAGATION', index=1, number=1,
+      name='BINARY_FORMAT_PROPAGATION', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='TRACE_CONTEXT_FORMAT_PROPAGATION', index=2, number=2,
+      name='B3_FORMAT_PROPAGATION', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TRACE_CONTEXT_FORMAT_PROPAGATION', index=3, number=3,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=336,
-  serialized_end=445,
+  serialized_start=362,
+  serialized_end=498,
 )
 _sym_db.RegisterEnumDescriptor(_SPEC_PROPAGATION)
 
@@ -350,7 +363,7 @@ _SPEC = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=203,
-  serialized_end=445,
+  serialized_end=498,
 )
 
 
@@ -387,8 +400,8 @@ _COMMONRESPONSESTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=447,
-  serialized_end=517,
+  serialized_start=500,
+  serialized_end=570,
 )
 
 
@@ -418,8 +431,8 @@ _REGISTRATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=519,
-  serialized_end=588,
+  serialized_start=572,
+  serialized_end=641,
 )
 
 
@@ -463,8 +476,8 @@ _TESTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=590,
-  serialized_end=672,
+  serialized_start=643,
+  serialized_end=725,
 )
 
 
@@ -501,8 +514,8 @@ _SERVICEHOP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=674,
-  serialized_end=749,
+  serialized_start=727,
+  serialized_end=802,
 )
 
 
@@ -539,8 +552,8 @@ _TAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=751,
-  serialized_end=784,
+  serialized_start=804,
+  serialized_end=837,
 )
 
 
@@ -577,8 +590,8 @@ _TESTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=786,
-  serialized_end=859,
+  serialized_start=839,
+  serialized_end=912,
 )
 
 
@@ -601,8 +614,8 @@ _INTEROPRUNREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=861,
-  serialized_end=880,
+  serialized_start=914,
+  serialized_end=933,
 )
 
 
@@ -632,8 +645,8 @@ _INTEROPRUNRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=882,
-  serialized_end=914,
+  serialized_start=935,
+  serialized_end=967,
 )
 
 
@@ -663,8 +676,8 @@ _INTEROPRESULTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=916,
-  serialized_end=950,
+  serialized_start=969,
+  serialized_end=1003,
 )
 
 
@@ -708,8 +721,8 @@ _INTEROPRESULTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=952,
-  serialized_end=1071,
+  serialized_start=1005,
+  serialized_end=1124,
 )
 
 
@@ -767,8 +780,8 @@ _TESTRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1074,
-  serialized_end=1250,
+  serialized_start=1127,
+  serialized_end=1303,
 )
 
 _REGISTRATIONREQUEST.fields_by_name['services'].message_type = _SERVICE
@@ -913,8 +926,8 @@ _TESTEXECUTIONSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2059,
-  serialized_end=2136,
+  serialized_start=2127,
+  serialized_end=2204,
   methods=[
   _descriptor.MethodDescriptor(
     name='test',
@@ -937,8 +950,8 @@ _REGISTRATIONSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=2138,
-  serialized_end=2234,
+  serialized_start=2206,
+  serialized_end=2302,
   methods=[
   _descriptor.MethodDescriptor(
     name='register',
@@ -961,8 +974,8 @@ _INTEROPTESTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=2,
   serialized_options=None,
-  serialized_start=2237,
-  serialized_end=2398,
+  serialized_start=2305,
+  serialized_end=2466,
   methods=[
   _descriptor.MethodDescriptor(
     name='result',
