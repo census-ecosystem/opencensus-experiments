@@ -1,6 +1,6 @@
-grpcio
 flask
-opencensus
+-e git+git@github.com:census-instrumentation/opencensus-python.git#egg=opencensus
+grpcio
 protobuf
 requests
 wrapt  # see https://github.com/census-instrumentation/opencensus-python/pull/432
