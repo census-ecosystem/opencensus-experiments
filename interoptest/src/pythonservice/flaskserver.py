@@ -20,9 +20,11 @@
 from contextlib import contextmanager
 import logging
 import sys
-
 from concurrent import futures
+
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
+from opencensus.trace.propagation import trace_context_http_header_format
 import flask
 import grpc
 import requests
@@ -39,8 +41,19 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 app = flask.Flask(__name__)
 
-# Enable tracing the requests
-flask_middleware.FlaskMiddleware(app)
+
+def instrument_flask():
+    """Enable tracing via flask middleware."""
+    oc_trace_config = app.config.get('OPENCENSUS_TRACE', {})
+    oc_trace_config.update({
+        'EXPORTER': trace_exporter.TraceExporter,
+        'PROPAGATOR': trace_context_http_header_format.TraceContextPropagator
+    })
+    app.config.update(OPENCENSUS_TRACE=oc_trace_config)
+    return flask_middleware.FlaskMiddleware(app)
+
+
+instrument_flask()
 
 
 @app.route('/', methods=['GET'])
