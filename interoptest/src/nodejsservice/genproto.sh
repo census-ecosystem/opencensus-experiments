@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# protos are loaded dynamically for node, simply copies over the proto.
-mkdir -p proto
-cp -r ../../proto/* ./proto
+# script to compile javascript protos
+#
+# requires grpc-tools:
+#   npm install -g grpc-tools
+
+grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` ./proto/interoperability_test.proto
