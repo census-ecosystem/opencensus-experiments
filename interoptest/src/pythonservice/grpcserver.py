@@ -23,7 +23,7 @@ from contextlib import contextmanager
 import logging
 import sys
 
-from opencensus.trace.exporters import logging_exporter
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.grpc import server_interceptor
 from opencensus.trace.samplers import always_on
 import grpc
@@ -38,6 +38,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 GRPC_TPE_WORKERS = 10
+SERVICE_NAME = "interop test python grpc binary service"
 
 
 class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
@@ -84,7 +85,8 @@ def register(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
 def serve_grpc_binary(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
     """Run the GRPC/binary server, shut down on exiting context."""
     interceptor = server_interceptor.OpenCensusServerInterceptor(
-        always_on.AlwaysOnSampler(), logging_exporter.LoggingExporter())
+        always_on.AlwaysOnSampler(),
+        trace_exporter.TraceExporter(SERVICE_NAME))
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=GRPC_TPE_WORKERS),
         interceptors=(interceptor,)

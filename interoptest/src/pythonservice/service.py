@@ -21,6 +21,7 @@ from uuid import uuid4
 import logging
 import sys
 
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext import requests as requests_wrapper
 from opencensus.trace.tracers import context_tracer
 import grpc
@@ -30,7 +31,9 @@ import interoperability_test_pb2 as pb2
 import interoperability_test_pb2_grpc as pb2_grpc
 
 # Monkey patch the requests library
-requests_wrapper.trace.trace_integration(context_tracer.ContextTracer())
+requests_wrapper.trace.trace_integration(
+    context_tracer.ContextTracer(
+        exporter=trace_exporter.TraceExporter("requests")))
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
