@@ -104,13 +104,15 @@ def main():
         except futures.TimeoutError as timeout_ex:
             logger.fatal("Timed out waiting for response from test service")
             logger.debug(timeout_ex)
-            sys.exit(-1)
+            sys.exit(-2)
         except grpc.RpcError as rpc_ex:
             logger.fatal("RPC error while calling test service")
             logger.debug(rpc_ex)
-            sys.exit(-1)
+            sys.exit(-2)
     logger.debug("Results:")
     print(results)
+    if results.status.status == pb2.FAILURE:
+        sys.exit(-1)
 
 
 if __name__ == "__main__":
