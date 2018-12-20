@@ -45,16 +45,16 @@ public class PublisherExample {
     List<ApiFuture<String>> futures = new ArrayList<>();
 
     // Scope the span for the requests.
-    try (Scope scope = OpenCensusUtil.createScopedSpan("Publisher")) {
-      OpenCensusUtil.addAnnotation("Publisher:Begin");
+    try (Scope scope = OpenCensusTraceUtil.createScopedSpan("Publisher")) {
+      OpenCensusTraceUtil.addAnnotation("Publisher:Begin");
       // Create a publisher instance with default settings bound to the topic.
       publisher = Publisher.newBuilder(topicName).build();
       for (int i = 0; i < messageCount; i++) {
         try (
-            Scope traceScope = OpenCensusUtil.createScopedSpan("PublisherRoot-" + i);
+            Scope traceScope = OpenCensusTraceUtil.createScopedSpan("PublisherRoot-" + i);
             Scope statsScope = OpenCensusStatsUtil.createPublisherScope()) {
           try (Scope latencyScope = OpenCensusStatsUtil.createLatencyScope()) {
-            OpenCensusUtil.addAnnotation("Publisher:message-" + i);
+            OpenCensusTraceUtil.addAnnotation("Publisher:message-" + i);
             // Propagate the span information with the request.
             String message = "message-" + i;
             // convert message to bytes
@@ -78,7 +78,7 @@ public class PublisherExample {
         // When finished with the publisher, shutdown to free up resources.
         publisher.shutdown();
       }
-      OpenCensusUtil.addAnnotation("Publisher:End");
+      OpenCensusTraceUtil.addAnnotation("Publisher:End");
       Thread.sleep(5000);
     }
   }

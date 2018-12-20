@@ -40,12 +40,12 @@ public class SubscriberExample {
     public void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
       try (Scope subScope =  OpenCensusStatsUtil.createSubscriberScope()) {
         try (Scope latencyScope = OpenCensusStatsUtil.createLatencyScope()) {
-          OpenCensusUtil.addAnnotation("Receiver:Message");
+          OpenCensusTraceUtil.addAnnotation("Receiver:Message");
           String data = message.getData().toStringUtf8();
           logger.log(Level.INFO, "Data: " + data + ", Message Id: " + message.getMessageId());
-          OpenCensusUtil.addAnnotation("Receiver:Ack: " + data);
+          OpenCensusTraceUtil.addAnnotation("Receiver:Ack: " + data);
           consumer.ack();
-          OpenCensusUtil.addAnnotation("Receiver:Done: " + data);
+          OpenCensusTraceUtil.addAnnotation("Receiver:Done: " + data);
         }
       }
     }
@@ -70,7 +70,7 @@ public class SubscriberExample {
       if (subscriber != null) {
         subscriber.stopAsync();
       }
-      OpenCensusUtil.addAnnotation("Subscriber:End");
+      OpenCensusTraceUtil.addAnnotation("Subscriber:End");
     }
   }
 }

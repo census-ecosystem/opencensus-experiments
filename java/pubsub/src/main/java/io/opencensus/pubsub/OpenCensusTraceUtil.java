@@ -24,13 +24,11 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class OpenCensusUtil {
-  private static final Logger logger = Logger.getLogger(OpenCensusUtil.class.getName());
+final class OpenCensusTraceUtil {
+  private static final Logger logger = Logger.getLogger(OpenCensusTraceUtil.class.getName());
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
   private static final Tracer tracer = Tracing.getTracer();
 
