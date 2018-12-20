@@ -18,6 +18,7 @@ const interop = require('../../proto/interoperability_test_pb');
 const services = require('../../proto/interoperability_test_grpc_pb');
 const grpc = require('grpc');
 const http = require('http');
+const {constants, toBuffer, fromBuffer} = require('./util');
 
 function serviceHop (request) {
   return new Promise((resolve, reject) => {
@@ -33,7 +34,7 @@ function serviceHop (request) {
     } else {
       // Extracts data from first service hop.
       const firstHop = hops[0];
-      const host = firstHop.getService().getHost() || 'localhost';
+      const host = firstHop.getService().getHost() || constants.DEFAULT_HOST;
       const port = firstHop.getService().getPort();
       const restHops = hops.slice(1);
       const transport = firstHop
@@ -108,18 +109,12 @@ function grpcServiceHop (host, port, request) {
     return client.test(request, (err, response) => {
       if (err) {
         const response = new interop.TestResponse();
-        resolve(setFailureStatus(response, 'GRPC Service Hopper Error'));
+        resolve(setFailureStatus(response, `GRPC Service Hopper Error : ${err.message}`));
       } else {
         resolve(response);
       }
     });
   });
-}
-
-function toBuffer (testRequest) {
-  var bytes = testRequest.serializeBinary();
-  var buffer = new Buffer(bytes);
-  return buffer;
 }
 
 /**
@@ -132,8 +127,8 @@ function httpServiceHop (host, port, request) {
   const options = {
     hostname: host,
     port: port,
-    path: '/test/request',
-    method: 'POST',
+    path: constants.HTTP_URL_ENDPOINT,
+    method: constants.POST_METHOD,
     headers: {
       'Content-Length': buf.length,
       'Content-Type': 'application/x-protobuf'
@@ -147,22 +142,21 @@ function httpServiceHop (host, port, request) {
         res.on('data', chunk => { data.push(chunk); });
         res.on('end', () => {
           if (res.statusCode === 200) {
-            const bytes = new Uint8Array(Buffer.concat(data));
-            response = interop.TestResponse.deserializeBinary(bytes);
+            response = fromBuffer(data, interop.TestResponse);
             resolve(response);
           } else {
-            resolve(setFailureStatus(response, 'Http Service Hopper Error'));
+            resolve(setFailureStatus(response, `Http Service Hopper Error ${res.statusCode}:${res.statusMessage}`));
           }
         });
       }).on('error', (err) => {
         // console.error(err);
-        resolve(setFailureStatus(response, 'Http Service Hopper Error'));
+        resolve(setFailureStatus(response, `Http Service Hopper Error: ${err.message}`));
       });
 
       req.write(buf);
       req.end();
     } catch (error) {
-      resolve(setFailureStatus(response, 'Http Socket Error'));
+      resolve(setFailureStatus(response, `Http Socket Error : ${error.message}`));
     }
   });
 }
@@ -190,3 +184,4 @@ function setFailureStatus (response, msg) {
 }
 
 exports.serviceHop = serviceHop;
+exports.setFailureStatus = setFailureStatus;
