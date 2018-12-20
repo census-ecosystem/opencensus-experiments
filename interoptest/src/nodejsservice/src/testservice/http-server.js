@@ -19,6 +19,8 @@ const serviceHopper = require('./service-hopper');
 const {constants, toBuffer, fromBuffer} = require('./util');
 const http = require('http');
 
+const URL_ENDPOINT = '/test/request';
+const PROTOBUF_HEADER = {'Content-Type': 'application/x-protobuf'}
 let server;
 
 /**
