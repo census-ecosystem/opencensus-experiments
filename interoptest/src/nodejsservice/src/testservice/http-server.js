@@ -17,8 +17,9 @@
 const interop = require('../../proto/interoperability_test_pb');
 const serviceHopper = require('./service-hopper');
 const http = require('http');
-const URL_ENDPOINT = '/test/request';
 
+const URL_ENDPOINT = '/test/request';
+const PROTOBUF_HEADER = {'Content-Type': 'application/x-protobuf'}
 let server;
 
 /**
@@ -40,9 +41,34 @@ function start (httpPort, httpHost) {
 
 // A function which handles requests and send response
 function handleRequest (request, response) {
-  // TODO(mayurkale) : Add this handler
+  try {
+    const url = request.url;
+    if (url === URL_ENDPOINT) {
+      let body = [];
+      request.on('error', err => console.log(err));
+      request.on('data', chunk => body.push(chunk));
+      request.on('end', () => {
+        const bytes = new Uint8Array(Buffer.concat(body));
+        const testRequest = interop.TestRequest.deserializeBinary(bytes);
+        (async () => {
+          const testResponse = await serviceHopper.serviceHop(testRequest);
+          console.log('http hopper: '+JSON.stringify(testResponse.toObject()));
+          response.writeHead(200, PROTOBUF_HEADER);
+          response.write(toBuffer(testResponse));
+          response.end();
+        })();
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
+function toBuffer (testResponse) {
+  var bytes = testResponse.serializeBinary();
+  var buffer = new Buffer(bytes);
+  return buffer;
+}
 
 /**
  * Gracefully shuts down the server. The server will stop receiving new calls

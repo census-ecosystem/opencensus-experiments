@@ -17,6 +17,7 @@
 const interop = require('../../proto/interoperability_test_pb');
 const services = require('../../proto/interoperability_test_grpc_pb');
 const grpc = require('grpc');
+const http = require('http');
 
 function serviceHop (request) {
   return new Promise((resolve, reject) => {
@@ -59,6 +60,27 @@ function serviceHop (request) {
           const nextResponse = await grpcServiceHop(host, port, newRequest);
           resolve(combineStatus(setSuccessStatus(response), nextResponse));
         })();
+      } else if (
+        transport === spec.Transport.HTTP &&
+        propagation === spec.Propagation.B3_FORMAT_PROPAGATION
+      ) {
+        (async () => {
+          const nextResponse = await httpServiceHop(host, port, newRequest);
+          resolve(combineStatus(setSuccessStatus(response), nextResponse));
+        })();
+      } else if (
+        transport === spec.Transport.HTTP &&
+        propagation === spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION
+      ) {
+        // TODO(mayurkale): implement TRACE_CONTEXT_FORMAT_PROPAGATION method.
+        const nextResponse = new interop.TestResponse();
+        nextResponse.setId(id);
+        resolve(
+          combineStatus(
+            setSuccessStatus(response),
+            setFailureStatus(nextResponse, `Not available`)
+          )
+        );
       } else {
         resolve(
           setFailureStatus(
@@ -91,6 +113,58 @@ function grpcServiceHop (host, port, request) {
         resolve(response);
       }
     });
+  });
+}
+
+function toBuffer (testRequest) {
+  var bytes = testRequest.serializeBinary();
+  var buffer = new Buffer(bytes);
+  return buffer;
+}
+
+/**
+ * This method sends http request to a server specified
+ * in serviceHop -> request.
+ */
+function httpServiceHop (host, port, request) {
+  console.log(`NextHop HTTP:${host}->${JSON.stringify(request.toObject())}`);
+  const buf = toBuffer(request);
+  const options = {
+    hostname: host,
+    port: port,
+    path: '/test/request',
+    method: 'POST',
+    headers: {
+      'Content-Length': buf.length,
+      'Content-Type': 'application/x-protobuf'
+    }
+  };
+  let response = new interop.TestResponse();
+  return new Promise((resolve, reject) => {
+    try {
+      let req = http.request(options, res => {
+        let data = [];
+        res.on('data', chunk => {
+          data.push(chunk);
+        });
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            const bytes = new Uint8Array(Buffer.concat(data));
+            response = interop.TestResponse.deserializeBinary(bytes);
+            resolve(response);
+          } else {
+            resolve(setFailureStatus(response, 'Http Service Hopper Error'));
+          }
+        });
+      }).on('error', (err) => {
+        resolve(setFailureStatus(response, 'Http Service Hopper Error'));
+      });;
+
+      req.write(buf);
+      req.end();
+    } catch(error) {
+      resolve(setFailureStatus(response, 'Http Socket Error'));
+    }
   });
 }
 
