@@ -16,10 +16,10 @@ package testservice
 
 import (
 	"fmt"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"go.opencensus.io/plugin/ocgrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"goservice/genproto"
 )
 
 // GRPCSender is the type that handles test requests over gRPC.

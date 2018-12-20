@@ -19,13 +19,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace/propagation"
+	"goservice/genproto"
 	"io/ioutil"
 	"net/http"
 )
@@ -80,6 +80,8 @@ func httpTestRequestHandler(w http.ResponseWriter, req *http.Request) {
 	if err := proto.UnmarshalText(string(data), &testRequest); err == nil {
 		testResp, _ := rp.getInstance().process(context.Background(), &testRequest)
 		proto.MarshalText(w, testResp)
+	} else {
+		http.Error(w, "error parsing request", http.StatusBadRequest)
 	}
 }
 
