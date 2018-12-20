@@ -24,6 +24,9 @@ import (
 	"time"
 
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/genproto"
+	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/receiver"
+	commonpb "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1"
+	tracepb "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1"
 	"go.opencensus.io/plugin/ocgrpc"
 	"google.golang.org/grpc"
 )
@@ -132,11 +135,12 @@ func (srv *ServerImpl) startGRPCServer() error {
 type ServiceImpl struct {
 	mu                 sync.Mutex
 	registeredServices map[string][]*interop.Service
+	sink               *receiver.TestCoordinatorSink
 }
 
 // NewService returns a new ServiceImpl with the given registered services.
-func NewService(services map[string][]*interop.Service) *ServiceImpl {
-	return &ServiceImpl{registeredServices: services}
+func NewService(services map[string][]*interop.Service, sink *receiver.TestCoordinatorSink) *ServiceImpl {
+	return &ServiceImpl{registeredServices: services, sink: sink}
 }
 
 func (s *ServiceImpl) SetRegisteredServices(services map[string][]*interop.Service) {
@@ -166,5 +170,10 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 
 	id := rand.Int63()
 	// TODO: run all tests by sending out test execution requests
+	verifySpans(s.sink.SpansPerNode)
 	return &interop.InteropRunResponse{Id: id}, nil
+}
+
+func verifySpans(map[*commonpb.Node][]*tracepb.Span) {
+	// TODO: implement this
 }

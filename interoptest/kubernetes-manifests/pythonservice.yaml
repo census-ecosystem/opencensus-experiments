@@ -25,10 +25,17 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/pythonservice
+        image: gcr.io/opencensus-interoptest/pythonservice
+        imagePullPolicy: Never
         ports:
         - containerPort: 10401
-          name: pythonservice
+          name: grpc-binary
+        ports:
+        - containerPort: 10402
+          name: http-b3
+        ports:
+        - containerPort: 10403
+          name: http-tc
         env:
         - name: PORT
           value: "10401"
@@ -59,6 +66,12 @@ spec:
   selector:
     app: pythonservice
   ports:
-  - name: pythonservice
+  - name: grpc-binary
     port: 10401
     targetPort: 10401
+  - name: http-b3
+    port: 10402
+    targetPort: 10402
+  - name: http-tc
+    port: 10403
+    targetPort: 10403

@@ -25,10 +25,17 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/opencensus-microservices-demo/nodejsservice
+        image: gcr.io/opencensus-interoptest/nodejsservice
+        imagePullPolicy: Never
         ports:
         - containerPort: 10301
-          name: nodejsservice
+          name: grpc-binary
+        ports:
+        - containerPort: 10302
+          name: http-b3
+        ports:
+        - containerPort: 10303
+          name: http-tc
         env:
         - name: PORT
           value: "10301"
@@ -59,6 +66,12 @@ spec:
   selector:
     app: nodejsservice
   ports:
-  - name: nodejsservice
+  - name: grpc-binary
     port: 10301
     targetPort: 10301
+  - name: http-b3
+    port: 10302
+    targetPort: 10302
+  - name: http-tc
+    port: 10303
+    targetPort: 10303

@@ -12,10 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var http = require('http');
+const interop = require('./proto/interoperability_test_pb');
+const grpcServer = require('./src/testservice/grpc-server');
+const httpServer = require('./src/testservice/http-server');
 
-var server = http.createServer(function(req, res) {
-res.writeHead(200);
-res.end('Hi everybody! it is nodejsservice');
-});
-server.listen(10301);
+function main () {
+  // GRPC Server
+  const grpcPort = interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT;
+  grpcServer.start(grpcPort);
+
+  // HTTP Server
+  const httpPort = interop.ServicePort.NODEJS_HTTP_B3_PROPAGATION_PORT;
+  httpServer.start(httpPort);
+
+  // setTimeout(() => {
+  //   httpServer.close();
+  //   grpcServer.close();
+  // }, 2000);
+}
+
+main();

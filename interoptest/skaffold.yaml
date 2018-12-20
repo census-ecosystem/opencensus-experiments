@@ -12,31 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v1alpha5
+apiVersion: skaffold/v1beta1
 kind: Config
 build:
+  artifacts:
+  - image: gcr.io/opencensus-interoptest/javaservice
+    context: src/javaservice
+  - image: gcr.io/opencensus-interoptest/goservice
+    context: src/goservice
+  - image: gcr.io/opencensus-interoptest/nodejsservice
+    context: src/nodejsservice
+  - image: gcr.io/opencensus-interoptest/pythonservice
+    context: src/pythonservice
+  - image: gcr.io/opencensus-interoptest/testcoordinator
+    context: src/testcoordinator
+  - image: gcr.io/opencensus-interoptest/ocagent
+    context: src/ocagent
+  - image: gcr.io/opencensus-interoptest/traceui
+    context: src/traceui
   tagPolicy:
     gitCommit: {}
-  artifacts:
-  - image: gcr.io/opencensus-microservices-demo/javaservice
-    context: src/javaservice
-  - image: gcr.io/opencensus-microservices-demo/goservice
-    context: src/goservice
-  - image: gcr.io/opencensus-microservices-demo/nodejsservice
-    context: src/nodejsservice
-  - image: gcr.io/opencensus-microservices-demo/pythonservice
-    context: src/pythonservice
-  - image: gcr.io/opencensus-microservices-demo/testcoordinator
-    context: src/testcoordinator
-  - image: gcr.io/opencensus-microservices-demo/ocagent
-    context: src/ocagent
-  - image: gcr.io/opencensus-microservices-demo/traceui
-    context: src/traceui
 deploy:
   kubectl:
     manifests:
     - ./kubernetes-manifests/**.yaml
-    
 profiles:
   # "travis-ci" profile is used to build the images without
   # pushing them.
@@ -56,4 +55,4 @@ profiles:
   build:
     googleCloudBuild:
       diskSizeGb: 300
-      machineType: "N1_HIGHCPU_32"
+      machineType: N1_HIGHCPU_32
