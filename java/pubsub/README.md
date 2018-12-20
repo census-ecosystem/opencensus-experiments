@@ -1,4 +1,4 @@
-# Getting Started with Cloud Pub/Sub and the Google Cloud Client libraries
+# Using OpenCensus and Stackdriver with Cloud Pub/Sub and the Google Cloud Client libraries
 
 <a href="https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/java-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/README.md">
 <img alt="Open in Cloud Shell" src ="http://gstatic.com/cloudssh/images/open-btn.png"></a>
@@ -24,7 +24,7 @@ For more samples, see the samples in
 #### Build
 - Build your project with:
 ```
-  mvn clean package -DskipTests
+  mvn clean package
 ```
 
 #### Create a new topic
@@ -39,9 +39,9 @@ For more samples, see the samples in
 
 #### Publish messages
 ```
-  mvn exec:java -Dexec.mainClass=com.example.pubsub.PublisherExample -Dexec.args="my-topic 5"
+  mvn exec:java -Dexec.mainClass=com.example.pubsub.PublisherExample -Dexec.args="my-topic 3"
 ```
-Publishes 5 messages to the topic `my-topic`.
+Publishes 3 messages to the topic `my-topic`.
 
 #### Receive messages
 ```
@@ -49,8 +49,4 @@ Publishes 5 messages to the topic `my-topic`.
 ```
 Subscriber will continue to listen on the topic for 5 minutes and print out message id and data as messages are received.
 
-#### Testing
-Run the test with Maven.
-```
-  mvn verify
-```
+
