@@ -19,7 +19,6 @@ import com.google.cloud.ServiceOptions;
 
 import io.opencensus.common.Duration;
 import io.opencensus.common.Scope;
-import io.opencensus.contrib.zpages.ZPageHandlers;
 import io.opencensus.exporter.stats.stackdriver.StackdriverStatsConfiguration;
 import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
 import io.opencensus.stats.Aggregation.Distribution;
@@ -42,7 +41,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 /**
- * A utility class for using OpenCensus Stats in microservices.
+ * A utility class for using OpenCensus stats with pub/sub.
  */
 final class OpenCensusStatsUtil {
   private static final Tagger tagger = Tags.getTagger();
@@ -51,8 +50,6 @@ final class OpenCensusStatsUtil {
 
   private static final TagContextBinarySerializer serializer =
       Tags.getTagPropagationComponent().getBinarySerializer();
-
-  public static final String OPEN_CENSUS_TAG_CONTEXT = "OpenCensusTagContext";
 
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
@@ -64,53 +61,10 @@ final class OpenCensusStatsUtil {
 
   private static final TagKey SUBSCRIBER = TagKey.create("SUBSCRIBER");
 
-  public static TagContext getCurrentTagContext() {
-    return tagger.getCurrentTagContext();
-  }
-
-  public static String encodeCurrentTagContext() {
-    try {
-      byte[] encodedTags = serializer.toByteArray(tagger.getCurrentTagContext());
-      //return new String(encodedTags);
-      return Base64.getEncoder().encodeToString(encodedTags);
-    }
-    catch (TagContextSerializationException exn) {
-      System.err.println("Serialization Exn: " + exn);
-      return "";
-    }
-    catch (Exception exn) {
-      System.err.println("Exn: " + exn);
-      return "";
-    }
-  }
-
-  public static Scope createScope(String encodedTags) {
-    try {
-      TagContext tags = serializer.fromByteArray(Base64.getDecoder().decode(encodedTags));
-      return tagger.withTagContext(tags);
-    } catch (TagContextDeserializationException exn) {
-      System.err.println("Deserialization Exn: " + exn);
-      return tagger.withTagContext(tagger.getCurrentTagContext());
-    }
-  }
-
-  public static TagContext createTagContext(String encodedTags) {
-    try {
-      return serializer.fromByteArray(Base64.getDecoder().decode(encodedTags));
-    } catch (TagContextDeserializationException exn) {
-      System.err.println("Deserialization Exn: " + exn);
-      return tagger.getCurrentTagContext();
-    }
-  }
-
-  public static Scope withTagContext(TagContext tags) {
-    return tagger.withTagContext(tags);
-  }
-
   private static int pubCount = 0;
 
   public static Scope createPublisherScope() {
-    TagValue val = TagValue.create("publisher2-" + pubCount);
+    TagValue val = TagValue.create("publisher-" + pubCount);
     pubCount = (pubCount + 1) % 10;
     return tagger.currentBuilder().put(PUBLISHER, val).buildScoped();
   }
@@ -156,8 +110,7 @@ final class OpenCensusStatsUtil {
 
   // Measure for Pub/Sub latency in milliseconds.
   private static final Measure.MeasureDouble LATENCY =
-      Measure.MeasureDouble.create(
-          "my.io/cloud-pubsub/latency", "Latency in milliseconds.", "ms");
+      Measure.MeasureDouble.create("my.io/cloud-pubsub/latency", "Latency in milliseconds.", "ms");
 
   private static final View LATENCY_VIEW =
       View.create(
@@ -179,9 +132,6 @@ final class OpenCensusStatsUtil {
             .setProjectId(PROJECT_ID)
             .setExportInterval(Duration.create(15, 0))
             .build());
-
-        // Starts a HTTP server and registers all Zpages to it.
-        ZPageHandlers.startHttpServerAndRegisterAll(3001);
       } catch (IOException exn) {
         if (exn == null) {
           System.err.println("Null exn");
