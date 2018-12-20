@@ -19,7 +19,7 @@ const serviceHopper = require('./service-hopper');
 const http = require('http');
 
 const URL_ENDPOINT = '/test/request';
-const PROTOBUF_HEADER = {'Content-Type': 'application/x-protobuf'}
+const PROTOBUF_HEADER = {'Content-Type': 'application/x-protobuf'};
 let server;
 
 /**
@@ -52,7 +52,7 @@ function handleRequest (request, response) {
         const testRequest = interop.TestRequest.deserializeBinary(bytes);
         (async () => {
           const testResponse = await serviceHopper.serviceHop(testRequest);
-          console.log('http hopper: '+JSON.stringify(testResponse.toObject()));
+          console.log(`http hopper:${JSON.stringify(testResponse.toObject())}`);
           response.writeHead(200, PROTOBUF_HEADER);
           response.write(toBuffer(testResponse));
           response.end();

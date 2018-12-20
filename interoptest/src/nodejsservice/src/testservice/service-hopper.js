@@ -144,9 +144,7 @@ function httpServiceHop (host, port, request) {
     try {
       let req = http.request(options, res => {
         let data = [];
-        res.on('data', chunk => {
-          data.push(chunk);
-        });
+        res.on('data', chunk => { data.push(chunk); });
         res.on('end', () => {
           if (res.statusCode === 200) {
             const bytes = new Uint8Array(Buffer.concat(data));
@@ -157,12 +155,13 @@ function httpServiceHop (host, port, request) {
           }
         });
       }).on('error', (err) => {
+        // console.error(err);
         resolve(setFailureStatus(response, 'Http Service Hopper Error'));
-      });;
+      });
 
       req.write(buf);
       req.end();
-    } catch(error) {
+    } catch (error) {
       resolve(setFailureStatus(response, 'Http Socket Error'));
     }
   });
