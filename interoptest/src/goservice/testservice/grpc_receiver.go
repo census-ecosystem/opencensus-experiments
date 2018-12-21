@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"google.golang.org/grpc"
+	"goservice/genproto"
 )
 
 // GrpcReceiver is the type that handles test requests over GRPC.
