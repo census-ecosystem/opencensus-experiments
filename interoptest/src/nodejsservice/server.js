@@ -12,37 +12,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const path = require('path');
 const interop = require('./proto/interoperability_test_pb');
-const grpcServer = require('./src/testservice/grpc-server');
+const http = require("http");
 const httpServer = require('./src/testservice/http-server');
 const httpPlugin = require('@opencensus/instrumentation-http');
+const grpc = require('grpc');
+const grpcServer = require('./src/testservice/grpc-server');
+const grpcPlugin = require('@opencensus/instrumentation-grpc');
 const tracing = require('@opencensus/nodejs');
 const {logger} = require('@opencensus/core');
-const http = require("http");
 const jaeger = require('@opencensus/exporter-jaeger');
+const propagation = require('@opencensus/propagation-b3');
 
 function main () {
+  // Setup Tracer
+  const tracer = tracing.start({
+    samplingRate: 1,
+    propagation: new propagation.B3Format()
+  }).tracer;
 
-  enableHttpPlugin();
+  // Setup Exporter, Enable GRPC and HTTP plugin
+  enableJaegerTraceExporter(tracer);
+  enableHttpPlugin(tracer);
+  enableGrpcPlugin(tracer);
 
-  // GRPC Server
-  const grpcPort = interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT;
-  grpcServer.start(grpcPort);
+  // Start GRPC Server
+  grpcServer.start(interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT);
 
-  // HTTP Server
-  const httpPort = interop.ServicePort.NODEJS_HTTP_B3_PROPAGATION_PORT;
-  httpServer.start(httpPort);
-
-  // setTimeout(() => {
-  //   httpServer.close();
-  //   grpcServer.close();
-  // }, 2000);
+  // Start HTTP Server
+  httpServer.start(interop.ServicePort.NODEJS_HTTP_B3_PROPAGATION_PORT);
 }
 
-function enableHttpPlugin () {
-  // 1. Define service name, node version and jaeger options
-  const service = 'nodejsservice';
+function enableGrpcPlugin (tracer) {
+  // 1. Define basedir and version
+  const basedir = path.dirname(require.resolve('grpc'));
+  const version = require(path.join(basedir, 'package.json')).version;
+
+  // 2. Enable GRPC plugin: Method that enables the instrumentation patch.
+  grpcPlugin.plugin.enable(grpc, tracer, version, basedir);
+}
+
+function enableHttpPlugin (tracer) {
+  // 1. Define node version
   const version = process.versions.node;
+
+  // 2. Enable HTTP plugin
+  httpPlugin.plugin.enable(http, tracer, version, null);
+}
+
+function enableJaegerTraceExporter (tracer) {
+  // 1. Define service name and jaeger options
+  const service = 'nodejsservice';
   const jaegerOptions = {
     serviceName: service,
     host: 'localhost',
@@ -51,16 +72,9 @@ function enableHttpPlugin () {
     logger: logger.logger('debug')
   };
 
-  // 2. Get the global singleton Tracer object
-  // 3. Configure 100% sample rate, otherwise, few traces will be sampled.
-  const tracer = tracing.start({samplingRate: 1}).tracer;
-
-  // 4. Configure exporter to export traces to Jaeger.
+  // 2. Configure exporter to export traces to Jaeger.
   const exporter = new jaeger.JaegerTraceExporter(jaegerOptions);
   tracer.registerSpanEventListener(exporter);
-
-  // 5. Enable HTTP plugin
-  httpPlugin.plugin.enable(http, tracer, version, null);
 }
 
 main();
