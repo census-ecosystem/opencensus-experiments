@@ -15,8 +15,9 @@
 package testservice
 
 import (
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
+	"fmt"
 	"golang.org/x/net/context"
+	"goservice/genproto"
 	"sync"
 )
 
@@ -61,7 +62,7 @@ func (rp *RequestProcessor) process(ctx context.Context, req *interop.TestReques
 		nextResponse, err := rp.send(ctx, *nextServiceHop, &newReq)
 		if err != nil {
 			res.Status = append(res.Status, &interop.CommonResponseStatus{Status: interop.Status_FAILURE,
-				Error: "failed to send request to nexthop"})
+				Error: fmt.Sprintf("failed to send request to nexthop, err:%v", err)})
 		} else if nextResponse == nil {
 			res.Status = append(res.Status, &interop.CommonResponseStatus{Status: interop.Status_FAILURE,
 				Error: "received empty response from nexthop"})

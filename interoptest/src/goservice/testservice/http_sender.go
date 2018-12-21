@@ -17,13 +17,13 @@ package testservice
 import (
 	"bytes"
 	"fmt"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"github.com/golang/protobuf/proto"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace/propagation"
 	"golang.org/x/net/context"
+	"goservice/genproto"
 	"io/ioutil"
 	"net/http"
 )

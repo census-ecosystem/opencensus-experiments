@@ -26,8 +26,9 @@ build:
     context: src/pythonservice
   - image: gcr.io/opencensus-interoptest/testcoordinator
     context: src/testcoordinator
-  - image: gcr.io/opencensus-interoptest/ocagent
-    context: src/ocagent
+# TODO: [rghetia] ocagent fails to build. Remove it for now.
+#  - image: gcr.io/opencensus-interoptest/ocagent
+#    context: src/ocagent
   - image: gcr.io/opencensus-interoptest/traceui
     context: src/traceui
   tagPolicy:
