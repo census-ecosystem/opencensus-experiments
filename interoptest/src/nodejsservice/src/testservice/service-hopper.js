@@ -17,6 +17,8 @@
 const interop = require('../../proto/interoperability_test_pb');
 const services = require('../../proto/interoperability_test_grpc_pb');
 const grpc = require('grpc');
+const http = require('http');
+const {constants, toBuffer, fromBuffer} = require('./util');
 
 function serviceHop (request) {
   return new Promise((resolve, reject) => {
@@ -32,7 +34,7 @@ function serviceHop (request) {
     } else {
       // Extracts data from first service hop.
       const firstHop = hops[0];
-      const host = firstHop.getService().getHost() || 'localhost';
+      const host = firstHop.getService().getHost() || constants.DEFAULT_HOST;
       const port = firstHop.getService().getPort();
       const restHops = hops.slice(1);
       const transport = firstHop
@@ -59,6 +61,27 @@ function serviceHop (request) {
           const nextResponse = await grpcServiceHop(host, port, newRequest);
           resolve(combineStatus(setSuccessStatus(response), nextResponse));
         })();
+      } else if (
+        transport === spec.Transport.HTTP &&
+        propagation === spec.Propagation.B3_FORMAT_PROPAGATION
+      ) {
+        (async () => {
+          const nextResponse = await httpServiceHop(host, port, newRequest);
+          resolve(combineStatus(setSuccessStatus(response), nextResponse));
+        })();
+      } else if (
+        transport === spec.Transport.HTTP &&
+        propagation === spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION
+      ) {
+        // TODO(mayurkale): implement TRACE_CONTEXT_FORMAT_PROPAGATION method.
+        const nextResponse = new interop.TestResponse();
+        nextResponse.setId(id);
+        resolve(
+          combineStatus(
+            setSuccessStatus(response),
+            setFailureStatus(nextResponse, `Not available`)
+          )
+        );
       } else {
         resolve(
           setFailureStatus(
@@ -86,11 +109,55 @@ function grpcServiceHop (host, port, request) {
     return client.test(request, (err, response) => {
       if (err) {
         const response = new interop.TestResponse();
-        resolve(setFailureStatus(response, 'GRPC Service Hopper Error'));
+        resolve(setFailureStatus(response, `GRPC Service Hopper Error : ${err.message}`));
       } else {
         resolve(response);
       }
     });
+  });
+}
+
+/**
+ * This method sends http request to a server specified
+ * in serviceHop -> request.
+ */
+function httpServiceHop (host, port, request) {
+  console.log(`NextHop HTTP:${host}->${JSON.stringify(request.toObject())}`);
+  const buf = toBuffer(request);
+  const options = {
+    hostname: host,
+    port: port,
+    path: constants.HTTP_URL_ENDPOINT,
+    method: constants.POST_METHOD,
+    headers: {
+      'Content-Length': buf.length,
+      'Content-Type': 'application/x-protobuf'
+    }
+  };
+  let response = new interop.TestResponse();
+  return new Promise((resolve, reject) => {
+    try {
+      let req = http.request(options, res => {
+        let data = [];
+        res.on('data', chunk => { data.push(chunk); });
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            response = fromBuffer(data, interop.TestResponse);
+            resolve(response);
+          } else {
+            resolve(setFailureStatus(response, `Http Service Hopper Error ${res.statusCode}:${res.statusMessage}`));
+          }
+        });
+      }).on('error', (err) => {
+        // console.error(err);
+        resolve(setFailureStatus(response, `Http Service Hopper Error: ${err.message}`));
+      });
+
+      req.write(buf);
+      req.end();
+    } catch (error) {
+      resolve(setFailureStatus(response, `Http Socket Error : ${error.message}`));
+    }
   });
 }
 
@@ -117,3 +184,4 @@ function setFailureStatus (response, msg) {
 }
 
 exports.serviceHop = serviceHop;
+exports.setFailureStatus = setFailureStatus;
