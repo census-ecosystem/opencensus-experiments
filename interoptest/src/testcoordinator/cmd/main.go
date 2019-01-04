@@ -73,6 +73,7 @@ func parseFlags() (regSrvAddr, receiverAddr, interopSrvAddr string) {
 	regSrvAddrPtr := flag.String("registration_service_address", "localhost:10002", "Address of the registration service")
 	recieverAddrPtr := flag.String("oc_receiver_address", "localhost:10001", "Address of OC Agent trace receiver")
 	interopSrvAddrPtr := flag.String("interop_service_address", "localhost:10003", "Address of the interop test service")
+	flag.Parse()
 	return *regSrvAddrPtr, *recieverAddrPtr, *interopSrvAddrPtr
 }
 
