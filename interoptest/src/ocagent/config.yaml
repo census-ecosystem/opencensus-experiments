@@ -1,6 +1,6 @@
 exporters:
     ocagent:
-        endpoint: "http://testcoordinator:10000/api/v2/spans"
+        endpoint: "http://testcoordinator:10001"
 
     zipkin:
         endpoint: "http://traceui:9411/api/v2/spans"
