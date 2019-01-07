@@ -63,7 +63,7 @@ function serviceHop (request) {
         })();
       } else if (
         transport === spec.Transport.HTTP &&
-        propagation === spec.Propagation.B3_FORMAT_PROPAGATION
+        propagation === spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION
       ) {
         (async () => {
           const nextResponse = await httpServiceHop(host, port, newRequest);
@@ -71,7 +71,7 @@ function serviceHop (request) {
         })();
       } else if (
         transport === spec.Transport.HTTP &&
-        propagation === spec.Propagation.TRACE_CONTEXT_FORMAT_PROPAGATION
+        propagation === spec.Propagation.B3_FORMAT_PROPAGATION
       ) {
         // TODO(mayurkale): implement TRACE_CONTEXT_FORMAT_PROPAGATION method.
         const nextResponse = new interop.TestResponse();

@@ -21,21 +21,21 @@ const grpc = require('grpc');
 const grpcServer = require('./src/testservice/grpc-server');
 const grpcPlugin = require('@opencensus/instrumentation-grpc');
 const tracing = require('@opencensus/nodejs');
-const {logger} = require('@opencensus/core');
+const {logger, CoreTracer} = require('@opencensus/core');
 const jaeger = require('@opencensus/exporter-jaeger');
-const propagation = require('@opencensus/propagation-b3');
+const propagation = require('@opencensus/propagation-tracecontext');
 
 function main () {
   // Setup Tracer
   const tracer = tracing.start({
     samplingRate: 1,
-    propagation: new propagation.B3Format()
+    propagation: new propagation.TraceContextFormat()
   }).tracer;
 
   // Setup Exporter, Enable GRPC and HTTP plugin
   enableJaegerTraceExporter(tracer);
   enableHttpPlugin(tracer);
-  enableGrpcPlugin(tracer);
+  //enableGrpcPlugin(tracer);
 
   // Start GRPC Server
   grpcServer.start(interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT);
@@ -68,8 +68,7 @@ function enableJaegerTraceExporter (tracer) {
     serviceName: service,
     host: 'localhost',
     port: 6832,
-    bufferTimeout: 10,
-    logger: logger.logger('debug')
+    bufferTimeout: 10
   };
 
   // 2. Configure exporter to export traces to Jaeger.
