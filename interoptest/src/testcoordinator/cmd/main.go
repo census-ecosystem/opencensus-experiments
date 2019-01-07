@@ -122,19 +122,19 @@ var (
 		"java": []*interoppb.Service{
 			&interoppb.Service{
 				Name: "java:grpc:binary",
-				Port: 10101,
+				Port: int32(interoppb.ServicePort_JAVA_GRPC_BINARY_PROPAGATION_PORT),
 				Host: "javaservice",
 				Spec: grpcBinarySpec,
 			},
 			&interoppb.Service{
 				Name: "java:http:b3",
-				Port: 10102,
+				Port: int32(interoppb.ServicePort_JAVA_HTTP_B3_PROPAGATION_PORT),
 				Host: "javaservice",
 				Spec: httpB3Spec,
 			},
 			&interoppb.Service{
 				Name: "java:http:tc",
-				Port: 10103,
+				Port: int32(interoppb.ServicePort_JAVA_HTTP_TRACECONTEXT_PROPAGATION_PORT),
 				Host: "javaservice",
 				Spec: httpTCSpec,
 			},
@@ -142,19 +142,19 @@ var (
 		"go": []*interoppb.Service{
 			&interoppb.Service{
 				Name: "go:grpc:binary",
-				Port: 10201,
+				Port: int32(interoppb.ServicePort_GO_GRPC_BINARY_PROPAGATION_PORT),
 				Host: "goservice",
 				Spec: grpcBinarySpec,
 			},
 			&interoppb.Service{
 				Name: "go:http:b3",
-				Port: 10202,
+				Port: int32(interoppb.ServicePort_GO_HTTP_B3_PROPAGATION_PORT),
 				Host: "goservice",
 				Spec: httpB3Spec,
 			},
 			&interoppb.Service{
 				Name: "go:http:tc",
-				Port: 10203,
+				Port: int32(interoppb.ServicePort_GO_HTTP_TRACECONTEXT_PROPAGATION_PORT),
 				Host: "goservice",
 				Spec: httpTCSpec,
 			},
@@ -162,19 +162,19 @@ var (
 		"python": []*interoppb.Service{
 			&interoppb.Service{
 				Name: "python:grpc:binary",
-				Port: 10301,
+				Port: int32(interoppb.ServicePort_PYTHON_GRPC_BINARY_PROPAGATION_PORT),
 				Host: "pythonservice",
 				Spec: grpcBinarySpec,
 			},
 			&interoppb.Service{
 				Name: "python:http:b3",
-				Port: 10302,
+				Port: int32(interoppb.ServicePort_PYTHON_HTTP_B3_PROPAGATION_PORT),
 				Host: "pythonservice",
 				Spec: httpB3Spec,
 			},
 			&interoppb.Service{
 				Name: "python:http:tc",
-				Port: 10303,
+				Port: int32(interoppb.ServicePort_PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT),
 				Host: "pythonservice",
 				Spec: httpTCSpec,
 			},
@@ -182,19 +182,19 @@ var (
 		"node": []*interoppb.Service{
 			&interoppb.Service{
 				Name: "node:grpc:binary",
-				Port: 10401,
+				Port: int32(interoppb.ServicePort_NODEJS_GRPC_BINARY_PROPAGATION_PORT),
 				Host: "nodeservice",
 				Spec: grpcBinarySpec,
 			},
 			&interoppb.Service{
 				Name: "node:http:b3",
-				Port: 10402,
+				Port: int32(interoppb.ServicePort_NODEJS_HTTP_B3_PROPAGATION_PORT),
 				Host: "nodeservice",
 				Spec: httpB3Spec,
 			},
 			&interoppb.Service{
 				Name: "node:http:tc",
-				Port: 10403,
+				Port: int32(interoppb.ServicePort_NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT),
 				Host: "nodeservice",
 				Spec: httpTCSpec,
 			},
