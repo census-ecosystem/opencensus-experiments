@@ -41,7 +41,7 @@ function main () {
   grpcServer.start(interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT);
 
   // Start HTTP Server
-  httpServer.start(interop.ServicePort.NODEJS_HTTP_B3_PROPAGATION_PORT);
+  httpServer.start(interop.ServicePort.NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT);
 }
 
 function enableGrpcPlugin (tracer) {
