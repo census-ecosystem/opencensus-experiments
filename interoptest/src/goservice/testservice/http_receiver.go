@@ -16,6 +16,7 @@ package testservice
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -77,9 +78,14 @@ func httpTestRequestHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	var rp *RequestProcessor
 	testRequest := interop.TestRequest{}
-	if err := proto.UnmarshalText(string(data), &testRequest); err == nil {
+	if err := proto.Unmarshal(data, &testRequest); err == nil {
 		testResp, _ := rp.getInstance().process(context.Background(), &testRequest)
-		proto.MarshalText(w, testResp)
+		data, err := proto.Marshal(testResp)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error marshalling response %s", err.Error()), http.StatusInternalServerError)
+		} else {
+			w.Write(data)
+		}
 	} else {
 		http.Error(w, "error parsing request", http.StatusBadRequest)
 	}
