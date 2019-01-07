@@ -22,6 +22,8 @@ import (
 	"os/signal"
 	"time"
 
+	interoppb "github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/genproto"
+
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/interoptestservice"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/receiver"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/registrationservice"
@@ -50,6 +52,7 @@ func main() {
 	regSrvAddr, receiverAddr, interopSrvAddr := parseFlags()
 
 	// 2. Create and start registration server.
+	// Currently micro services are registered statically and this server performs no-op.
 	regSrv := startRegistrationService(regSrvAddr)
 	defer regSrv.Stop()
 
@@ -99,8 +102,111 @@ func startOCTraceReceiver(addr string) (*opencensus.Receiver, *receiver.TestCoor
 	return receiver, sink
 }
 
+var (
+	grpcBinarySpec = &interoppb.Spec{
+		Transport:   interoppb.Spec_GRPC,
+		Propagation: interoppb.Spec_BINARY_FORMAT_PROPAGATION,
+	}
+
+	httpB3Spec = &interoppb.Spec{
+		Transport:   interoppb.Spec_HTTP,
+		Propagation: interoppb.Spec_B3_FORMAT_PROPAGATION,
+	}
+
+	httpTCSpec = &interoppb.Spec{
+		Transport:   interoppb.Spec_HTTP,
+		Propagation: interoppb.Spec_TRACE_CONTEXT_FORMAT_PROPAGATION,
+	}
+
+	microSvcs = map[string][]*interoppb.Service{
+		"java": []*interoppb.Service{
+			&interoppb.Service{
+				Name: "java:grpc:binary",
+				Port: 10101,
+				Host: "javaservice",
+				Spec: grpcBinarySpec,
+			},
+			&interoppb.Service{
+				Name: "java:http:b3",
+				Port: 10102,
+				Host: "javaservice",
+				Spec: httpB3Spec,
+			},
+			&interoppb.Service{
+				Name: "java:http:tc",
+				Port: 10103,
+				Host: "javaservice",
+				Spec: httpTCSpec,
+			},
+		},
+		"go": []*interoppb.Service{
+			&interoppb.Service{
+				Name: "go:grpc:binary",
+				Port: 10201,
+				Host: "goservice",
+				Spec: grpcBinarySpec,
+			},
+			&interoppb.Service{
+				Name: "go:http:b3",
+				Port: 10202,
+				Host: "goservice",
+				Spec: httpB3Spec,
+			},
+			&interoppb.Service{
+				Name: "go:http:tc",
+				Port: 10203,
+				Host: "goservice",
+				Spec: httpTCSpec,
+			},
+		},
+		"python": []*interoppb.Service{
+			&interoppb.Service{
+				Name: "python:grpc:binary",
+				Port: 10301,
+				Host: "pythonservice",
+				Spec: grpcBinarySpec,
+			},
+			&interoppb.Service{
+				Name: "python:http:b3",
+				Port: 10302,
+				Host: "pythonservice",
+				Spec: httpB3Spec,
+			},
+			&interoppb.Service{
+				Name: "python:http:tc",
+				Port: 10303,
+				Host: "pythonservice",
+				Spec: httpTCSpec,
+			},
+		},
+		"node": []*interoppb.Service{
+			&interoppb.Service{
+				Name: "node:grpc:binary",
+				Port: 10401,
+				Host: "nodeservice",
+				Spec: grpcBinarySpec,
+			},
+			&interoppb.Service{
+				Name: "node:http:b3",
+				Port: 10402,
+				Host: "nodeservice",
+				Spec: httpB3Spec,
+			},
+			&interoppb.Service{
+				Name: "node:http:tc",
+				Port: 10403,
+				Host: "nodeservice",
+				Spec: httpTCSpec,
+			},
+		},
+	}
+)
+
 func startInteropTestService(addr string, regSrv *registrationservice.Handler, sink *receiver.TestCoordinatorSink) *interoptestservice.ServerImpl {
-	interopService := interoptestservice.NewService(regSrv.Receiver.RegisteredServices, sink)
+	// Statically register the micro services for now.
+	// TODO: allow micro services to be reigstered dynamically
+	interopService := interoptestservice.NewService(microSvcs, sink)
+
 	interopSrv, err := interoptestservice.NewServer(addr)
 	if err != nil {
 		log.Errorf("error creating interop test server: %v", err)
