@@ -45,9 +45,9 @@ func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, m
 	roots := map[trace.TraceID]*SimpleSpan{}
 	errs := map[trace.TraceID]error{}
 	processedSpans := map[trace.SpanID]*SimpleSpan{} // cache processed spans for faster loop-up
-	outerLoop:
-	for tid, spans := range dict {                   // iterate each trace
-		for len(spans) > 0  {
+outerLoop:
+	for tid, spans := range dict { // iterate each trace
+		for len(spans) > 0 {
 			// The order of spans in the list are non-deterministic,
 			// so we need to keep iterating over the span list until either:
 			// 1. all spans are processed if the spans can form a valid trace;
