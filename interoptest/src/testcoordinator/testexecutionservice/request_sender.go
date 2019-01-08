@@ -28,15 +28,14 @@ import (
 // Sender is the type that stores necessary information for making test requests, and sends
 // test execution request to each test server.
 type Sender struct {
-	mu         sync.RWMutex
-	startOnces []sync.Once
+	mu        sync.RWMutex
+	startOnce sync.Once
 
 	canDialInsecure bool
 
-	// The order of reqIds, reqNames and serverAddrs must match.
-	reqIds             []int64
-	reqNames           []string
-	serverAddrs        []string
+	reqID              int64
+	reqName            string
+	serverAddr         string
 	registeredServices map[string][]*interop.Service
 	tagsForServices    map[string][]*tag.Tag
 }
@@ -50,55 +49,42 @@ var (
 // TODO: consider using options.
 func NewUnstartedSender(
 	canDialInsecure bool,
-	reqIds []int64,
-	reqNames []string,
-	serverAddrs []string,
+	reqID int64,
+	reqName string,
+	serverAddr string,
 	registeredServices map[string][]*interop.Service,
 	tagsForServices map[string][]*tag.Tag) (*Sender, error) {
-	if len(reqIds) != len(reqNames) || len(reqIds) != len(serverAddrs) || len(reqIds) != len(registeredServices) {
-		return nil, errSizeNotMatch
-	}
-	startOnces := make([]sync.Once, len(reqIds))
-	for i := range reqIds {
-		startOnces[i] = sync.Once{}
-	}
 	s := &Sender{
 		canDialInsecure:    canDialInsecure,
-		reqIds:             reqIds,
-		reqNames:           reqNames,
-		serverAddrs:        serverAddrs,
+		reqID:              reqID,
+		reqName:            reqName,
+		serverAddr:         serverAddr,
 		registeredServices: registeredServices,
 		tagsForServices:    tagsForServices,
 	}
 	return s, nil
 }
 
-// Start transforms each request id, request name and Services into a TestRequest.
-// Then sends each TestRequest to the corresponding server, and returns the list of responses
-// and errors and for each request.
-func (s *Sender) Start() ([]*interop.TestResponse, []error) {
-	var resps []*interop.TestResponse
-	var errs []error
-	for i, so := range s.startOnces {
-		var resp *interop.TestResponse
-		err := errAlreadyStarted
-		so.Do(func() {
-			s.mu.Lock()
-			defer s.mu.Unlock()
+// Start transforms the request id, request name and Services into a TestRequest.
+// Then sends a TestRequest to the corresponding server, and returns the response
+// and error.
+func (s *Sender) Start() (*interop.TestResponse, error) {
+	var resp *interop.TestResponse
+	err := errAlreadyStarted
+	s.startOnce.Do(func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
 
-			addr := s.serverAddrs[i]
-			if cc, err := s.dialToServer(addr); err == nil {
-				resp, err = s.send(cc, s.reqIds[i], s.reqNames[i])
-			}
-		})
-		resps = append(resps, resp)
-		errs = append(errs, err)
-	}
-	return resps, errs
+		addr := s.serverAddr
+		if cc, err := s.dialToServer(addr); err == nil {
+			resp, err = s.send(cc, s.reqID, s.reqName)
+		}
+	})
+	return resp, err
 }
 
 // TODO: send HTTP TestRequest
-func (s *Sender) send(cc *grpc.ClientConn, reqId int64, reqName string) (*interop.TestResponse, error) {
+func (s *Sender) send(cc *grpc.ClientConn, reqID int64, reqName string) (*interop.TestResponse, error) {
 	defer cc.Close()
 	services := s.registeredServices[reqName]
 	var hops []*interop.ServiceHop
@@ -109,7 +95,7 @@ func (s *Sender) send(cc *grpc.ClientConn, reqId int64, reqName string) (*intero
 		})
 	}
 	req := &interop.TestRequest{
-		Id:          reqId,
+		Id:          reqID,
 		Name:        reqName,
 		ServiceHops: hops,
 	}
