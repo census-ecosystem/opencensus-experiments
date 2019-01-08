@@ -65,7 +65,7 @@ def healthcheck():
 def test():
     """Handle a test request by calling other test services"""
     request = pb2.TestRequest.FromString(flask.request.get_data())
-    logger.debug("Got request: %s", request)
+    logger.debug("Flask service received: %s", request)
 
     if not request.service_hops:
         response = pb2.TestResponse(
