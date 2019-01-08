@@ -196,5 +196,5 @@ def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
 
 
 if __name__ == "__main__":
-    with util.get_signal_exit() as _exit_event:
-        main(exit_event=_exit_event)
+    with util.get_signal_exit() as exit_event:
+        main(exit_event=exit_event)

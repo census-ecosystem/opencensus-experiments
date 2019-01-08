@@ -24,7 +24,7 @@ import grpcserver
 import util
 
 if __name__ == "__main__":
-    with util.get_signal_exit() as _exit_event:
+    with util.get_signal_exit() as exit_event:
         with futures.ThreadPoolExecutor(max_workers=2) as tpe:
-            tpe.submit(flaskserver.main, exit_event=_exit_event)
-            tpe.submit(grpcserver.main, exit_event=_exit_event)
+            tpe.submit(flaskserver.main, exit_event=exit_event)
+            tpe.submit(grpcserver.main, exit_event=exit_event)
