@@ -4,7 +4,7 @@ services:
 - docker
 
 go:
-- 1.11.2
+  - "1.11.2"
 
 install:
 - curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v0.19.0/skaffold-linux-amd64
