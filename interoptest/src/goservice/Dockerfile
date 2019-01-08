@@ -5,6 +5,7 @@ RUN apk add --no-cache ca-certificates git && \
 WORKDIR /go/src/
 
 COPY . .
+ENV GOLANG_VERSION 1.11.2
 ENV GO111MODULE on
 RUN go get ./...
 RUN go build -gcflags='-N -l' -o /goservice .
