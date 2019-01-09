@@ -43,7 +43,7 @@ REGISTRATION_SERVER_HOST = ''
 REGISTRATION_SERVER_PORT = ''
 
 GRPC_TPE_WORKERS = 10
-HTTP_POST_PATH = "/test/request/"
+HTTP_POST_PATH = "/test/request"
 
 
 def rand63():
