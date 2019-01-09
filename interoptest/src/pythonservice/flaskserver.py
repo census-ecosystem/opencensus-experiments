@@ -142,9 +142,8 @@ def block_until_ready(host, port, timeout=10):
 
 @contextmanager
 def serve_http_tracecontext(
-        port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
+        host="0.0.0.0", port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
     """Run the HTTP/tracecontext server, shut down on exiting context."""
-    host = 'localhost'
     with futures.ThreadPoolExecutor(max_workers=1) as tpe:
         tpe.submit(app.run, host=host, port=port)
         block_until_ready(host, port)
@@ -163,7 +162,7 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:http:tracecontext",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.HTTP,
                         propagation=pb2.Spec.
@@ -172,7 +171,7 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:http:tracecontext",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.HTTP,
                         propagation=pb2.Spec.
@@ -180,13 +179,13 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
         ])
 
     with serve_http_tracecontext():
-        return service.call_http_tracecontext('localhost', port, test_request)
+        return service.call_http_tracecontext("0.0.0.0", port, test_request)
 
 
-def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
+def main(host="0.0.0.0", port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
          exit_event=None):
     """Runs the service and registers it with the test coordinator."""
-    with serve_http_tracecontext():
+    with serve_http_tracecontext(host=host, port=port):
         logger.debug("Registering with test coordinator")
         requests.post('http://{}:{}{}'.format(host, port, '/register'))
         logger.debug("Serving...")

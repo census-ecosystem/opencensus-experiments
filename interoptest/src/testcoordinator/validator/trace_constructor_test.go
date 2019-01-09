@@ -20,15 +20,15 @@ var (
 	spanID6 = trace.SpanID{6, 6, 6, 6, 6, 6, 6, 6}
 
 	// trace 1
-	span1 = &tracepb.Span{TraceId: traceID1[:], SpanId: spanID1[:]} // root
+	span1 = &tracepb.Span{TraceId: traceID1[:], SpanId: spanID1[:]}                           // root
 	span2 = &tracepb.Span{TraceId: traceID1[:], SpanId: spanID2[:], ParentSpanId: spanID1[:]} // child
 	span3 = &tracepb.Span{TraceId: traceID1[:], SpanId: spanID3[:], ParentSpanId: spanID2[:]} // grandchild 1
 	span4 = &tracepb.Span{TraceId: traceID1[:], SpanId: spanID4[:], ParentSpanId: spanID2[:]} // grandchild 2
 
 	// trace 2
-	span5 = &tracepb.Span{TraceId: traceID2[:], SpanId: spanID5[:]} // root
+	span5 = &tracepb.Span{TraceId: traceID2[:], SpanId: spanID5[:]}                           // root
 	span6 = &tracepb.Span{TraceId: traceID2[:], SpanId: spanID6[:], ParentSpanId: spanID5[:]} // child
-	span7 = &tracepb.Span{TraceId: traceID2[:], SpanId: spanID6[:]} // another root
+	span7 = &tracepb.Span{TraceId: traceID2[:], SpanId: spanID6[:]}                           // another root
 )
 
 func TestReconstructTraces(t *testing.T) {
