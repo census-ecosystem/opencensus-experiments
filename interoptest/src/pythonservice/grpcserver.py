@@ -45,7 +45,7 @@ class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
 
     def test(self, request, context):
         """Handle a test request by calling other test services"""
-        logger.debug("grpc service recieved: %s", request)
+        logger.debug("grpc service received: %s", request)
         if not request.service_hops:
             response = pb2.TestResponse(
                 id=request.id,
@@ -60,7 +60,7 @@ class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
         return response
 
 
-def register(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
+def register(host="0.0.0.0", port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
     """Register the server at host:port with the test registration service."""
     request = pb2.RegistrationRequest(
         server_name='python',
@@ -101,6 +101,7 @@ def serve_grpc_binary(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
         yield server
     finally:
         server.stop(0)
+    logger.debug("Shut down grpc server")
 
 
 def test_server(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
@@ -113,7 +114,7 @@ def test_server(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:grpc:binary",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.GRPC,
                         propagation=pb2.Spec.BINARY_FORMAT_PROPAGATION))),
@@ -121,20 +122,20 @@ def test_server(port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:grpc:binary",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.GRPC,
                         propagation=pb2.Spec.BINARY_FORMAT_PROPAGATION)))
         ])
 
     with serve_grpc_binary():
-        return service.call_grpc_binary('localhost', port, test_request)
+        return service.call_grpc_binary("0.0.0.0", port, test_request)
 
 
-def main(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT,
+def main(host="0.0.0.0", port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT,
          exit_event=None):
     """Runs the service and registers it with the test coordinator."""
-    with serve_grpc_binary():
+    with serve_grpc_binary(port=port):
         try:
             logger.debug("Registering with test coordinator")
             register(host, port)
@@ -148,5 +149,5 @@ def main(host='localhost', port=pb2.PYTHON_GRPC_BINARY_PROPAGATION_PORT,
 
 
 if __name__ == "__main__":
-    with util.get_signal_exit() as _exit_event:
-        main(exit_event=_exit_event)
+    with util.get_signal_exit() as exit_event:
+        main(exit_event=exit_event)
