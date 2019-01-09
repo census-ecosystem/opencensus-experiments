@@ -2,8 +2,8 @@ exporters:
     ocagent:
         endpoint: "http://testcoordinator:10001"
 
-    zipkin:
-        endpoint: "http://traceui:9411/api/v2/spans"
+    jaeger:
+        collector_endpoint: "http://traceui:14268/api/traces"
 
 receivers:
     opencensus:
