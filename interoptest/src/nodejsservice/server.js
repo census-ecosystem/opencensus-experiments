@@ -38,10 +38,10 @@ function main () {
   //enableGrpcPlugin(tracer);
 
   // Start GRPC Server
-  grpcServer.start(interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT);
+  grpcServer.start(interop.ServicePort.NODEJS_GRPC_BINARY_PROPAGATION_PORT, '0.0.0.0');
 
   // Start HTTP Server
-  httpServer.start(interop.ServicePort.NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT);
+  httpServer.start(interop.ServicePort.NODEJS_HTTP_TRACECONTEXT_PROPAGATION_PORT, '0.0.0.0');
 }
 
 function enableGrpcPlugin (tracer) {
