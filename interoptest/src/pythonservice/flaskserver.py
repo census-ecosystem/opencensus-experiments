@@ -65,7 +65,7 @@ def healthcheck():
 def test():
     """Handle a test request by calling other test services"""
     request = pb2.TestRequest.FromString(flask.request.get_data())
-    logger.debug("Got request: %s", request)
+    logger.debug("Flask service received: %s", request)
 
     if not request.service_hops:
         response = pb2.TestResponse(
@@ -195,5 +195,5 @@ def main(host="0.0.0.0", port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
 
 
 if __name__ == "__main__":
-    with util.get_signal_exit() as _exit_event:
-        main(exit_event=_exit_event)
+    with util.get_signal_exit() as exit_event:
+        main(exit_event=exit_event)
