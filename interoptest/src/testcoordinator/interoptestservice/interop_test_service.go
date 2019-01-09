@@ -161,12 +161,12 @@ func (s *ServiceImpl) Result(ctx context.Context, req *interop.InteropResultRequ
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	reps := &interop.InteropResultResponse{
+	resp := &interop.InteropResultResponse{
 		Id:     req.Id,
 		Status: &interop.CommonResponseStatus{Status: interop.Status_SUCCESS},
 		Result: s.results,
 	}
-	return reps, nil
+	return resp, nil
 }
 
 // Run runs the test asynchronously.
@@ -177,16 +177,16 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 	id := rand.Int63()
 	for svc, hops := range s.testSuites {
 		sender, _ := testexecutionservice.NewUnstartedSender(true, id, svc.Name, fmt.Sprintf("%s:%d", svc.Host, svc.Port), hops)
-		reps, err := sender.Start()
+		resp, err := sender.Start()
 
 		if err != nil {
 			s.results = append(s.results, getFailedResult(id, svc.Name, hops, nil))
 			continue
 		}
 
-		for _, status := range reps.Status {
+		for _, status := range resp.Status {
 			if status.Status == interop.Status_FAILURE {
-				s.results = append(s.results, getFailedResult(id, svc.Name, hops, reps.Status))
+				s.results = append(s.results, getFailedResult(id, svc.Name, hops, resp.Status))
 				continue
 			}
 		}
@@ -199,6 +199,7 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 			Name:        svc.Name,
 			Status:      status,
 			ServiceHops: hops,
+			Details:     resp.Status,
 		}
 		s.results = append(s.results, result)
 	}
