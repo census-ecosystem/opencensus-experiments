@@ -8,6 +8,7 @@ WORKDIR /go/src/github.com/census-instrumentation
 RUN git clone https://github.com/census-instrumentation/opencensus-service.git
 
 WORKDIR /go/src/github.com/census-instrumentation/opencensus-service
+RUN rm -rf /go/src/github.com/census-instrumentation/opencensus-service/go.sum
 RUN export GO111MODULE=on && ./build_binaries.sh linux && cp bin/ocagent_linux /ocagent
 
 FROM alpine:3.7
