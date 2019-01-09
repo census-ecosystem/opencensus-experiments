@@ -17,4 +17,4 @@ COPY . .
 ENV PORT "10401"
 EXPOSE 10401 10402 10403
 
-ENTRYPOINT ["python", "/pythonservice/grpcserver.py"]
+ENTRYPOINT ["python", "/pythonservice/both.py"]
