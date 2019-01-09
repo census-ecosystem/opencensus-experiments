@@ -175,24 +175,25 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 	defer s.mu.Unlock()
 
 	id := rand.Int63()
+outer:
 	for svc, hops := range s.testSuites {
 		sender, _ := testexecutionservice.NewUnstartedSender(true, id, svc.Name, fmt.Sprintf("%s:%d", svc.Host, svc.Port), hops)
 		resp, err := sender.Start()
 
 		if err != nil {
 			s.results = append(s.results, getFailedResult(id, svc.Name, hops, nil))
-			continue
+			continue outer
 		}
 
 		for _, status := range resp.Status {
 			if status.Status == interop.Status_FAILURE {
 				s.results = append(s.results, getFailedResult(id, svc.Name, hops, resp.Status))
-				continue
+				continue outer
 			}
 		}
 
 		// TODO: consider using a semaphore instead of waiting, to make exporting deterministic
-		time.Sleep(90 * time.Second) // wait until all micro-services exported their spans
+		time.Sleep(20 * time.Second) // wait until all micro-services exported their spans
 		status := verifySpans(s.sink.SpansPerNode, id)
 		s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
 		result := &interop.TestResult{
