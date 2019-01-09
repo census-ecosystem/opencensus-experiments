@@ -48,12 +48,12 @@ spec:
             memory: 300Mi
         readinessProbe:
           tcpSocket:
-            port: 10401
+            port: 10403
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 10401
+            port: 10403
           initialDelaySeconds: 10
           periodSeconds: 10
 ---
