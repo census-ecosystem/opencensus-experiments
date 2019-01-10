@@ -9,9 +9,7 @@ FROM openjdk:8-alpine as gitcloner
 WORKDIR /app
 RUN apk add --no-cache ca-certificates git curl unzip
 
-# TODO: [rghetia] replace private branch with master repo once http instrumentation is complete.
-#RUN git clone https://github.com/census-instrumentation/opencensus-java.git 
-RUN  git clone --single-branch --branch servletlistener https://github.com/rghetia/opencensus-java.git
+RUN git clone https://github.com/census-instrumentation/opencensus-java.git 
 
 # BUILDER
 #########
