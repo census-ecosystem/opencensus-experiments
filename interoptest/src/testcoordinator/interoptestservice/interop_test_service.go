@@ -192,7 +192,7 @@ outer:
 			}
 		}
 
-		// TODO: consider using a semaphore instead of waiting, to make exporting deterministic
+		// TODO: do not verify spans until ALL test cases completed.
 		time.Sleep(20 * time.Second) // wait until all micro-services exported their spans
 		status := verifySpans(s.sink.SpansPerNode, id)
 		s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
