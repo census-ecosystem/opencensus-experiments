@@ -16,9 +16,10 @@ package testservice
 
 import (
 	"fmt"
+	"sync"
 	"golang.org/x/net/context"
 	"goservice/genproto"
-	"sync"
+	"go.opencensus.io/trace"
 )
 
 // RequestProcessor is the type that process test requests.
@@ -51,6 +52,9 @@ func (rp *RequestProcessor) process(ctx context.Context, req *interop.TestReques
 	res := interop.TestResponse{
 		Id: req.GetId(),
 	}
+
+	span := trace.FromContext(ctx)
+	span.AddAttributes(trace.Int64Attribute("reqId", req.GetId()))
 
 	if serviceHops == nil || len(serviceHops) == 0 {
 		res.Status = append(res.Status, &interop.CommonResponseStatus{Status: interop.Status_SUCCESS, Error: ""})
