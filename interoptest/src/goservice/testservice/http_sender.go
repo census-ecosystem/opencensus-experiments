@@ -65,10 +65,12 @@ func (hs *HttpSender) Send(ctx context.Context, serviceHop interop.ServiceHop, r
 	var resp *http.Response
 	url := fmt.Sprintf("http://%s:%d/test/request", serviceHop.Service.Host, serviceHop.Service.Port)
 
+	httpReq, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	httpReq = httpReq.WithContext(ctx)
 	if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_B3_FORMAT_PROPAGATION {
-		resp, err = hs.b3Client.Post(url, "application/octet-stream", bytes.NewBuffer(data))
+		resp, err = hs.b3Client.Do(httpReq)
 	} else if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_TRACE_CONTEXT_FORMAT_PROPAGATION {
-		resp, err = hs.tcClient.Post(url, "application/octet-stream", bytes.NewBuffer(data))
+		resp, err = hs.tcClient.Do(httpReq)
 	}
 	if resp != nil {
 		defer resp.Body.Close()

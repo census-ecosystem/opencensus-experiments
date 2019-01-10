@@ -79,7 +79,7 @@ func httpTestRequestHandler(w http.ResponseWriter, req *http.Request) {
 	var rp *RequestProcessor
 	testRequest := interop.TestRequest{}
 	if err := proto.Unmarshal(data, &testRequest); err == nil {
-		testResp, _ := rp.getInstance().process(context.Background(), &testRequest)
+		testResp, _ := rp.getInstance().process(req.Context(), &testRequest)
 		data, err := proto.Marshal(testResp)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error marshalling response %s", err.Error()), http.StatusInternalServerError)
