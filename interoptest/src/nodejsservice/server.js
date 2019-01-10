@@ -64,10 +64,17 @@ function enableHttpPlugin (tracer) {
 function enableJaegerTraceExporter (tracer) {
   // 1. Define service name and jaeger options
   const service = 'nodejsservice';
+  let host = 'localhost';
+  let port = 6832;
+  const jaegerAddr = process.env.JAEGER_SERVICE_ADDR;
+  if (jaegerAddr) {
+    [host, port] = jaegerAddr.split(':', 2);
+  }
+
   const jaegerOptions = {
     serviceName: service,
-    host: 'localhost',
-    port: 6832,
+    host: host,
+    port: Number(port),
     bufferTimeout: 10
   };
 
