@@ -21,8 +21,6 @@ import (
 	"sync"
 
 	"google.golang.org/grpc"
-
-	"go.opencensus.io/tag"
 )
 
 // Sender is the type that stores necessary information for making test requests, and sends
@@ -33,11 +31,10 @@ type Sender struct {
 
 	canDialInsecure bool
 
-	reqID              int64
-	reqName            string
-	serverAddr         string
-	registeredServices map[string][]*interop.Service
-	tagsForServices    map[string][]*tag.Tag
+	reqID      int64
+	reqName    string
+	serverAddr string
+	hops       []*interop.ServiceHop
 }
 
 var (
@@ -52,15 +49,13 @@ func NewUnstartedSender(
 	reqID int64,
 	reqName string,
 	serverAddr string,
-	registeredServices map[string][]*interop.Service,
-	tagsForServices map[string][]*tag.Tag) (*Sender, error) {
+	hops []*interop.ServiceHop) (*Sender, error) {
 	s := &Sender{
-		canDialInsecure:    canDialInsecure,
-		reqID:              reqID,
-		reqName:            reqName,
-		serverAddr:         serverAddr,
-		registeredServices: registeredServices,
-		tagsForServices:    tagsForServices,
+		canDialInsecure: canDialInsecure,
+		reqID:           reqID,
+		reqName:         reqName,
+		serverAddr:      serverAddr,
+		hops:            hops,
 	}
 	return s, nil
 }
@@ -77,27 +72,19 @@ func (s *Sender) Start() (*interop.TestResponse, error) {
 
 		addr := s.serverAddr
 		if cc, err := s.dialToServer(addr); err == nil {
-			resp, err = s.send(cc, s.reqID, s.reqName)
+			resp, err = s.send(cc)
 		}
 	})
 	return resp, err
 }
 
 // TODO: send HTTP TestRequest
-func (s *Sender) send(cc *grpc.ClientConn, reqID int64, reqName string) (*interop.TestResponse, error) {
+func (s *Sender) send(cc *grpc.ClientConn) (*interop.TestResponse, error) {
 	defer cc.Close()
-	services := s.registeredServices[reqName]
-	var hops []*interop.ServiceHop
-	for _, service := range services {
-		hops = append(hops, &interop.ServiceHop{
-			Service: service,
-			Tags:    toTagsProto(s.tagsForServices[service.Name]),
-		})
-	}
 	req := &interop.TestRequest{
-		Id:          reqID,
-		Name:        reqName,
-		ServiceHops: hops,
+		Id:          s.reqID,
+		Name:        s.reqName,
+		ServiceHops: s.hops,
 	}
 
 	testSvcClient := interop.NewTestExecutionServiceClient(cc)
@@ -110,12 +97,4 @@ func (s *Sender) dialToServer(addr string) (*grpc.ClientConn, error) {
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	}
 	return grpc.Dial(addr, dialOpts...)
-}
-
-func toTagsProto(tags []*tag.Tag) []*interop.Tag {
-	var tagsProto []*interop.Tag
-	for _, t := range tags {
-		tagsProto = append(tagsProto, &interop.Tag{Key: t.Key.Name(), Value: t.Value})
-	}
-	return tagsProto
 }
