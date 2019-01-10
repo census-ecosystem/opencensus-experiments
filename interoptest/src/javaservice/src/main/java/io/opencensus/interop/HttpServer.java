@@ -16,11 +16,9 @@
 
 package io.opencensus.interop;
 
-import com.google.protobuf.TextFormat;
-import com.google.protobuf.TextFormat.ParseException;
 import io.opencensus.contrib.http.servlet.OcHttpServletFilter;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
@@ -92,23 +90,15 @@ final class HttpServer {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-      // Read from request
-      StringBuilder buffer = new StringBuilder();
-      BufferedReader reader = request.getReader();
-      String line;
-      while ((line = reader.readLine()) != null) {
-        buffer.append(line).append('\n');
+      int requestContentLength = request.getContentLength();
+      byte[] requestContent = new byte[requestContentLength];
+      if (request.getInputStream().readLine(requestContent, 0, requestContentLength) != requestContentLength) {
+        logger.info("HttpServer: error reading request content");
+        return;
       }
-      String data = buffer.toString();
-      TestRequest.Builder testRequestBuilder = TestRequest.newBuilder();
-      try {
-        TextFormat.merge(data, testRequestBuilder);
-      } catch (ParseException exn) {
-        logger.info("HttpServer: error parsing text proto: " + exn);
-      }
-      TestRequest testRequest = testRequestBuilder.build();
+      TestRequest testRequest = TestRequest.parseFrom(ByteBuffer.wrap(requestContent));
       TestResponse testResponse = ServiceHopper.serviceHop(testRequest);
-      response.getWriter().print(testResponse);
+      response.getOutputStream().write(testResponse.toByteArray());
     }
   }
 }
