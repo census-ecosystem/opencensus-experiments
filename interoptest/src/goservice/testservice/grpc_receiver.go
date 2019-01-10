@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"go.opencensus.io/plugin/ocgrpc"
 	"google.golang.org/grpc"
 	"goservice/genproto"
 )
@@ -68,7 +69,7 @@ func (gr *GrpcReceiver) grpcServer() *grpc.Server {
 	defer gr.mu.Unlock()
 
 	if gr.server == nil {
-		gr.server = grpc.NewServer()
+		gr.server = grpc.NewServer(grpc.StatsHandler(&ocgrpc.ServerHandler{}))
 	}
 
 	return gr.server
@@ -129,8 +130,8 @@ type GrpcTestReceiver struct {
 }
 
 // Test is the gRPC method that handles test requests.
-func (gtr *GrpcTestReceiver) Test(_ context.Context, req *interop.TestRequest) (*interop.TestResponse, error) {
+func (gtr *GrpcTestReceiver) Test(ctx context.Context, req *interop.TestRequest) (*interop.TestResponse, error) {
 	// TODO: add servicing test request.
 	var rp *RequestProcessor
-	return rp.getInstance().process(context.Background(), req)
+	return rp.getInstance().process(ctx, req)
 }
