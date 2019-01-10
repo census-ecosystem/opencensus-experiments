@@ -4,9 +4,12 @@ RUN apk add --no-cache ca-certificates git && \
 
 WORKDIR /go/src/
 
-COPY . .
 ENV GO111MODULE on
-RUN go get ./...
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
 RUN go build -gcflags='-N -l' -o /goservice .
 
 FROM alpine as release
