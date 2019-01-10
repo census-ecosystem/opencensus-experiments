@@ -31,6 +31,7 @@ import (
 	commonpb "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1"
 	tracepb "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1"
 	"go.opencensus.io/plugin/ocgrpc"
+	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
 )
 
@@ -196,20 +197,13 @@ outer:
 				continue outer
 			}
 		}
-
-		// TODO: do not verify spans until ALL test cases completed.
-		time.Sleep(20 * time.Second) // wait until all micro-services exported their spans
-		status := verifySpans(s.sink.SpansPerNode, req.Id)
-		s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
-		result := &interop.TestResult{
-			Id:          req.Id,
-			Name:        svc.Name,
-			Status:      status,
-			ServiceHops: req.ServiceHops,
-			Details:     resp.Status,
-		}
-		s.results = append(s.results, result)
 	}
+
+	time.Sleep(60 * time.Second) // wait until all micro-services exported their spans
+	results := verifyAllSpans(s.sink.SpansPerNode)
+	s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
+	s.results = append(s.results, results...)
+
 	return &interop.InteropRunResponse{Id: id}, nil
 }
 
@@ -223,19 +217,48 @@ func getFailedResult(id int64, reqName string, hops []*interop.ServiceHop, detai
 	}
 }
 
-func verifySpans(spansPerNode map[*commonpb.Node][]*tracepb.Span, id int64) *interop.CommonResponseStatus {
+func verifyAllSpans(spansPerNode map[*commonpb.Node][]*tracepb.Span) []*interop.TestResult {
 	var exportedSpans []*tracepb.Span
 	for _, spans := range spansPerNode {
 		exportedSpans = append(exportedSpans, spans...)
 	}
-	_, errs := validator.ReconstructTraces(exportedSpans...)
-	if len(errs) > 0 {
-		errMsg := "Unable to reconstruct traces:"
-		for traceID, err := range errs {
-			errMsg = fmt.Sprintf("%s %s:%s", errMsg, string(traceID[:16]), err.Error())
+	reqIDByTraceID := groupReqIDsByTraceID(exportedSpans)
+	traces, errs := validator.ReconstructTraces(exportedSpans...)
+	return generateResultForEachReq(reqIDByTraceID, traces, errs)
+}
+
+const reqIDKey = "reqId"
+
+func groupReqIDsByTraceID(spans []*tracepb.Span) map[trace.TraceID]int64 {
+	reqIDByTraceID := map[trace.TraceID]int64{}
+	for _, span := range spans {
+		reqID := span.Attributes.AttributeMap[reqIDKey].GetIntValue()
+		if reqID == 0 {
+			continue
 		}
-		return &interop.CommonResponseStatus{Status: interop.Status_FAILURE, Error: errMsg}
+		reqIDByTraceID[validator.ToTraceID(span.TraceId)] = reqID
 	}
-	// TODO: also verify the attributes once they're added.
-	return &interop.CommonResponseStatus{Status: interop.Status_SUCCESS}
+	return reqIDByTraceID
+}
+
+func generateResultForEachReq(reqIDByTraceID map[trace.TraceID]int64, traces map[trace.TraceID]*validator.SimpleSpan, errs map[trace.TraceID]error) []*interop.TestResult {
+	results := []*interop.TestResult{}
+	for traceID := range traces {
+		result := &interop.TestResult{
+			Id:     reqIDByTraceID[traceID],
+			Status: &interop.CommonResponseStatus{Status: interop.Status_SUCCESS},
+			// TODO: add req name and service hops?
+		}
+		results = append(results, result)
+	}
+	for traceID, err := range errs {
+		errMsg := fmt.Sprintf("Unable to reconstruct traces %s, error :%s", string(traceID[:16]), err.Error())
+		result := &interop.TestResult{
+			Id:     reqIDByTraceID[traceID],
+			Status: &interop.CommonResponseStatus{Status: interop.Status_FAILURE, Error: errMsg},
+			// TODO: add req name and service hops?
+		}
+		results = append(results, result)
+	}
+	return results
 }
