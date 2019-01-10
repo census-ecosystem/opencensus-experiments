@@ -23,8 +23,6 @@ import static io.opencensus.interop.Spec.Transport.HTTP;
 import static io.opencensus.interop.Spec.Transport.GRPC;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.protobuf.TextFormat;
-import com.google.protobuf.TextFormat.ParseException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opencensus.common.Scope;
