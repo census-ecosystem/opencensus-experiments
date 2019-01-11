@@ -22,5 +22,5 @@ spec:
     app: testcoordinator
   ports:
   - name: http
-    port: 10000
-    targetPort: 10000
+    port: 10003
+    targetPort: 10003
