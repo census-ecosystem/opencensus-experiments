@@ -25,6 +25,7 @@ import (
 
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/genproto"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/receiver"
+	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/testdata"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/testexecutionservice"
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/validator"
 	commonpb "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1"
@@ -139,13 +140,13 @@ type ServiceImpl struct {
 	mu                 sync.Mutex
 	registeredServices map[string][]*interop.Service
 	sink               *receiver.TestCoordinatorSink
-	testSuites         map[*interop.Service][]*interop.ServiceHop
+	testSuites         []*interop.TestRequest
 	results            []*interop.TestResult
 }
 
 // NewService returns a new ServiceImpl with the given registered services.
 func NewService(services map[string][]*interop.Service, sink *receiver.TestCoordinatorSink) *ServiceImpl {
-	return &ServiceImpl{registeredServices: services, sink: sink, testSuites: loadTestSuites()}
+	return &ServiceImpl{registeredServices: services, sink: sink, testSuites: testdata.LoadTestSuites()}
 }
 
 // SetRegisteredServices sets the registered services to the given one.
@@ -175,32 +176,36 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 	defer s.mu.Unlock()
 
 	id := rand.Int63()
+
 outer:
-	for svc, hops := range s.testSuites {
-		sender, _ := testexecutionservice.NewUnstartedSender(true, id, svc.Name, fmt.Sprintf("%s:%d", svc.Host, svc.Port), hops)
+	for _, req := range s.testSuites {
+		svc := req.ServiceHops[0].Service // always send request to the first hop to initiate tests
+		req.ServiceHops = req.ServiceHops[1:]
+
+		sender, _ := testexecutionservice.NewUnstartedSender(true, req.Id, req.Name, fmt.Sprintf("%s:%d", svc.Host, svc.Port), req.ServiceHops)
 		resp, err := sender.Start()
 
 		if err != nil {
-			s.results = append(s.results, getFailedResult(id, svc.Name, hops, nil))
+			s.results = append(s.results, getFailedResult(req.Id, req.Name, req.ServiceHops, nil))
 			continue outer
 		}
 
 		for _, status := range resp.Status {
 			if status.Status == interop.Status_FAILURE {
-				s.results = append(s.results, getFailedResult(id, svc.Name, hops, resp.Status))
+				s.results = append(s.results, getFailedResult(req.Id, req.Name, req.ServiceHops, resp.Status))
 				continue outer
 			}
 		}
 
 		// TODO: do not verify spans until ALL test cases completed.
 		time.Sleep(20 * time.Second) // wait until all micro-services exported their spans
-		status := verifySpans(s.sink.SpansPerNode, id)
+		status := verifySpans(s.sink.SpansPerNode, req.Id)
 		s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
 		result := &interop.TestResult{
-			Id:          id,
+			Id:          req.Id,
 			Name:        svc.Name,
 			Status:      status,
-			ServiceHops: hops,
+			ServiceHops: req.ServiceHops,
 			Details:     resp.Status,
 		}
 		s.results = append(s.results, result)
@@ -233,9 +238,4 @@ func verifySpans(spansPerNode map[*commonpb.Node][]*tracepb.Span, id int64) *int
 	}
 	// TODO: also verify the attributes once they're added.
 	return &interop.CommonResponseStatus{Status: interop.Status_SUCCESS}
-}
-
-func loadTestSuites() map[*interop.Service][]*interop.ServiceHop {
-	// TODO: load and parse test suites from test data
-	return map[*interop.Service][]*interop.ServiceHop{}
 }
