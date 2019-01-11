@@ -19,12 +19,19 @@ const services = require('../../proto/interoperability_test_grpc_pb');
 const grpc = require('grpc');
 const http = require('http');
 const {constants, toBuffer, fromBuffer} = require('./util');
+const tracing = require('@opencensus/nodejs');
 
 function serviceHop (request) {
   return new Promise((resolve, reject) => {
     const id = request.getId();
     const name = request.getName();
     const hops = request.getServiceHopsList();
+
+    // Adds reqId attribute
+    const span = tracing.tracer.currentRootSpan;
+    if (span) {
+      span.addAttribute('reqId', id);
+    }
 
     // Creates a test response
     const response = new interop.TestResponse();

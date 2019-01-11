@@ -21,7 +21,6 @@ const grpc = require('grpc');
 const grpcServer = require('./src/testservice/grpc-server');
 const grpcPlugin = require('@opencensus/instrumentation-grpc');
 const tracing = require('@opencensus/nodejs');
-const {logger, CoreTracer} = require('@opencensus/core');
 const jaeger = require('@opencensus/exporter-jaeger');
 const propagation = require('@opencensus/propagation-tracecontext');
 
