@@ -25,7 +25,7 @@ Options:
   -v --verbose            Verbose output
   -t --timeout=<timeout>  Seconds to wait for service calls [default: 60]
   -o --host=<host>        Test service host [default: localhost]
-  -p --port=<port>        Test service port [default: 10000]
+  -p --port=<port>        Test service port [default: 10003]
 
 """
 
@@ -43,7 +43,7 @@ import interoperability_test_pb2_grpc as pb2_grpc
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Seconds between calls to get test result

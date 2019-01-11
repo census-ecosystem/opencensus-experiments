@@ -1,5 +1,8 @@
 sudo: required
 
+env:
+- CHANGE_MINIKUBE_NONE_USER=true
+
 services:
 - docker
 
@@ -9,4 +12,4 @@ install:
 - sudo mv skaffold /usr/local/bin
 
 script:
-- cd interoptest && skaffold build --profile travis-ci
+- cd interoptest && ./build_and_run.sh
