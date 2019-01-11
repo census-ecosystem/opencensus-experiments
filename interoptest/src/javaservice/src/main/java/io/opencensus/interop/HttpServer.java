@@ -90,9 +90,9 @@ final class HttpServer {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-      int requestContentLength = request.getContentLength();
-      byte[] requestContent = new byte[requestContentLength];
-      if (request.getInputStream().readLine(requestContent, 0, requestContentLength) != requestContentLength) {
+      int len = request.getContentLength();
+      byte[] requestContent = new byte[len];
+      if (request.getInputStream().readLine(requestContent, 0, len) != len) {
         logger.info("HttpServer: error reading request content");
         return;
       }
