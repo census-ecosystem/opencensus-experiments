@@ -22,6 +22,7 @@ import logging
 import sys
 from concurrent import futures
 
+from opencensus.trace import execution_context
 from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import trace_context_http_header_format
@@ -79,6 +80,8 @@ def test():
                   list(service.call_next(request).status))
         response = pb2.TestResponse(id=request.id, status=status)
 
+    tracer = execution_context.get_opencensus_tracer()
+    tracer.add_attribute_to_current_span("reqId", request.id)
     return response.SerializeToString()
 
 
