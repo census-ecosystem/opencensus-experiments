@@ -90,11 +90,18 @@ final class HttpServer {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+      int offset = 0;
       int len = request.getContentLength();
       byte[] requestContent = new byte[len];
-      if (request.getInputStream().readLine(requestContent, 0, len) != len) {
-        logger.info("HttpServer: error reading request content");
-        return;
+      while (len > 0) {
+        int bytesRead = request.getInputStream().readLine(requestContent, offset, len);
+        if (bytesRead < 0) {
+          logger.info("HttpServer: error reading request content: bytes read:" + bytesRead
+              + ", len:" + len + ", offset:" + offset);
+          return;
+        }
+        offset += bytesRead;
+        len -= bytesRead;
       }
       TestRequest testRequest = TestRequest.parseFrom(ByteBuffer.wrap(requestContent));
       TestResponse testResponse = ServiceHopper.serviceHop(testRequest);
