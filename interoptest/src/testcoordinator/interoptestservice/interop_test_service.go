@@ -248,6 +248,7 @@ func groupReqIDsByTraceID(spans []*tracepb.Span) map[trace.TraceID]int64 {
 
 func generateResultForEachReq(reqIDByTraceID map[trace.TraceID]int64, traces map[trace.TraceID]*validator.SimpleSpan, errs map[trace.TraceID]error, testSuites map[int64]*interop.TestRequest) []*interop.TestResult {
 	results := []*interop.TestResult{}
+	// TODO(issue/167): check whether tail spans are missing
 	for traceID := range traces {
 		reqID := reqIDByTraceID[traceID]
 		result := &interop.TestResult{
