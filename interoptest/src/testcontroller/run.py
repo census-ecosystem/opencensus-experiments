@@ -43,7 +43,7 @@ import interoperability_test_pb2_grpc as pb2_grpc
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARN)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Seconds between calls to get test result

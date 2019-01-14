@@ -1,8 +1,5 @@
 sudo: required
 
-env:
-- CHANGE_MINIKUBE_NONE_USER=true
-
 services:
 - docker
 
