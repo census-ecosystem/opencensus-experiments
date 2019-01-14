@@ -23,8 +23,6 @@ import static io.opencensus.interop.Spec.Transport.HTTP;
 import static io.opencensus.interop.Spec.Transport.GRPC;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.protobuf.TextFormat;
-import com.google.protobuf.TextFormat.ParseException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opencensus.common.Scope;
@@ -34,11 +32,11 @@ import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 
 final class ServiceHopper {
@@ -135,11 +133,10 @@ final class ServiceHopper {
           .newRequest("http://" + host + ":" + port + "/test/request")
           .method(HttpMethod.POST)
           .timeout(WAIT_SECONDS, SECONDS);
-      httpRequest.content(new StringContentProvider(request.toString()));
-      ContentResponse httpResponse = httpRequest.send();
-      TestResponse.Builder responseBuilder = TestResponse.newBuilder();
-      TextFormat.merge(httpResponse.getContentAsString(), responseBuilder);
-      return addSuccessStatus(responseBuilder.build());
+      httpRequest.content(new BytesContentProvider(request.toByteArray()));
+      byte[] httpResponseContent = httpRequest.send().getContent();
+      TestResponse response = TestResponse.parseFrom(ByteBuffer.wrap(httpResponseContent));
+      return addSuccessStatus(response);
     } catch (Exception exn) {
           return setFailureStatus(id, "HTTP Service Hopper Error: " + exn);
     }
