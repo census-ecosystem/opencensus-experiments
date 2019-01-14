@@ -16,6 +16,6 @@ FROM alpine as release
 RUN apk add --no-cache ca-certificates curl
 
 COPY --from=builder /testcoordinator /testcoordinator
-EXPOSE 10000
+EXPOSE 10003
 ENTRYPOINT ["/testcoordinator"]
 

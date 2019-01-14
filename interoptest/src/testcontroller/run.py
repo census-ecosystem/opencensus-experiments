@@ -25,7 +25,7 @@ Options:
   -v --verbose            Verbose output
   -t --timeout=<timeout>  Seconds to wait for service calls [default: 60]
   -o --host=<host>        Test service host [default: localhost]
-  -p --port=<port>        Test service port [default: 10000]
+  -p --port=<port>        Test service port [default: 10003]
 
 """
 
