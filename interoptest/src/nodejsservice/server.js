@@ -21,7 +21,6 @@ const grpc = require('grpc');
 const grpcServer = require('./src/testservice/grpc-server');
 const grpcPlugin = require('@opencensus/instrumentation-grpc');
 const tracing = require('@opencensus/nodejs');
-const {logger, CoreTracer} = require('@opencensus/core');
 const jaeger = require('@opencensus/exporter-jaeger');
 const propagation = require('@opencensus/propagation-tracecontext');
 
@@ -64,10 +63,17 @@ function enableHttpPlugin (tracer) {
 function enableJaegerTraceExporter (tracer) {
   // 1. Define service name and jaeger options
   const service = 'nodejsservice';
+  let host = 'localhost';
+  let port = 6832;
+  const jaegerAddr = process.env.JAEGER_SERVICE_ADDR;
+  if (jaegerAddr) {
+    [host, port] = jaegerAddr.split(':', 2);
+  }
+
   const jaegerOptions = {
     serviceName: service,
-    host: 'localhost',
-    port: 6832,
+    host: host,
+    port: Number(port),
     bufferTimeout: 10
   };
 

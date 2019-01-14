@@ -23,7 +23,7 @@ from contextlib import contextmanager
 import logging
 import sys
 
-from opencensus.trace.exporters.ocagent import trace_exporter
+from opencensus.trace import execution_context
 from opencensus.trace.ext.grpc import server_interceptor
 from opencensus.trace.samplers import always_on
 import grpc
@@ -57,6 +57,9 @@ class GRPCBinaryTestServer(pb2_grpc.TestExecutionServiceServicer):
             status = ([pb2.CommonResponseStatus(status=pb2.SUCCESS)] +
                       list(service.call_next(request).status))
             response = pb2.TestResponse(id=request.id, status=status)
+
+        tracer = execution_context.get_opencensus_tracer()
+        tracer.add_attribute_to_current_span("reqId", request.id)
         return response
 
 

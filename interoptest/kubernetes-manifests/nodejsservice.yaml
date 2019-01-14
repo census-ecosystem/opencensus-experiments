@@ -39,6 +39,8 @@ spec:
         env:
         - name: PORT
           value: "10301"
+        - name: JAEGER_SERVICE_ADDR
+          value: "traceui:14268"
         resources:
           requests:
             cpu: 200m
