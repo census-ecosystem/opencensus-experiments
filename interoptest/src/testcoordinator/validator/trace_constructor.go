@@ -80,14 +80,14 @@ outerLoop:
 func groupSpansByTraceID(spans []*tracepb.Span) map[trace.TraceID][]*tracepb.Span {
 	dict := map[trace.TraceID][]*tracepb.Span{}
 	for _, span := range spans {
-		traceID := toTraceID(span.TraceId)
+		traceID := ToTraceID(span.TraceId)
 		dict[traceID] = append(dict[traceID], span)
 	}
 	return dict
 }
 
 func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, processedSpans map[trace.SpanID]*SimpleSpan, span *tracepb.Span) (bool, error) {
-	if processedSpans[toSpanID(span.SpanId)] != nil {
+	if processedSpans[ToSpanID(span.SpanId)] != nil {
 		return false, errAlreadyExists
 	}
 	if isRoot(span) { // root span
@@ -100,7 +100,7 @@ func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, process
 			return false, errDuplicatedRootSpan
 		}
 	} else { // leaf span
-		psID := toSpanID(span.ParentSpanId)
+		psID := ToSpanID(span.ParentSpanId)
 		parent := processedSpans[psID] // check if we already processed its parent
 		if parent != nil {
 			child := spanToSimpleSpan(span)
@@ -112,13 +112,15 @@ func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, process
 	}
 }
 
-func toTraceID(bytes []byte) trace.TraceID {
+// ToTraceID creates a Trace ID from the given byte array.
+func ToTraceID(bytes []byte) trace.TraceID {
 	var bytesCopy [16]byte
 	copy(bytesCopy[:], bytes[:16])
 	return trace.TraceID(bytesCopy)
 }
 
-func toSpanID(bytes []byte) trace.SpanID {
+// ToSpanID creates a SpanID ID from the given byte array.
+func ToSpanID(bytes []byte) trace.SpanID {
 	var bytesCopy [8]byte
 	copy(bytesCopy[:], bytes[:8])
 	return trace.SpanID(bytesCopy)
@@ -137,8 +139,8 @@ func toTracestate(tspb *tracepb.Span_Tracestate) tracestate.Tracestate {
 func spanToSimpleSpan(span *tracepb.Span) *SimpleSpan {
 	ss := &SimpleSpan{
 		children: make(map[trace.SpanID]*SimpleSpan),
-		traceID:  toTraceID(span.TraceId),
-		spanID:   toSpanID(span.SpanId),
+		traceID:  ToTraceID(span.TraceId),
+		spanID:   ToSpanID(span.SpanId),
 	}
 	if span.Tracestate != nil && span.Tracestate.Entries != nil {
 		ss.tracestate = toTracestate(span.Tracestate)
