@@ -46,7 +46,7 @@ final class ServiceHopper {
   private static final Logger logger = Logger.getLogger(ServiceHopper.class.getName());
   private static final Tagger tagger = Tags.getTagger();
   private static final Tracer tracer = Tracing.getTracer();
-  private static final String ID_ATTRIBUTE_KEY = "req.id";
+  private static final String ID_ATTRIBUTE_KEY = "reqId";
 
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).build();
