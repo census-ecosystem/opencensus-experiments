@@ -102,7 +102,7 @@ be static as long as there are no conflicts.
   
 - Request could contain a list of tags. If they do then tags should be propagated along with trace
  context. [TODO] Do all plugins provide propagation?
-- All services should add attribute "req.id" with value of the id receieved in the test request to
+- All services should add attribute "reqId" with value of the id receieved in the test request to
   current span. This is important for TestCoordinator in correlating requests with trace data 
   exported by all services via OC Agent.
 
