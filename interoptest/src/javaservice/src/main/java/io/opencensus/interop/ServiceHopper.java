@@ -32,6 +32,9 @@ import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -42,6 +45,9 @@ import org.eclipse.jetty.http.HttpMethod;
 final class ServiceHopper {
   private static final Logger logger = Logger.getLogger(ServiceHopper.class.getName());
   private static final Tagger tagger = Tags.getTagger();
+  private static final Tracer tracer = Tracing.getTracer();
+  private static final String ID_ATTRIBUTE_KEY = "reqId";
+
   private static final CommonResponseStatus SUCCESS =
       CommonResponseStatus.newBuilder().setStatus(Status.SUCCESS).build();
   private static final int WAIT_SECONDS = 1;
@@ -62,6 +68,7 @@ final class ServiceHopper {
     TestRequest restRequest =
         TestRequest.newBuilder().setId(id).setName(name).addAllServiceHops(rest).build();
     try (Scope tagScope = scopeTags(first.getTagsList())) {
+      tracer.getCurrentSpan().putAttribute(ID_ATTRIBUTE_KEY, AttributeValue.longAttributeValue(id));
       switch (transport) {
         case HTTP:
           switch (propagation) {
