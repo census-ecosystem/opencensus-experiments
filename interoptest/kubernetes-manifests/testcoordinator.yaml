@@ -30,6 +30,10 @@ spec:
         ports:
         - containerPort: 10003
           name: testcoordinator
+        - containerPort: 10002
+          name: registration
+        - containerPort: 10001
+          name: receiver
         env:
         - name: PORT
           value: "10003"
@@ -63,3 +67,9 @@ spec:
   - name: testcoordinator
     port: 10003
     targetPort: 10003
+  - name: registration
+    port: 10002
+    targetPort: 10002
+  - name: receiver
+    port: 10001
+    targetPort: 10001
