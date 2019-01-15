@@ -74,7 +74,8 @@ func registerOcAgentExporter() {
 }
 
 func main() {
-	registerJaegerExporter()
+	// For debugging use JaegerExporter.
+	// registerJaegerExporter()
 	registerOcAgentExporter()
 	grpcServer, err := testservice.NewGRPCReciever(fmt.Sprintf(":%d", interop.ServicePort_GO_GRPC_BINARY_PROPAGATION_PORT))
 	if err != nil {

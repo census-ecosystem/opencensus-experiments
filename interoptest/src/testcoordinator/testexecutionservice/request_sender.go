@@ -27,7 +27,6 @@ import (
 // test execution request to each test server.
 type Sender struct {
 	mu        sync.RWMutex
-	startOnce sync.Once
 
 	canDialInsecure bool
 
@@ -65,16 +64,11 @@ func NewUnstartedSender(
 // and error.
 func (s *Sender) Start() (*interop.TestResponse, error) {
 	var resp *interop.TestResponse
-	err := errAlreadyStarted
-	s.startOnce.Do(func() {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-
-		addr := s.serverAddr
-		if cc, err := s.dialToServer(addr); err == nil {
-			resp, err = s.send(cc)
-		}
-	})
+	addr := s.serverAddr
+	var err error
+	if cc, err := s.dialToServer(addr); err == nil {
+		resp, err = s.send(cc)
+	}
 	return resp, err
 }
 
