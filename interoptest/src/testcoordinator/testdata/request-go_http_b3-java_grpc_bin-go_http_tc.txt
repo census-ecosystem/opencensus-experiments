@@ -19,6 +19,17 @@ service_hops {
   service {
     name: "goservice"
     host: "goservice"
+    port: 10201
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+}
+service_hops {
+  service {
+    name: "goservice"
+    host: "goservice"
     port: 10202
     spec {
       transport: HTTP
