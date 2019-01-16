@@ -13,8 +13,8 @@
 # limitations under the License.
 
 # some comment
-id: 203203
-name: "request-go_http_tc-go_http_tc"
+id: 201201201201
+name: "request-go_grpc_bin-go_grpc_bin-go_grpc_bin-go_grpc_bin"
 service_hops {
   service {
     name: "goservice"
@@ -29,11 +29,11 @@ service_hops {
 service_hops {
   service {
     name: "goservice"
-    host: "localhost"
-    port: 10203
+    host: "goservice"
+    port: 10201
     spec {
-      transport: HTTP
-      propagation: TRACE_CONTEXT_FORMAT_PROPAGATION
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
     }
   }
   tags {
@@ -48,11 +48,49 @@ service_hops {
 service_hops {
   service {
     name: "goservice"
-    host: "localhost"
-    port: 10203
+    host: "goservice"
+    port: 10201
     spec {
-      transport: HTTP
-      propagation: TRACE_CONTEXT_FORMAT_PROPAGATION
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+  tags {
+    key: "key1"
+    value: "value1"
+  }
+  tags {
+    key: "key2"
+    value: "value2"
+  }
+}
+service_hops {
+  service {
+    name: "goservice"
+    host: "goservice"
+    port: 10201
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+  tags {
+    key: "key1"
+    value: "value1"
+  }
+  tags {
+    key: "key2"
+    value: "value2"
+  }
+}
+service_hops {
+  service {
+    name: "goservice"
+    host: "goservice"
+    port: 10201
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
     }
   }
   tags {
