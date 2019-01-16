@@ -12,10 +12,14 @@ RUN go mod download
 COPY . .
 RUN go build -gcflags='-N -l' -o /testcoordinator cmd/main.go
 
+# COPY test suites
+RUN cp -r testdata /
+
 FROM alpine as release
 RUN apk add --no-cache ca-certificates curl
 
 COPY --from=builder /testcoordinator /testcoordinator
-EXPOSE 10003
+COPY --from=builder /testdata /testdata
+EXPOSE 10003 10002 10001
 ENTRYPOINT ["/testcoordinator"]
 
