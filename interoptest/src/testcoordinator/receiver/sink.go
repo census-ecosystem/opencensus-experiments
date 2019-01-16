@@ -34,12 +34,7 @@ func (tcs TestCoordinatorSink) ReceiveTraceData(ctx context.Context, td data.Tra
 	node := td.Node
 	spans := td.Spans
 
-	storedSpans, ok := tcs.SpansPerNode[node]
-	if ok {
-		tcs.SpansPerNode[node] = append(storedSpans, spans...)
-	} else {
-		tcs.SpansPerNode[node] = spans
-	}
+	tcs.SpansPerNode[node] = append(tcs.SpansPerNode[node], spans...)
 
 	ack := &receiver.TraceReceiverAcknowledgement{
 		SavedSpans: uint64(len(td.Spans)),
