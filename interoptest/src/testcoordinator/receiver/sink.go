@@ -36,7 +36,7 @@ func (tcs TestCoordinatorSink) ReceiveTraceData(ctx context.Context, td data.Tra
 
 	storedSpans, ok := tcs.SpansPerNode[node]
 	if ok {
-		storedSpans = append(storedSpans, spans...)
+		tcs.SpansPerNode[node] = append(storedSpans, spans...)
 	} else {
 		tcs.SpansPerNode[node] = spans
 	}
