@@ -25,6 +25,17 @@ service_hops {
       propagation: BINARY_FORMAT_PROPAGATION
     }
   }
+}
+service_hops {
+  service {
+    name: "goservice"
+    host: "goservice"
+    port: 10201
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
   tags {
     key: "key1"
     value: "value1"
@@ -53,3 +64,4 @@ service_hops {
     value: "value2"
   }
 }
+

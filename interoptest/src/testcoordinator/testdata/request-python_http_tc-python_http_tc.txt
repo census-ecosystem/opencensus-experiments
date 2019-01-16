@@ -14,7 +14,18 @@
 
 # some comment
 id: 403403
-name: "request-python_http_tc-python_http_tc
+name: "request-python_http_tc-python_http_tc"
+service_hops {
+  service {
+    name: "pythonservice"
+    host: "pythonservice"
+    port: 10401
+    spec {
+      transport: GRPC
+      propagation: BINARY_FORMAT_PROPAGATION
+    }
+  }
+}
 service_hops {
   service {
     name: "pythonservice"
