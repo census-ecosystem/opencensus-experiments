@@ -38,10 +38,6 @@ var (
 )
 
 func TestReconstructTraces(t *testing.T) {
-	//got, errs := ReconstructTraces(span13, span14, span11, span21, span12)
-	//if len(errs) > 0 {
-	//	t.Fatalf("Failed to reconstruct trace: %v", errs)
-	//}
 	want := map[trace.TraceID]*SimpleSpan{
 		traceID1: {
 			traceID: traceID1,

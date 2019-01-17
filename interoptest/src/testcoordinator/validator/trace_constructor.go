@@ -81,6 +81,11 @@ outerLoop:
 func groupSpansByTraceID(spans []*tracepb.Span) map[trace.TraceID][]*tracepb.Span {
 	dict := map[trace.TraceID][]*tracepb.Span{}
 	for _, span := range spans {
+		if zeroSpan == ToSpanID(span.SpanId) {
+			// zero span id is considered invalid for interop test.
+			// throw away such spans.
+			continue;
+		}
 		traceID := ToTraceID(span.TraceId)
 		dict[traceID] = append(dict[traceID], span)
 	}
