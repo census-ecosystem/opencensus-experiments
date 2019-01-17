@@ -30,9 +30,11 @@ import (
 	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator/validator"
 	commonpb "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1"
 	tracepb "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1"
+	"github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
+	"os"
 )
 
 // ServerImpl is the type that handles RPCs for interop test service.
@@ -46,6 +48,22 @@ type ServerImpl struct {
 	stopOnce         sync.Once
 	startServerOnce  sync.Once
 	startServiceOnce sync.Once
+}
+
+var log *logrus.Logger
+
+func init() {
+	log = logrus.New()
+	log.Level = logrus.DebugLevel
+	log.Formatter = &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "timestamp",
+			logrus.FieldKeyLevel: "severity",
+			logrus.FieldKeyMsg:   "message",
+		},
+		TimestampFormat: time.RFC3339Nano,
+	}
+	log.Out = os.Stdout
 }
 
 // NewServer returns a new unstarted gRPC interop server.
@@ -168,6 +186,7 @@ func (s *ServiceImpl) Result(ctx context.Context, req *interop.InteropResultRequ
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	log.Printf("Result Request received %d\n", req.Id)
 	resp := &interop.InteropResultResponse{
 		Id:     req.Id,
 		Status: &interop.CommonResponseStatus{Status: interop.Status_SUCCESS},
@@ -182,19 +201,34 @@ func (s *ServiceImpl) Run(ctx context.Context, req *interop.InteropRunRequest) (
 	defer s.mu.Unlock()
 
 	id := rand.Int63()
+	log.Printf("Run Request received %d\n", id)
+
+	spanCount := 0
 
 outer:
 	for _, req := range s.testSuites {
+		if len(req.ServiceHops) < 2 {
+			// bad request. ignore it.
+			log.Printf("bad request: %v", req)
+			continue
+		}
+		spanCount += (len(req.ServiceHops)*2 + 1)
 		svc := req.ServiceHops[0].Service // always send request to the first hop to initiate tests
-		req.ServiceHops = req.ServiceHops[1:]
 
 		sender, _ := testexecutionservice.NewUnstartedSender(true, req.Id, req.Name, fmt.Sprintf("%s:%d", svc.Host, svc.Port), req.ServiceHops)
 		resp, err := sender.Start()
 
 		if err != nil {
+			log.Printf("test suite %s: request failed %s\n", req.Name, err)
 			s.results = append(s.results, getFailedResult(req.Id, req.Name, req.ServiceHops, nil))
 			continue outer
 		}
+
+		if resp == nil {
+			log.Printf("response is null for request id %d\n", req.Id)
+			continue outer
+		}
+		log.Printf("response is %v\n", resp)
 
 		for _, status := range resp.Status {
 			if status.Status == interop.Status_FAILURE {
@@ -204,12 +238,30 @@ outer:
 		}
 	}
 
-	time.Sleep(60 * time.Second) // wait until all micro-services exported their spans
+	spanRecv := s.recvdSpanCount()
+	for i := 10; i > 0; i-- {
+		log.Printf("received %d spans\n", spanRecv)
+		if spanRecv >= spanCount {
+			break
+		} else {
+			time.Sleep(10 * time.Second) // wait until all micro-services exported their spans
+		}
+		spanRecv = s.recvdSpanCount()
+	}
+	log.Printf("received %d spans\n", spanRecv)
 	results := verifyAllSpans(s.sink.SpansPerNode, s.testSuites)
 	s.sink.SpansPerNode = map[*commonpb.Node][]*tracepb.Span{} // flush verified spans
 	s.results = append(s.results, results...)
 
 	return &interop.InteropRunResponse{Id: id}, nil
+}
+
+func (s *ServiceImpl) recvdSpanCount() int {
+	count := 0
+	for _, spans := range s.sink.SpansPerNode {
+		count = len(spans)
+	}
+	return count
 }
 
 func getFailedResult(id int64, reqName string, hops []*interop.ServiceHop, details []*interop.CommonResponseStatus) *interop.TestResult {
@@ -261,7 +313,12 @@ func generateResultForEachReq(reqIDByTraceID map[trace.TraceID]int64, traces map
 	}
 	for traceID, err := range errs {
 		reqID := reqIDByTraceID[traceID]
-		errMsg := fmt.Sprintf("Unable to reconstruct traces %s, error :%s", string(traceID[:16]), err.Error())
+		if testSuites[reqID] == nil {
+			log.Printf("received trace %s for unknown request id %d", traceID.String(), reqID)
+			continue
+		}
+		errMsg := fmt.Sprintf("unable to reconstruct traces %s, error :%s", traceID.String(), err.Error())
+		log.Println(errMsg)
 		result := &interop.TestResult{
 			Id:          reqID,
 			Status:      &interop.CommonResponseStatus{Status: interop.Status_FAILURE, Error: errMsg},

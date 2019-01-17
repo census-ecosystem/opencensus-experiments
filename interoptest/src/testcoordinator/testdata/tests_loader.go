@@ -58,8 +58,8 @@ func parseReq(filepath string) *interop.TestRequest {
 		log.Fatalln("Error reading file:", err)
 	}
 
-	if err := proto.Unmarshal(f, req); err != nil {
-		log.Fatalln("Failed to parse TestRequest:", err)
+	if err := proto.UnmarshalText(string(f), req); err != nil {
+		log.Fatalf("Failed to parse TestRequest. file:%s, err:%s\n", filepath, err)
 	}
 
 	return req

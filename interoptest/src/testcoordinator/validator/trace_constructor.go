@@ -36,6 +36,7 @@ var (
 	errOrphanSpan         = errors.New("found orphan span")
 	errAlreadyExists      = errors.New("found two spans with the same span ID")
 	errDuplicatedRootSpan = errors.New("found duplicated root span for the same trace")
+	zeroSpan              = trace.SpanID{0, 0, 0, 0, 0, 0, 0, 0}
 )
 
 // ReconstructTraces tries to reconstruct traces from the given spans. If the spans are valid, it will return the root
@@ -80,6 +81,11 @@ outerLoop:
 func groupSpansByTraceID(spans []*tracepb.Span) map[trace.TraceID][]*tracepb.Span {
 	dict := map[trace.TraceID][]*tracepb.Span{}
 	for _, span := range spans {
+		if zeroSpan == ToSpanID(span.SpanId) {
+			// zero span id is considered invalid for interop test.
+			// throw away such spans.
+			continue;
+		}
 		traceID := ToTraceID(span.TraceId)
 		dict[traceID] = append(dict[traceID], span)
 	}
@@ -149,7 +155,7 @@ func spanToSimpleSpan(span *tracepb.Span) *SimpleSpan {
 }
 
 func isRoot(span *tracepb.Span) bool {
-	return span.ParentSpanId == nil || len(span.ParentSpanId) == 0
+	return span.ParentSpanId == nil || len(span.ParentSpanId) == 0 || zeroSpan == ToSpanID(span.ParentSpanId)
 }
 
 func removeFromSpanList(i int, spans []*tracepb.Span) []*tracepb.Span {
