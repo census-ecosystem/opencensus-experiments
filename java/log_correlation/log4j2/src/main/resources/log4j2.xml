@@ -7,18 +7,13 @@
         <!--
         This section reads the trace ID, span ID, and sampled fields from the Log4j context and adds
         them to the JSON log entry as key-value pairs. It uses the special JSON keys that the
-        Stackdriver Logging agent converts to "trace" and "spanId" in the Stackdriver LogEntry
-        (https://cloud.google.com/logging/docs/agent/configuration#special_fields_in_structured_payloads).
+        Stackdriver Logging agent converts to "trace", "spanId", and "traceSampled" in the
+        Stackdriver LogEntry
+        (https://cloud.google.com/logging/docs/agent/configuration#special-fields).
         -->
         <KeyValuePair key="logging.googleapis.com/trace" value="$${ctx:traceId}"/>
         <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:spanId}"/>
-
-        <!--
-        There is no field corresponding to traceSampled in the Stackdriver LogEntry, so this field
-        can only be added to the "jsonPayload" object.
-        -->
-        <KeyValuePair key="traceSampled" value="$${ctx:traceSampled}"/>
-
+        <KeyValuePair key="logging.googleapis.com/traceSampled" value="$${ctx:traceSampled}"/>
      </JsonLayout>
     </File>
   </Appenders>
