@@ -1,5 +1,6 @@
 # TODO [rghetia] disable travis build until interoptest runs on nightly basis. 
 # otherwise it is too hard to capture the failure happening on HEAD of each language.
+# https://github.com/census-ecosystem/opencensus-experiments/issues/129
 #
 #sudo: required
 #
