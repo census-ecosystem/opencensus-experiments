@@ -1,12 +1,15 @@
-sudo: required
-
-services:
-- docker
-
-install:
-- curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v0.19.0/skaffold-linux-amd64
-- chmod +x skaffold
-- sudo mv skaffold /usr/local/bin
-
-script:
-- cd interoptest && ./build_and_run.sh
+# TODO [rghetia] disable travis build until interoptest runs on nightly basis. 
+# otherwise it is too hard to capture the failure happening on HEAD of each language.
+#
+#sudo: required
+#
+#services:
+#- docker
+#
+#install:
+#- curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v0.19.0/skaffold-linux-amd64
+#- chmod +x skaffold
+#- sudo mv skaffold /usr/local/bin
+#
+#script:
+#- cd interoptest && ./build_and_run.sh
