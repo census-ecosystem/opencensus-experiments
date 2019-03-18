@@ -5,13 +5,17 @@
 
 [Google Cloud Pub/Sub][pubsub] is a fully-managed real-time messaging service that allows you to
 send and receive messages between independent applications.
-This sample Java application demonstrates how to access the Pub/Sub API using
+This sample Java application demonstrates how to use [OpenCensus][opencensus] with the Pub/Sub API using
 the [Google Cloud Client Library for Java][google-cloud-java].
 
 [pubsub]: https://cloud.google.com/pubsub/
+[opencensus]: https://opencensus.io
 [google-cloud-java]: https://github.com/GoogleCloudPlatform/google-cloud-java
+[google-cloud-examples]: https://github.com/GoogleCloudPlatform/google-cloud-java
 
-For more samples, see the samples in
+This example is based on the Pub/Sub example in the 
+[Google Cloud Platform Java examples](https://github.com/GoogleCloudPlatform/java-docs-samples).
+For more samples, see the samples in 
 [google-cloud-java](https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-examples/src/main/java/com/google/cloud/examples/pubsub).
 
 ## Quickstart
