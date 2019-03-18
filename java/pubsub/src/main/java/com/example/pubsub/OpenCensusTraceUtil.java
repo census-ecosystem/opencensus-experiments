@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.pubsub;
+package com.example.pubsub;
 
 import com.google.cloud.ServiceOptions;
 import com.google.errorprone.annotations.MustBeClosed;

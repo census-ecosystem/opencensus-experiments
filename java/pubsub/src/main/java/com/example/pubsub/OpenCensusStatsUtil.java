@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.pubsub;
+package com.example.pubsub;
 
 import com.google.cloud.ServiceOptions;
 
@@ -27,9 +27,6 @@ import io.opencensus.stats.Measure;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
 import io.opencensus.stats.View;
-import io.opencensus.tags.propagation.TagContextBinarySerializer;
-import io.opencensus.tags.propagation.TagContextDeserializationException;
-import io.opencensus.tags.propagation.TagContextSerializationException;
 import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
@@ -38,7 +35,6 @@ import io.opencensus.tags.Tags;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Base64;
 
 /**
  * A utility class for using OpenCensus stats with pub/sub.
@@ -47,9 +43,6 @@ final class OpenCensusStatsUtil {
   private static final Tagger tagger = Tags.getTagger();
 
   private static final StatsRecorder statsRecorder = Stats.getStatsRecorder();
-
-  private static final TagContextBinarySerializer serializer =
-      Tags.getTagPropagationComponent().getBinarySerializer();
 
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 

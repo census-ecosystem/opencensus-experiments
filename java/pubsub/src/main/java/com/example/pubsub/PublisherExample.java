@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.pubsub;
+package com.example.pubsub;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
