@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package io.opencensus.pubsub;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.OpenCensusUtil.OpenCensusMessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
@@ -27,11 +28,8 @@ import io.opencensus.common.Scope;
 import io.opencensus.tags.TagContext;
 import io.opencensus.trace.SpanContext;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class SubscriberExample {
-  private static final Logger logger = Logger.getLogger(SubscriberExample.class.getName());
+
   // use the default project id
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
@@ -40,12 +38,14 @@ public class SubscriberExample {
     public void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
       try (Scope subScope =  OpenCensusStatsUtil.createSubscriberScope()) {
         try (Scope latencyScope = OpenCensusStatsUtil.createLatencyScope()) {
-          OpenCensusTraceUtil.addAnnotation("Receiver:Message");
+          OpenCensusTraceUtil.logCurrentSpan();
+          System.out.println("Message Id: " + message.getMessageId());
           String data = message.getData().toStringUtf8();
-          logger.log(Level.INFO, "Data: " + data + ", Message Id: " + message.getMessageId());
-          OpenCensusTraceUtil.addAnnotation("Receiver:Ack: " + data);
+          System.out.println("Data: " + data);
+          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Message");
+          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Ack: " + data);
           consumer.ack();
-          OpenCensusTraceUtil.addAnnotation("Receiver:Done: " + data);
+          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Done: " + data);
         }
       }
     }
@@ -59,10 +59,11 @@ public class SubscriberExample {
         PROJECT_ID, subscriptionId);
     Subscriber subscriber = null;
     try {
-      // create a subscriber bound to the asynchronous message receiver
-      subscriber =
-          Subscriber.newBuilder(subscriptionName, new MessageReceiverExample()).build();
+      // create a subscriber bound to the asynchronous OpenCensus message receiver
+      MessageReceiver receiver = new OpenCensusMessageReceiver(new MessageReceiverExample());
+      subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
       subscriber.startAsync().awaitRunning();
+      // Continue to listen to messages
       while (true) {
         Thread.sleep(Long.MAX_VALUE);
       }
@@ -70,7 +71,6 @@ public class SubscriberExample {
       if (subscriber != null) {
         subscriber.stopAsync();
       }
-      OpenCensusTraceUtil.addAnnotation("Subscriber:End");
     }
   }
 }

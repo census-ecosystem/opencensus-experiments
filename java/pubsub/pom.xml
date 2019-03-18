@@ -32,7 +32,7 @@
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <opencensus.version>0.15.1</opencensus.version>
+    <opencensus.version>0.18.0</opencensus.version>
   </properties>
 
   <dependencies>
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.56.1-SNAPSHOT</version>
+      <version>1.62.1-SNAPSHOT</version>
     </dependency>
     <!-- [END pubsub_java_dependencies] -->
 

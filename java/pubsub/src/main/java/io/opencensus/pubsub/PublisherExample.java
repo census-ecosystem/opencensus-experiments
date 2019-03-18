@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,20 @@ package io.opencensus.pubsub;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.pubsub.v1.OpenCensusUtil;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PubsubMessage;
+
 import io.opencensus.common.Scope;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 public class PublisherExample {
+
   // use the default project id
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
@@ -45,16 +48,19 @@ public class PublisherExample {
     List<ApiFuture<String>> futures = new ArrayList<>();
 
     // Scope the span for the requests.
-    try (Scope scope = OpenCensusTraceUtil.createScopedSpan("Publisher")) {
-      OpenCensusTraceUtil.addAnnotation("Publisher:Begin");
+    try (Scope scope = OpenCensusTraceUtil.createScopedSampledSpan("Publisher")) {
+      OpenCensusTraceUtil.addAnnotationAndLog("Publisher:Begin");
       // Create a publisher instance with default settings bound to the topic.
-      publisher = Publisher.newBuilder(topicName).build();
+      publisher = Publisher
+                  .newBuilder(topicName)
+                  .setTransform(OpenCensusUtil.OPEN_CENSUS_MESSAGE_TRANSFORM)
+                  .build();
       for (int i = 0; i < messageCount; i++) {
         try (
-            Scope traceScope = OpenCensusTraceUtil.createScopedSpan("PublisherRoot-" + i);
+            Scope traceScope = OpenCensusTraceUtil.createScopedSampledSpan("PublisherRoot-" + i);
             Scope statsScope = OpenCensusStatsUtil.createPublisherScope()) {
           try (Scope latencyScope = OpenCensusStatsUtil.createLatencyScope()) {
-            OpenCensusTraceUtil.addAnnotation("Publisher:message-" + i);
+            OpenCensusTraceUtil.addAnnotationAndLog("Publisher:message-" + i);
             // Propagate the span information with the request.
             String message = "message-" + i;
             // convert message to bytes
@@ -78,7 +84,7 @@ public class PublisherExample {
         // When finished with the publisher, shutdown to free up resources.
         publisher.shutdown();
       }
-      OpenCensusTraceUtil.addAnnotation("Publisher:End");
+      OpenCensusTraceUtil.addAnnotationAndLog("Publisher:End");
       Thread.sleep(5000);
     }
   }
