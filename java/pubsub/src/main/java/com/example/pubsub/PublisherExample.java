@@ -49,29 +49,24 @@ public class PublisherExample {
 
     // Scope the span for the requests.
     try (Scope scope = OpenCensusTraceUtil.createScopedSampledSpan("Publisher")) {
-      OpenCensusTraceUtil.addAnnotationAndLog("Publisher:Begin");
+      OpenCensusTraceUtil.addAnnotation("Publisher:Begin");
       // Create a publisher instance with default settings bound to the topic.
       publisher = Publisher
                   .newBuilder(topicName)
                   .setTransform(OpenCensusUtil.OPEN_CENSUS_MESSAGE_TRANSFORM)
                   .build();
       for (int i = 0; i < messageCount; i++) {
-        try (
-            Scope traceScope = OpenCensusTraceUtil.createScopedSampledSpan("PublisherRoot-" + i);
-            Scope statsScope = OpenCensusStatsUtil.createPublisherScope()) {
-          try (Scope latencyScope = OpenCensusStatsUtil.createLatencyScope()) {
-            OpenCensusTraceUtil.addAnnotationAndLog("Publisher:message-" + i);
-            // Propagate the span information with the request.
-            String message = "message-" + i;
-            // convert message to bytes
-            ByteString data = ByteString.copyFromUtf8(message);
-            PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-                .setData(data)
-                .build();
-            // Schedule a message to be published. Messages are automatically batched.
-            ApiFuture<String> future = publisher.publish(pubsubMessage);
-            futures.add(future);
-          }
+        try (Scope traceScope = OpenCensusTraceUtil.createScopedSampledSpan("PublisherRoot-" + i)) {
+          // Propagate the span information with the request.
+          String message = "message-" + i;
+          // convert message to bytes
+          ByteString data = ByteString.copyFromUtf8(message);
+          PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
+                                        .setData(data)
+                                        .build();
+          // Schedule a message to be published. Messages are automatically batched.
+          ApiFuture<String> future = publisher.publish(pubsubMessage);
+          futures.add(future);
         }
       }
     } finally {
@@ -84,7 +79,7 @@ public class PublisherExample {
         // When finished with the publisher, shutdown to free up resources.
         publisher.shutdown();
       }
-      OpenCensusTraceUtil.addAnnotationAndLog("Publisher:End");
+      OpenCensusTraceUtil.addAnnotation("Publisher:End");
       Thread.sleep(5000);
     }
   }

@@ -42,10 +42,10 @@ public class SubscriberExample {
           System.out.println("Message Id: " + message.getMessageId());
           String data = message.getData().toStringUtf8();
           System.out.println("Data: " + data);
-          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Message");
-          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Ack: " + data);
+          OpenCensusTraceUtil.addAnnotation("Receiver:Message");
+          OpenCensusTraceUtil.addAnnotation("Receiver:Ack: " + data);
           consumer.ack();
-          OpenCensusTraceUtil.addAnnotationAndLog("Receiver:Done: " + data);
+          OpenCensusTraceUtil.addAnnotation("Receiver:Done: " + data);
         }
       }
     }

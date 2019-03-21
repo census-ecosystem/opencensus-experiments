@@ -35,7 +35,7 @@ final class OpenCensusTraceUtil {
   private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
   private static final Tracer tracer = Tracing.getTracer();
 
-  public static void addAnnotationAndLog(String annotation) {
+  public static void addAnnotation(String annotation) {
     tracer.getCurrentSpan().addAnnotation(annotation);
     logger.log(Level.INFO, annotation);
   }

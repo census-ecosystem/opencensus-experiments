@@ -40,7 +40,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.62.1-SNAPSHOT</version>
+      <version>1.65.1-SNAPSHOT</version>
     </dependency>
     <!-- [END pubsub_java_dependencies] -->
 
