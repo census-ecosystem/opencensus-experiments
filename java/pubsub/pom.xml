@@ -44,7 +44,6 @@
     </dependency>
     <!-- [END pubsub_java_dependencies] -->
 
-
     <!-- [START opencensus_java_dependencies] -->
     <dependency>
       <groupId>io.opencensus</groupId>
