@@ -122,13 +122,11 @@ final class OpenCensusStatsUtil {
         // Initialize stats exporter.
         StackdriverStatsExporter.createAndRegister(
             StackdriverStatsConfiguration.builder()
-            .setProjectId(PROJECT_ID)
+            .setProjectId(projectId)
             .setExportInterval(Duration.create(15, 0))
             .build());
       } catch (IOException exn) {
-        if (exn == null) {
-          System.err.println("Null exn");
-        }
+        System.err.println("Null exn");
       }
     }
   }
