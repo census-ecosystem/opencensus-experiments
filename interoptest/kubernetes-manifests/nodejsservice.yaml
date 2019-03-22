@@ -39,6 +39,8 @@ spec:
         env:
         - name: PORT
           value: "10301"
+        - name: JAEGER_SERVICE_ADDR
+          value: "traceui:14268"
         resources:
           requests:
             cpu: 200m
@@ -48,12 +50,12 @@ spec:
             memory: 300Mi
         readinessProbe:
           tcpSocket:
-            port: 10301
+            port: 10303
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 10301
+            port: 10303
           initialDelaySeconds: 10
           periodSeconds: 10
 ---

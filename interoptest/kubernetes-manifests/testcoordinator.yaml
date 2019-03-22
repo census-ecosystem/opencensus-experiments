@@ -28,11 +28,15 @@ spec:
         image: gcr.io/opencensus-interoptest/testcoordinator
         imagePullPolicy: Never
         ports:
-        - containerPort: 10000
+        - containerPort: 10003
           name: testcoordinator
+        - containerPort: 10002
+          name: registration
+        - containerPort: 10001
+          name: receiver
         env:
         - name: PORT
-          value: "10000"
+          value: "10003"
         resources:
           requests:
             cpu: 200m
@@ -40,16 +44,16 @@ spec:
           limits:
             cpu: 300m
             memory: 300Mi
-        readinessProbe:
-          tcpSocket:
-            port: 10000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          tcpSocket:
-            port: 10000
-          initialDelaySeconds: 10
-          periodSeconds: 10
+#        readinessProbe:
+#          tcpSocket:
+#            port: 10003
+#          initialDelaySeconds: 5
+#          periodSeconds: 10
+#        livenessProbe:
+#          tcpSocket:
+#            port: 10003
+#          initialDelaySeconds: 10
+#          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -61,5 +65,11 @@ spec:
     app: testcoordinator
   ports:
   - name: testcoordinator
-    port: 10000
-    targetPort: 10000
+    port: 10003
+    targetPort: 10003
+  - name: registration
+    port: 10002
+    targetPort: 10002
+  - name: receiver
+    port: 10001
+    targetPort: 10001

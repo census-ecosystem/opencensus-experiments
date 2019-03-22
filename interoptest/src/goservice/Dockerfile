@@ -1,14 +1,13 @@
-FROM golang:1.10-alpine as builder
+FROM golang:1.11-alpine3.7 as builder
 RUN apk add --no-cache ca-certificates git && \
-      wget -qO/go/bin/dep https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 && \
-      chmod +x /go/bin/dep
+    apk add --no-cache bash git openssh gcc musl-dev
 
-ENV PROJECT github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice
-WORKDIR /go/src/$PROJECT
+WORKDIR /go/src/
 
-# restore dependencies
-COPY Gopkg.* ./
-RUN dep ensure --vendor-only -v
+ENV GO111MODULE on
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
 
 COPY . .
 RUN go build -gcflags='-N -l' -o /goservice .

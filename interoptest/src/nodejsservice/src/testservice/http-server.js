@@ -16,8 +16,8 @@
 
 const interop = require('../../proto/interoperability_test_pb');
 const serviceHopper = require('./service-hopper');
+const {constants, toBuffer, fromBuffer} = require('./util');
 const http = require('http');
-const URL_ENDPOINT = '/test/request';
 
 let server;
 
@@ -25,7 +25,7 @@ let server;
  * Starts a HTTP server that receives requests on sample server port
  */
 function start (httpPort, httpHost) {
-  const host = httpHost || 'localhost';
+  const host = httpHost || constants.DEFAULT_HOST;
   // Creates a server
   server = http.createServer(handleRequest);
 
@@ -40,9 +40,33 @@ function start (httpPort, httpHost) {
 
 // A function which handles requests and send response
 function handleRequest (request, response) {
-  // TODO(mayurkale) : Add this handler
+  try {
+    const url = request.url;
+    if (url === constants.HTTP_URL_ENDPOINT) {
+      let body = [];
+      request.on('error', err => console.log(err));
+      request.on('data', chunk => body.push(chunk));
+      request.on('end', () => {
+        const testRequest = fromBuffer(body, interop.TestRequest);
+        (async () => {
+          const testResponse = await serviceHopper.serviceHop(testRequest);
+          console.log(`http hopper:${JSON.stringify(testResponse.toObject())}`);
+          response.writeHead(200, constants.PROTOBUF_HEADER);
+          response.write(toBuffer(testResponse));
+          response.end();
+        })();
+      });
+    } else {
+      const testResponse = new interop.TestResponse();
+      serviceHopper.setFailureStatus(testResponse, 'Bad Request');
+      response.writeHead(400, constants.PROTOBUF_HEADER);
+      response.write(toBuffer(testResponse));
+      response.end();
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
-
 
 /**
  * Gracefully shuts down the server. The server will stop receiving new calls

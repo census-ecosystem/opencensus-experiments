@@ -22,6 +22,7 @@ import logging
 import sys
 from concurrent import futures
 
+from opencensus.trace import execution_context
 from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import trace_context_http_header_format
@@ -65,7 +66,7 @@ def healthcheck():
 def test():
     """Handle a test request by calling other test services"""
     request = pb2.TestRequest.FromString(flask.request.get_data())
-    logger.debug("Got request: %s", request)
+    logger.debug("Flask service received: %s", request)
 
     if not request.service_hops:
         response = pb2.TestResponse(
@@ -79,6 +80,8 @@ def test():
                   list(service.call_next(request).status))
         response = pb2.TestResponse(id=request.id, status=status)
 
+    tracer = execution_context.get_opencensus_tracer()
+    tracer.add_attribute_to_current_span("reqId", request.id)
     return response.SerializeToString()
 
 
@@ -142,9 +145,8 @@ def block_until_ready(host, port, timeout=10):
 
 @contextmanager
 def serve_http_tracecontext(
-        port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
+        host="0.0.0.0", port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
     """Run the HTTP/tracecontext server, shut down on exiting context."""
-    host = 'localhost'
     with futures.ThreadPoolExecutor(max_workers=1) as tpe:
         tpe.submit(app.run, host=host, port=port)
         block_until_ready(host, port)
@@ -163,7 +165,7 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:http:tracecontext",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.HTTP,
                         propagation=pb2.Spec.
@@ -172,7 +174,7 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
                 service=pb2.Service(
                     name="python:http:tracecontext",
                     port=port,
-                    host="localhost",
+                    host="0.0.0.0",
                     spec=pb2.Spec(
                         transport=pb2.Spec.HTTP,
                         propagation=pb2.Spec.
@@ -180,13 +182,13 @@ def test_server(port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT):
         ])
 
     with serve_http_tracecontext():
-        return service.call_http_tracecontext('localhost', port, test_request)
+        return service.call_http_tracecontext("0.0.0.0", port, test_request)
 
 
-def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
+def main(host="0.0.0.0", port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
          exit_event=None):
     """Runs the service and registers it with the test coordinator."""
-    with serve_http_tracecontext():
+    with serve_http_tracecontext(host=host, port=port):
         logger.debug("Registering with test coordinator")
         requests.post('http://{}:{}{}'.format(host, port, '/register'))
         logger.debug("Serving...")
@@ -196,5 +198,5 @@ def main(host='localhost', port=pb2.PYTHON_HTTP_TRACECONTEXT_PROPAGATION_PORT,
 
 
 if __name__ == "__main__":
-    with util.get_signal_exit() as _exit_event:
-        main(exit_event=_exit_event)
+    with util.get_signal_exit() as exit_event:
+        main(exit_event=exit_event)

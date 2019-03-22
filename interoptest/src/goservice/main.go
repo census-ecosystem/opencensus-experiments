@@ -23,11 +23,11 @@ import (
 
 	"context"
 	"contrib.go.opencensus.io/exporter/ocagent"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"github.com/sirupsen/logrus"
 	"go.opencensus.io/exporter/jaeger"
 	"go.opencensus.io/trace"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/testservice"
+	"goservice/genproto"
+	"goservice/testservice"
 )
 
 var log *logrus.Logger
@@ -74,7 +74,8 @@ func registerOcAgentExporter() {
 }
 
 func main() {
-	registerJaegerExporter()
+	// For debugging use JaegerExporter.
+	// registerJaegerExporter()
 	registerOcAgentExporter()
 	grpcServer, err := testservice.NewGRPCReciever(fmt.Sprintf(":%d", interop.ServicePort_GO_GRPC_BINARY_PROPAGATION_PORT))
 	if err != nil {

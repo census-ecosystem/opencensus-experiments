@@ -17,13 +17,13 @@ package testservice
 import (
 	"bytes"
 	"fmt"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"github.com/golang/protobuf/proto"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace/propagation"
 	"golang.org/x/net/context"
+	"goservice/genproto"
 	"io/ioutil"
 	"net/http"
 )
@@ -58,25 +58,27 @@ func (hs *HttpSender) Send(ctx context.Context, serviceHop interop.ServiceHop, r
 		Id: req.GetId(),
 	}
 
-	data := proto.MarshalTextString(req)
-	var err error
+	data, err := proto.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
 	var resp *http.Response
 	url := fmt.Sprintf("http://%s:%d/test/request", serviceHop.Service.Host, serviceHop.Service.Port)
 
+	httpReq, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	httpReq = httpReq.WithContext(ctx)
 	if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_B3_FORMAT_PROPAGATION {
-		resp, err = hs.b3Client.Post(url, "text/plain", bytes.NewBufferString(data))
+		resp, err = hs.b3Client.Do(httpReq)
 	} else if serviceHop.GetService().GetSpec().GetPropagation() == interop.Spec_TRACE_CONTEXT_FORMAT_PROPAGATION {
-		resp, err = hs.tcClient.Post(url, "text/plain", bytes.NewBufferString(data))
+		resp, err = hs.tcClient.Do(httpReq)
 	}
 	if resp != nil {
 		defer resp.Body.Close()
+		respData, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			respData, err := ioutil.ReadAll(resp.Body)
+			err = proto.Unmarshal(respData, &res)
 			if err == nil {
-				err = proto.UnmarshalText(string(respData), &res)
-				if err == nil {
-					return &res, nil
-				}
+				return &res, nil
 			}
 		}
 	}

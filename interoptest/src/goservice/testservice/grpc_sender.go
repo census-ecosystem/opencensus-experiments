@@ -16,10 +16,11 @@ package testservice
 
 import (
 	"fmt"
-	"github.com/census-ecosystem/opencensus-experiments/interoptest/src/goservice/genproto"
 	"go.opencensus.io/plugin/ocgrpc"
+	"go.opencensus.io/trace"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"goservice/genproto"
 )
 
 // GRPCSender is the type that handles test requests over gRPC.
@@ -34,7 +35,9 @@ func NewGRPCSender() *GRPCSender {
 // Send sends gRPC request to a server specified by serviceHop.
 func (gs *GRPCSender) Send(ctx context.Context, serviceHop interop.ServiceHop, req *interop.TestRequest) (*interop.TestResponse, error) {
 	address := fmt.Sprintf("%s:%d", serviceHop.Service.Host, serviceHop.Service.Port)
-	conn, err := grpc.Dial(address, grpc.WithStatsHandler(&ocgrpc.ClientHandler{}), grpc.WithInsecure())
+	ch := ocgrpc.ClientHandler{}
+	ch.StartOptions.Sampler = trace.AlwaysSample()
+	conn, err := grpc.Dial(address, grpc.WithStatsHandler(&ch), grpc.WithInsecure())
 	if err != nil {
 		// TODO: log error
 		// log.Fatalf("Cannot connect: %v", err)
@@ -43,7 +46,7 @@ func (gs *GRPCSender) Send(ctx context.Context, serviceHop interop.ServiceHop, r
 	c := interop.NewTestExecutionServiceClient(conn)
 
 	// Contact the server and print out its response.
-	r, err := c.Test(context.Background(), req)
+	r, err := c.Test(ctx, req)
 	if err != nil {
 		// TODO: log error
 		// log.Printf("Could not test: %v", err)

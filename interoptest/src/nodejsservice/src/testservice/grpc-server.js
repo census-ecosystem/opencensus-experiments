@@ -17,6 +17,7 @@
 const services = require('../../proto/interoperability_test_grpc_pb');
 const serviceHopper = require('./service-hopper');
 const grpc = require('grpc');
+const {constants} = require('./util');
 
 let server;
 /**
@@ -24,7 +25,7 @@ let server;
  * service at the sample server port
  */
 function start (grpcPort, grpcHost) {
-  const host = grpcHost || 'localhost';
+  const host = grpcHost || constants.DEFAULT_HOST;
   // Creates a server
   server = new grpc.Server();
 
@@ -35,7 +36,6 @@ function start (grpcPort, grpcHost) {
 
   if (boundPort !== grpcPort) {
     console.warn('Failed to bind to port', grpcPort);
-    process.exit(1);
   }
 
   // Starts the server !

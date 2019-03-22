@@ -36,6 +36,7 @@ var (
 	errOrphanSpan         = errors.New("found orphan span")
 	errAlreadyExists      = errors.New("found two spans with the same span ID")
 	errDuplicatedRootSpan = errors.New("found duplicated root span for the same trace")
+	zeroSpan              = trace.SpanID{0, 0, 0, 0, 0, 0, 0, 0}
 )
 
 // ReconstructTraces tries to reconstruct traces from the given spans. If the spans are valid, it will return the root
@@ -45,9 +46,9 @@ func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, m
 	roots := map[trace.TraceID]*SimpleSpan{}
 	errs := map[trace.TraceID]error{}
 	processedSpans := map[trace.SpanID]*SimpleSpan{} // cache processed spans for faster loop-up
-	outerLoop:
-	for tid, spans := range dict {                   // iterate each trace
-		for len(spans) > 0  {
+outerLoop:
+	for tid, spans := range dict { // iterate each trace
+		for len(spans) > 0 {
 			// The order of spans in the list are non-deterministic,
 			// so we need to keep iterating over the span list until either:
 			// 1. all spans are processed if the spans can form a valid trace;
@@ -80,14 +81,19 @@ func ReconstructTraces(spans ...*tracepb.Span) (map[trace.TraceID]*SimpleSpan, m
 func groupSpansByTraceID(spans []*tracepb.Span) map[trace.TraceID][]*tracepb.Span {
 	dict := map[trace.TraceID][]*tracepb.Span{}
 	for _, span := range spans {
-		traceID := toTraceID(span.TraceId)
+		if zeroSpan == ToSpanID(span.SpanId) {
+			// zero span id is considered invalid for interop test.
+			// throw away such spans.
+			continue;
+		}
+		traceID := ToTraceID(span.TraceId)
 		dict[traceID] = append(dict[traceID], span)
 	}
 	return dict
 }
 
 func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, processedSpans map[trace.SpanID]*SimpleSpan, span *tracepb.Span) (bool, error) {
-	if processedSpans[toSpanID(span.SpanId)] != nil {
+	if processedSpans[ToSpanID(span.SpanId)] != nil {
 		return false, errAlreadyExists
 	}
 	if isRoot(span) { // root span
@@ -100,7 +106,7 @@ func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, process
 			return false, errDuplicatedRootSpan
 		}
 	} else { // leaf span
-		psID := toSpanID(span.ParentSpanId)
+		psID := ToSpanID(span.ParentSpanId)
 		parent := processedSpans[psID] // check if we already processed its parent
 		if parent != nil {
 			child := spanToSimpleSpan(span)
@@ -112,13 +118,15 @@ func processSpan(tid trace.TraceID, roots map[trace.TraceID]*SimpleSpan, process
 	}
 }
 
-func toTraceID(bytes []byte) trace.TraceID {
+// ToTraceID creates a Trace ID from the given byte array.
+func ToTraceID(bytes []byte) trace.TraceID {
 	var bytesCopy [16]byte
 	copy(bytesCopy[:], bytes[:16])
 	return trace.TraceID(bytesCopy)
 }
 
-func toSpanID(bytes []byte) trace.SpanID {
+// ToSpanID creates a SpanID ID from the given byte array.
+func ToSpanID(bytes []byte) trace.SpanID {
 	var bytesCopy [8]byte
 	copy(bytesCopy[:], bytes[:8])
 	return trace.SpanID(bytesCopy)
@@ -137,8 +145,8 @@ func toTracestate(tspb *tracepb.Span_Tracestate) tracestate.Tracestate {
 func spanToSimpleSpan(span *tracepb.Span) *SimpleSpan {
 	ss := &SimpleSpan{
 		children: make(map[trace.SpanID]*SimpleSpan),
-		traceID:  toTraceID(span.TraceId),
-		spanID:   toSpanID(span.SpanId),
+		traceID:  ToTraceID(span.TraceId),
+		spanID:   ToSpanID(span.SpanId),
 	}
 	if span.Tracestate != nil && span.Tracestate.Entries != nil {
 		ss.tracestate = toTracestate(span.Tracestate)
@@ -147,7 +155,7 @@ func spanToSimpleSpan(span *tracepb.Span) *SimpleSpan {
 }
 
 func isRoot(span *tracepb.Span) bool {
-	return span.ParentSpanId == nil || len(span.ParentSpanId) == 0
+	return span.ParentSpanId == nil || len(span.ParentSpanId) == 0 || zeroSpan == ToSpanID(span.ParentSpanId)
 }
 
 func removeFromSpanList(i int, spans []*tracepb.Span) []*tracepb.Span {

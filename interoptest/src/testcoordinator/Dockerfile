@@ -1,21 +1,25 @@
-FROM golang:1.10-alpine as builder
+FROM golang:1.11-alpine3.7 as builder
 RUN apk add --no-cache ca-certificates git && \
-      wget -qO/go/bin/dep https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 && \
-      chmod +x /go/bin/dep
+    apk add --no-cache bash git openssh gcc musl-dev
 
-ENV PROJECT github.com/census-ecosystem/opencensus-experiments/interoptest/src/testcoordinator
-WORKDIR /go/src/$PROJECT
+WORKDIR /go/src/
 
-# restore dependencies
-COPY Gopkg.* ./
-RUN dep ensure --vendor-only -v
+ENV GO111MODULE on
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
 
 COPY . .
-RUN go build -gcflags='-N -l' -o /testcoordinator .
+RUN go build -gcflags='-N -l' -o /testcoordinator cmd/main.go
+
+# COPY test suites
+RUN cp -r testdata /
 
 FROM alpine as release
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates curl
 
 COPY --from=builder /testcoordinator /testcoordinator
-EXPOSE 10000
+COPY --from=builder /testdata /testdata
+EXPOSE 10003 10002 10001
 ENTRYPOINT ["/testcoordinator"]
+

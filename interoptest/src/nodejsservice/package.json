@@ -16,9 +16,16 @@
   "author": "opencensus team",
   "license": "ISC",
   "dependencies": {
-    "google-protobuf": "^3.2.0",
-    "grpc": "^1.17.0",
-    "http": "*"
+    "@opencensus/core": "^0.0.8",
+    "@opencensus/exporter-jaeger": "^0.0.8",
+    "@opencensus/instrumentation-grpc": "^0.0.8",
+    "@opencensus/instrumentation-http": "^0.0.8",
+    "@opencensus/nodejs": "^0.0.8",
+    "@opencensus/propagation-tracecontext": "^0.0.8",
+    "@opencensus/propagation-b3": "^0.0.8",
+    "http": "*",
+    "google-protobuf": "^3.6.1",
+    "grpc": "^1.17.0"
   },
   "devDependencies": {
     "semistandard": "^12.0.1"
