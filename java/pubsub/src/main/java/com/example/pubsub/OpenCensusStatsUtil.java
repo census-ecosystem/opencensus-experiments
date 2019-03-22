@@ -37,14 +37,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * A utility class for using OpenCensus stats with pub/sub.
+ * A utility class for the OpenCensus Stats Pub/Sub example.
  */
 final class OpenCensusStatsUtil {
   private static final Tagger tagger = Tags.getTagger();
 
   private static final StatsRecorder statsRecorder = Stats.getStatsRecorder();
-
-  private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
 
   // The method key allows us to break down the recorded latencies.
   private static final TagKey METHOD = TagKey.create("METHOD");
@@ -56,7 +54,7 @@ final class OpenCensusStatsUtil {
 
   private static int pubCount = 0;
 
-  public static Scope createPublisherScope() {
+  static Scope createPublisherScope() {
     TagValue val = TagValue.create("publisher-" + pubCount);
     pubCount = (pubCount + 1) % 10;
     return tagger.currentBuilder().put(PUBLISHER, val).buildScoped();
@@ -64,7 +62,7 @@ final class OpenCensusStatsUtil {
 
   private static int subCount = 0;
 
-  public static Scope createSubscriberScope() {
+  static Scope createSubscriberScope() {
     TagValue val = TagValue.create("subscriber-" + subCount);
     subCount = (subCount + 1) % 10;
     return tagger.currentBuilder().put(SUBSCRIBER, val).buildScoped();
@@ -74,7 +72,7 @@ final class OpenCensusStatsUtil {
    * Creates a Scope that captures the current system time and records latency when Scope is
    * close()'d.
    */
-  public static final Scope createLatencyScope() {
+  static final Scope createLatencyScope() {
     return new LatencyStatsRecorder();
   }
 
@@ -115,7 +113,9 @@ final class OpenCensusStatsUtil {
           Arrays.asList(PUBLISHER, SUBSCRIBER));
 
   static {
-    if (!PROJECT_ID.isEmpty()) {
+    String projectId = ServiceOptions.getDefaultProjectId();
+
+    if (projectId != null && !projectId.isEmpty()) {
       // Register latency view.
       Stats.getViewManager().registerView(LATENCY_VIEW);
       try {

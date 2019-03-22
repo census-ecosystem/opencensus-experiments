@@ -57,6 +57,7 @@ public class PublisherExample {
                   .build();
       for (int i = 0; i < messageCount; i++) {
         try (Scope traceScope = OpenCensusTraceUtil.createScopedSampledSpan("PublisherRoot-" + i)) {
+          OpenCensusTraceUtil.addAnnotation(OpenCensusTraceUtil.getCurrentSpanIdAsString());
           // Propagate the span information with the request.
           String message = "message-" + i;
           // convert message to bytes

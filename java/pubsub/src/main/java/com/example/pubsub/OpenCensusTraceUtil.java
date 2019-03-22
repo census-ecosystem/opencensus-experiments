@@ -30,18 +30,20 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A utility class for the OpenCensus Tracing Pub/Sub example.
+ */
 final class OpenCensusTraceUtil {
   private static final Logger logger = Logger.getLogger(OpenCensusTraceUtil.class.getName());
-  private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
   private static final Tracer tracer = Tracing.getTracer();
 
-  public static void addAnnotation(String annotation) {
+  static void addAnnotation(String annotation) {
     tracer.getCurrentSpan().addAnnotation(annotation);
     logger.log(Level.INFO, annotation);
   }
 
   @MustBeClosed
-  public static Scope createScopedSampledSpan(String name) {
+  static Scope createScopedSampledSpan(String name) {
     return tracer
         .spanBuilderWithExplicitParent(name, tracer.getCurrentSpan())
         .setRecordEvents(true)
@@ -49,7 +51,11 @@ final class OpenCensusTraceUtil {
         .startScopedSpan();
   }
 
-  public static void logCurrentSpan() {
+  static String getCurrentSpanIdAsString() {
+    return tracer.getCurrentSpan().getContext().getSpanId().toString();
+  }
+
+  static void logCurrentSpan() {
     SpanContext ctxt = tracer.getCurrentSpan().getContext();
     logger.log(Level.INFO, "OpenCensusTraceUtil: logCurrentSpan(): "
         + "traceid=" + ctxt.getTraceId().toLowerBase16()
@@ -58,11 +64,13 @@ final class OpenCensusTraceUtil {
   }
 
   static {
-    if (!PROJECT_ID.isEmpty()) {
+    String projectId = ServiceOptions.getDefaultProjectId();
+
+    if (projectId != null && !projectId.isEmpty()) {
       try {
         // Initialize trace exporter.
         StackdriverTraceExporter.createAndRegister(
-            StackdriverTraceConfiguration.builder().setProjectId(PROJECT_ID).build());
+            StackdriverTraceConfiguration.builder().setProjectId(projectId).build());
       } catch (IOException exn) {
         logger.log(Level.INFO, "Initializing OpenCensusTraceUtil: Exception: " + exn);
       }
