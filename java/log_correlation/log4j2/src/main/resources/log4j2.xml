@@ -13,7 +13,7 @@
         -->
         <KeyValuePair key="logging.googleapis.com/trace" value="$${ctx:traceId}"/>
         <KeyValuePair key="logging.googleapis.com/spanId" value="$${ctx:spanId}"/>
-        <KeyValuePair key="logging.googleapis.com/traceSampled" value="$${ctx:traceSampled}"/>
+        <KeyValuePair key="logging.googleapis.com/trace_sampled" value="$${ctx:traceSampled}"/>
      </JsonLayout>
     </File>
   </Appenders>
