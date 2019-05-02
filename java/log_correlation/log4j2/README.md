@@ -57,8 +57,9 @@ described in https://cloud.google.com/logging/docs/agent/configuration#structure
 that the demo project's `log4j2.xml` and the fluentd configuration specify the same log file.
 
 4. Add the following fluentd filter to transform Log4j's `level` field into the `severity` field
-that is expected by Stackdriver.  This snippet can be appended to the file from step 4.  Ensure that
-the tag on the first line of the snippet matches the tag in the fluentd configuration file from step 4.
+that is expected by Stackdriver.  This snippet can be appended to the fluentd configuration file
+that was added in step 3.  Ensure that the tag on the first line of the snippet matches the tag in
+the configuration from step 3.
 
   ```xml
   <filter structured-log>
