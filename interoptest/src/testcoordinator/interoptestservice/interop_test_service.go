@@ -16,10 +16,16 @@ package interoptestservice
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
+	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -328,4 +334,140 @@ func generateResultForEachReq(reqIDByTraceID map[trace.TraceID]int64, traces map
 		results = append(results, result)
 	}
 	return results
+}
+
+var _ http.Handler = (*ServiceImpl)(nil)
+
+// ServeHTTP allows ServiceImpl to handle HTTP requests.
+func (s *ServiceImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		// For options, unconditionally respond with a 200 and send CORS headers.
+		// Without properly responding to OPTIONS and without CORS headers, browsers
+		// won't be able to use this handler.
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Methods", "*")
+		w.Header().Add("Access-Control-Allow-Headers", "*")
+		w.WriteHeader(200)
+		return
+	}
+
+	// Handle routing.
+	switch r.Method {
+	case "GET":
+		s.handleHTTPGET(w, r)
+		return
+
+	case "POST":
+		s.handleHTTPPOST(w, r)
+		return
+
+	default:
+		http.Error(w, "Unhandled HTTP Method: "+r.Method+" only accepting POST and GET", http.StatusMethodNotAllowed)
+		return
+	}
+}
+
+func deserializeJSON(blob []byte, save interface{}) error {
+	return json.Unmarshal(blob, save)
+}
+
+func serializeJSON(src interface{}) ([]byte, error) {
+	return json.Marshal(src)
+}
+
+// readTillEOFAndDeserializeJSON reads the entire body out of rc and then closes it.
+// If it encounters an error, it will return it immediately.
+// After successfully reading the body, it then JSON unmarshals to save.
+func readTillEOFAndDeserializeJSON(rc io.ReadCloser, save interface{}) error {
+	// We are always receiving an interop.InteropResultRequest
+	blob, err := ioutil.ReadAll(rc)
+	_ = rc.Close()
+	if err != nil {
+		return err
+	}
+	return deserializeJSON(blob, save)
+}
+
+const resultPathPrefix = "/result/"
+
+func (s *ServiceImpl) handleHTTPGET(w http.ResponseWriter, r *http.Request) {
+	// Expecting a request path of: "/result/:id"
+	var path string
+	if r.URL != nil {
+		path = r.URL.Path
+	}
+
+	if len(path) <= len(resultPathPrefix) {
+		http.Error(w, "Expected path of the form: /result/:id", http.StatusBadRequest)
+		return
+	}
+
+	strId := strings.TrimPrefix(path, resultPathPrefix)
+	if strId == "" || strId == "/" {
+		http.Error(w, "Expected path of the form: /result/:id", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.ParseInt(strId, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// TODO: actually look up the available tests by their IDs
+	req := &interop.InteropResultRequest{Id: id}
+	res, err := s.Result(r.Context(), req)
+	if err != nil {
+		// TODO: perhaps multiplex on NotFound and other sentinel errors.
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	blob, _ := serializeJSON(res)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(blob)
+}
+
+func (s *ServiceImpl) handleHTTPPOST(w http.ResponseWriter, r *http.Request) {
+	var path string
+	if r.URL != nil {
+		path = r.URL.Path
+	}
+
+	ctx := r.Context()
+	var res interface{}
+	var err error
+
+	switch path {
+	case "/run", "/run/":
+		inrreq := new(interop.InteropRunRequest)
+		if err := readTillEOFAndDeserializeJSON(r.Body, inrreq); err != nil {
+			http.Error(w, "Failed to JSON unmarshal interop.InteropRunRequest: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		res, err = s.Run(ctx, inrreq)
+
+	case "/result", "/result/":
+		inrreq := new(interop.InteropResultRequest)
+		if err := readTillEOFAndDeserializeJSON(r.Body, inrreq); err != nil {
+			http.Error(w, "Failed to JSON unmarshal interop.InteropResultRequest: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		res, err = s.Result(ctx, inrreq)
+
+	default:
+		http.Error(w, "Unmatched route: "+path+"\nOnly accepting /result and /run", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		// TODO: Perhap return a structured error e.g. {"error": <ERROR_MESSAGE>}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Otherwise all clear to return the response.
+	blob, _ := serializeJSON(res)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(blob)
 }
